@@ -23,7 +23,7 @@ function current_user_row($conn) {
 }
 
 // get current user (alias for compatibility with delete.php)
-function get_current_user($conn) {
+function get_current_session_user($conn) {
     // try session first
     if (!empty($_SESSION['user'])) {
         return $_SESSION['user'];
