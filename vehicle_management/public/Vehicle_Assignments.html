@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Assignments</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>body{font-family:"Tajawal",sans-serif;margin:18px;background:#f6f7f9;color:#0d2b16} .card{background:#fff;padding:16px;border-radius:10px;border:1px solid #e6e9eb}</style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="pageTitle">Assignments</h2>
+    <div id="content">Loading…</div>
+  </div>
+
+<script src="session_check.js"></script>
+<script src="/vehicle_management/public/permissions.js"></script>
+<script>
+(async()=>{
+  const sess = await sessionCheck();
+  if (!sess || !sess.success) return location.href='login.html';
+  const lang = (sess.user.preferred_language||'ar').toLowerCase();
+  try {
+    const tr = await fetch(`/vehicle_management/languages/${lang}_index.json`, { credentials:'same-origin' }).then(r=>r.json()).catch(()=>({}));
+    document.getElementById('pageTitle').textContent = tr.assignments || 'Assignments';
+  } catch(e){}
+  await Permissions.loadForSession();
+  Permissions.apply();
+  // show actions depending on permission
+  const canAssign = Permissions.has('assign_vehicle');
+  document.getElementById('content').innerHTML = canAssign ? '<div>Load assignment UI here</div>' : '<div class="small">No permission to manage assignments.</div>';
+})();
+</script>
+</body>
+</html>

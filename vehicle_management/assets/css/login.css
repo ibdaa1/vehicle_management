@@ -1,0 +1,32 @@
+/* vehicle_management/assets/css/login.css
+   Palette: light background, dark/olive green primary, gold accents for small text.
+*/
+* { box-sizing: border-box; font-family: "Tajawal", "Helvetica Neue", Arial, sans-serif; }
+html,body{height:100%}
+body { margin:0; background:#fbfbfb; color:#254b2a; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+.auth-wrapper { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card { width:420px; background:#ffffff; border-radius:10px; box-shadow: 0 6px 20px rgba(0,0,0,0.07); padding:28px; text-align:center; }
+.logo img { width:90px; height:auto; margin:0 auto 12px; display:block; }
+h1#title { margin:6px 0 4px; font-size:22px; color:#254b2a; font-weight:700; }
+#subtitle { margin:0 0 14px; color:#556b4a; font-size:13px; }
+
+.mode-switch { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+.mode-switch button { padding:8px 16px; border-radius:6px; border:1px solid transparent; background:transparent; cursor:pointer; color:#254b2a; font-weight:600; }
+.mode-switch button.active { background:#254b2a; color:#fff; box-shadow: 0 2px 6px rgba(37,75,42,0.12); }
+
+.form-row { margin-bottom:10px; display:flex; gap:8px; }
+input[type="text"], input[type="password"], input[type="email"], select { width:100%; padding:10px 12px; border:1px solid #e6dec8; border-radius:6px; background:#fff; color:#254b2a; font-size:14px; }
+select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, #bda36b 50%), linear-gradient(135deg, #bda36b 50%, transparent 50%); background-position: right 10px center, right 5px center; background-repeat: no-repeat; background-size: 8px 8px; padding-right:32px; }
+.select-row select { width:48%; }
+
+button.btn { padding:12px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+button.primary { background:#254b2a; color:#fff; width:100%; }
+
+.msg { margin-top:8px; font-size:13px; color:#b22222; min-height:18px; text-align:center; }
+
+/* responsive */
+@media (max-width:500px) {
+  .auth-card { width:100%; padding:18px; }
+  .select-row select { width:100%; }
+}

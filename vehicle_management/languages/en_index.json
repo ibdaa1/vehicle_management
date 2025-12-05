@@ -1,0 +1,17 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Manage your account information",
+  "addVehicle": "Add Vehicle",
+  "assignments": "Assignments",
+  "maintenance": "Maintenance",
+  "vehicles": "Vehicles",
+  "manage": "Manage",
+  "reports": "Reports",
+  "open": "Open",
+  "logout": "Logout",
+  "plate": "Plate Number",
+  "model": "Model",
+  "department": "Department",
+  "save": "Save",
+  "back": "Back"
+}

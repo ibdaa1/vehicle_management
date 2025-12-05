@@ -1,0 +1,261 @@
+// AdminUsers module: list / edit (modal) / delete / activate users (Admin only)
+// Reuses API endpoints under /vehicle_management/api/users/admin/
+// - list.php
+// - get.php?id=...
+// - update.php (POST)
+// - delete.php (POST)
+// - activate.php (POST)
+// Also fetches roles from /vehicle_management/api/permissions/roles/list.php to populate role select.
+
+const AdminUsers = (function(){
+  const API_BASE = '/vehicle_management/api/users/admin';
+  const ROLES_API = '/vehicle_management/api/permissions/roles/list.php';
+
+  function escapeHTML(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+  async function api(path, opts = {}) {
+    opts.credentials = 'same-origin';
+    opts.headers = Object.assign({'Accept':'application/json'}, opts.headers||{});
+    const res = await fetch(API_BASE + '/' + path, opts);
+    try { return await res.json(); } catch(e) { return { success:false, message:'Invalid response', status: res.status }; }
+  }
+
+  async function fetchRoles() {
+    try {
+      const res = await fetch(ROLES_API, { credentials:'same-origin' });
+      const j = await res.json();
+      if (j && j.success) return j.roles;
+    } catch(e){}
+    return [];
+  }
+
+  async function load(){
+    document.getElementById('desc').textContent = 'جاري التحميل…';
+    const res = await api('list.php');
+    if (!res || !res.success) {
+      document.getElementById('desc').textContent = res.message || 'خطأ في التحميل';
+      return;
+    }
+    document.getElementById('desc').textContent = 'عرض ' + (res.users ? res.users.length : 0) + ' مستخدم(ين)';
+    renderUsers(res.users || []);
+  }
+
+  function renderUsers(rows) {
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+    rows.forEach(u=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHTML(u.display_name || u.username)}</td>
+        <td>${escapeHTML(u.emp_id||'')}</td>
+        <td>${escapeHTML(u.email||'')}</td>
+        <td>${escapeHTML(u.phone||'')}</td>
+        <td>${escapeHTML(roleLabel(u.role_id))}</td>
+        <td>${escapeHTML((u.department && u.department.name) || u.department_id || '')}</td>
+        <td>${escapeHTML((u.section && u.section.name) || u.section_id || '')}</td>
+        <td>${escapeHTML((u.division && u.division.name) || u.division_id || '')}</td>
+        <td>${u.is_active==1 ? '<span style="color:green">مفعل</span>' : '<span style="color:red">معطّل</span>'}</td>
+        <td class="actions">
+          <button data-id="${u.id}" class="editBtn">تعديل</button>
+          <button data-id="${u.id}" class="deleteBtn">حذف</button>
+          <button data-id="${u.id}" class="toggleActiveBtn">${u.is_active==1 ? 'تعطيل' : 'تفعيل'}</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    bindButtons();
+  }
+
+  function roleLabel(r) {
+    if (!r) return 'User';
+    if (parseInt(r) === 1) return 'سوبر ادمن';
+    if (parseInt(r) === 2) return 'ادمن';
+    // fallback: show role id
+    return 'role ' + r;
+  }
+
+  function bindButtons(){
+    document.querySelectorAll('.editBtn').forEach(b=>{
+      b.onclick = async ()=> {
+        const id = b.getAttribute('data-id');
+        openEditModal(id);
+      };
+    });
+    document.querySelectorAll('.deleteBtn').forEach(b=>{
+      b.onclick = async ()=> {
+        if (!confirm('هل تريد حذف المستخدم نهائياً؟')) return;
+        const id = b.getAttribute('data-id');
+        const fd = new FormData(); fd.append('id', id);
+        const res = await api('delete.php', { method:'POST', body: fd });
+        if (res && res.success) { alert('تم الحذف'); load(); } else alert(res.message || 'فشل الحذف');
+      };
+    });
+    document.querySelectorAll('.toggleActiveBtn').forEach(b=>{
+      b.onclick = async ()=> {
+        const id = b.getAttribute('data-id');
+        const fd = new FormData(); fd.append('id', id);
+        const res = await api('activate.php', { method:'POST', body: fd });
+        if (res && res.success) { alert('تم التغيير'); load(); } else alert(res.message || 'فشل العملية');
+      };
+    });
+  }
+
+  // Modal handling
+  const modalBackdrop = document.getElementById('modalBackdrop');
+  const modalBody = document.getElementById('modalBody');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalSave = document.getElementById('modalSave');
+  let currentEditId = null;
+  let currentRoles = [];
+
+  modalCancel.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', (e)=>{ if (e.target === modalBackdrop) closeModal(); });
+  modalSave.addEventListener('click', submitModalForm);
+
+  async function openEditModal(userId) {
+    currentEditId = userId;
+    modalTitle.textContent = 'تحميل بيانات...';
+    modalBody.innerHTML = '<div class="small">جاري التحميل…</div>';
+    showModal();
+
+    try {
+      const [roles, res] = await Promise.all([fetchRoles(), api('get.php?id=' + encodeURIComponent(userId))]);
+      currentRoles = roles || [];
+      if (!res || !res.success) {
+        modalBody.innerHTML = `<div class="small" style="color:red">${escapeHTML(res?.message || 'خطأ في تحميل المستخدم')}</div>`;
+        modalTitle.textContent = 'خطأ';
+        return;
+      }
+      const user = res.user;
+      modalTitle.textContent = 'تعديل المستخدم: ' + (user.display_name || user.username || user.id);
+      buildForm(user);
+    } catch (e) {
+      modalBody.innerHTML = `<div class="small" style="color:red">خطأ: ${escapeHTML(e.message || e)}</div>`;
+      modalTitle.textContent = 'خطأ';
+    }
+  }
+
+  function showModal(){ modalBackdrop.style.display = 'flex'; }
+  function closeModal(){ modalBackdrop.style.display = 'none'; modalBody.innerHTML = ''; currentEditId = null; }
+
+  // Build a form dynamically using user object fields (exclude id, created_at)
+  function buildForm(user){
+    // fields we want to show/edit (in order). If missing in user object, skip.
+    const fields = [
+      {key:'display_name', label:'الاسم الظاهر', type:'text'},
+      {key:'emp_id', label:'الرمز الوظيفي', type:'text'},
+      {key:'username', label:'اسم المستخدم', type:'text'},
+      {key:'email', label:'البريد الإلكتروني', type:'email'},
+      {key:'phone', label:'الهاتف', type:'text'},
+      {key:'preferred_language', label:'اللغة المفضلة', type:'select', options:[{v:'ar',t:'عربى'},{v:'en',t:'English'}]},
+      {key:'role_id', label:'الدور', type:'select_roles'},
+      {key:'is_active', label:'مفعل', type:'checkbox'},
+      {key:'department_id', label:'الإدارة (ID)', type:'number'},
+      {key:'section_id', label:'القسم (ID)', type:'number'},
+      {key:'division_id', label:'الشعبة (ID)', type:'number'}
+    ];
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'editForm';
+    fields.forEach(f=>{
+      if (!(f.key in user)) return; // skip if not present
+      const row = document.createElement('div');
+      row.className = 'form-row';
+      const label = document.createElement('label');
+      label.textContent = f.label;
+      const controlWrap = document.createElement('div');
+      controlWrap.style.flex = '1';
+
+      if (f.type === 'text' || f.type === 'email' || f.type === 'number') {
+        const inp = document.createElement('input');
+        inp.type = f.type === 'number' ? 'number' : (f.type === 'email' ? 'email' : 'text');
+        inp.name = f.key;
+        inp.value = user[f.key] ?? '';
+        controlWrap.appendChild(inp);
+      } else if (f.type === 'select') {
+        const sel = document.createElement('select');
+        sel.name = f.key;
+        f.options.forEach(op=>{
+          const o = document.createElement('option');
+          o.value = op.v; o.textContent = op.t;
+          if ((user[f.key]+'') === (op.v+'')) o.selected = true;
+          sel.appendChild(o);
+        });
+        controlWrap.appendChild(sel);
+      } else if (f.type === 'select_roles') {
+        const sel = document.createElement('select');
+        sel.name = f.key;
+        // populate currentRoles
+        (currentRoles || []).forEach(r=>{
+          const o = document.createElement('option');
+          o.value = r.id; o.textContent = (r.name_en || r.name_ar || ('role ' + r.id));
+          if (parseInt(user.role_id || 0,10) === parseInt(r.id,10)) o.selected = true;
+          sel.appendChild(o);
+        });
+        controlWrap.appendChild(sel);
+      } else if (f.type === 'checkbox') {
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.name = f.key;
+        chk.checked = (parseInt(user[f.key] || 0,10) === 1);
+        controlWrap.appendChild(chk);
+      }
+
+      row.appendChild(label);
+      row.appendChild(controlWrap);
+      wrapper.appendChild(row);
+    });
+
+    // add hidden id field
+    const hid = document.createElement('input');
+    hid.type = 'hidden'; hid.name = 'id'; hid.value = user.id;
+    wrapper.appendChild(hid);
+
+    modalBody.innerHTML = '';
+    modalBody.appendChild(wrapper);
+  }
+
+  async function submitModalForm(){
+    const form = document.getElementById('editForm');
+    if (!form) return;
+    const fd = new FormData(form);
+    // ensure checkbox fields are sent as 1/0
+    const checkboxNames = Array.from(form.querySelectorAll('input[type=checkbox]')).map(n=>n.name);
+    checkboxNames.forEach(n=>{
+      // FormData includes checkbox only if checked; we want explicit 0 if unchecked
+      if (!fd.has(n)) fd.append(n, '0');
+      else {
+        // convert checked value to '1'
+        fd.set(n, '1');
+      }
+    });
+
+    // send update
+    modalSave.disabled = true;
+    modalSave.textContent = 'جاري الحفظ…';
+    try {
+      const res = await api('update.php', { method:'POST', body: fd });
+      if (res && res.success) {
+        alert('تم الحفظ');
+        closeModal();
+        load();
+      } else {
+        alert(res.message || 'فشل الحفظ');
+      }
+    } catch (e) {
+      alert('خطأ: ' + (e.message || e));
+    } finally {
+      modalSave.disabled = false;
+      modalSave.textContent = 'حفظ';
+    }
+  }
+
+  // init
+  function init(){
+    document.getElementById('refreshBtn').addEventListener('click', load);
+    load();
+  }
+
+  return { init, load };
+})();

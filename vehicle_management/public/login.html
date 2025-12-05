@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>نظام متابعة السيارات - تسجيل / دخول</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="../assets/css/login.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="logo">
+        <img src="/vehicle_management/public/logo/shjmunlogo.png" alt="logo">
+      </div>
+
+      <h1 id="title">Vehicle Management</h1>
+      <p id="subtitle">نظام متابعة السيارات</p>
+
+      <div class="mode-switch">
+        <button id="btn_login" class="active">Login</button>
+        <button id="btn_register">Register</button>
+      </div>
+
+      <form id="authForm" autocomplete="off">
+        <!-- Login fields (default visible) -->
+        <div id="login_fields">
+          <div class="form-row">
+            <input type="text" id="identifier" placeholder="Username or Email" required />
+          </div>
+          <div class="form-row">
+            <input type="password" id="password" placeholder="Password" required />
+          </div>
+        </div>
+
+        <!-- Register-only fields -->
+        <div id="register_fields" style="display:none;">
+          <div class="form-row">
+            <input type="text" id="emp_id" placeholder="Institutional ID (Employee ID)" />
+          </div>
+
+          <div class="form-row">
+            <input type="text" id="reg_username" placeholder="Username" />
+          </div>
+          <div class="form-row">
+            <input type="email" id="reg_email" placeholder="Email" />
+          </div>
+
+          <div class="form-row select-row">
+            <select id="role_id"><option value="">Loading roles...</option></select>
+            <select id="department_id"><option value="">Select department</option></select>
+          </div>
+          <div class="form-row select-row">
+            <select id="section_id"><option value="">Select section</option></select>
+            <select id="division_id"><option value="">Select division</option></select>
+          </div>
+
+          <div class="form-row">
+            <select id="preferred_language">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <input type="text" id="phone" placeholder="Phone (optional)" />
+          </div>
+
+          <div class="form-row">
+            <input type="password" id="reg_password" placeholder="Password" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <button type="submit" id="submitBtn">Login</button>
+        </div>
+        <div id="msg" class="msg"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../assets/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم — HCS Department</title>
+
+  <!-- Tajawal + Font Awesome (for icons fallback) -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --brand-accent:#1f6f2b;
+      --card-bg:#ffffff;
+      --muted:#6b7280;
+      --text:#0d2b16;
+      --border:#e6e9eb;
+    }
+    *{box-sizing:border-box}
+    body{font-family:"Tajawal",sans-serif;margin:18px;background:#f3f5f7;color:var(--text)}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{height:56px;border-radius:8px;background:linear-gradient(135deg,var(--brand-accent),#2e7a2f);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:700;padding:6px 10px}
+    .logo .line1{font-size:14px;letter-spacing:0.4px}
+    .logo .line2{font-size:11px;opacity:0.95}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:0;background:var(--brand-accent);color:#fff;cursor:pointer;font-weight:600}
+    .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
+    .icon-btn{display:inline-flex;align-items:center;gap:8px;padding:8px;border-radius:10px;background:#fff;border:1px solid var(--border);color:var(--brand-accent);cursor:pointer}
+    .notif{position:relative;display:inline-block}
+    .badge{position:absolute;top:-8px;left:-8px;background:#ef4444;color:#fff;border-radius:999px;padding:4px 8px;font-size:12px;min-width:24px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+    .card{background:var(--card-bg);padding:16px;border-radius:10px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(15,23,42,0.03)}
+    .muted{color:var(--muted)}
+    .grid{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .tile{flex:1 1 220px;background:#fff;border-radius:10px;padding:12px;border:1px solid var(--border);display:flex;align-items:center;gap:12px}
+    .tile .icon{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,var(--brand-accent),#2e7a2f);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px}
+    .small{font-size:0.95rem}
+    a.small-link{color:var(--brand-accent);text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <div class="line1">HCS Department</div>
+        <div class="line2">الإدارة</div>
+      </div>
+      <div>
+        <h1 style="margin:0;font-size:1.05rem">لوحة التحكم</h1>
+        <div class="muted">مرحبا — موجز سريع للحالة</div>
+      </div>
+    </div>
+
+    <div class="controls" role="toolbar" aria-label="controls">
+      <!-- Notification + badge -->
+      <div class="notif" title="المستخدمون الذين يحتاجون التفعيل">
+        <button id="gotoAdmin" class="icon-btn" title="إدارة المستخدمين">
+          <!-- prefer local svg/icon then fallback to Font Awesome icon -->
+          <img src="/vehicle_management/public/icons/users-2.svg" alt="" style="width:20px;height:20px" onerror="this.style.display='none'">
+          <i class="fa fa-users" aria-hidden="true"></i>
+          <span style="margin-inline-start:6px">المستخدمون</span>
+        </button>
+        <span id="pendingBadge" class="badge" style="display:none">0</span>
+      </div>
+
+      <!-- Roles -->
+      <a href="/vehicle_management/public/admin_roles.html" class="icon-btn" title="صلاحيات الأدوار">
+        <img src="/vehicle_management/public/icons/role.svg" alt="" style="width:18px;height:18px" onerror="this.style.display='none'">
+        <i class="fa fa-user-shield" aria-hidden="true"></i>
+        <span style="margin-inline-start:6px">صلاحيات</span>
+      </a>
+
+      <!-- Reports -->
+      <a href="/vehicle_management/public/reports.html" class="icon-btn" title="التقارير">
+        <img src="/vehicle_management/public/icons/report.svg" alt="" style="width:18px;height:18px" onerror="this.style.display='none'">
+        <i class="fa fa-chart-line" aria-hidden="true"></i>
+        <span style="margin-inline-start:6px">تقارير</span>
+      </a>
+
+      <!-- Settings -->
+      <a href="/vehicle_management/public/settings.html" class="icon-btn" title="الإعدادات">
+        <img src="/vehicle_management/public/icons/settings.svg" alt="" style="width:18px;height:18px" onerror="this.style.display='none'">
+        <i class="fa fa-gear" aria-hidden="true"></i>
+        <span style="margin-inline-start:6px">إعدادات</span>
+      </a>
+
+      <!-- Logout -->
+      <button id="logoutBtn" class="icon-btn" title="تسجيل الخروج">
+        <img src="/vehicle_management/public/icons/logout.svg" alt="" style="width:18px;height:18px" onerror="this.style.display='none'">
+        <i class="fa fa-sign-out-alt" aria-hidden="true"></i>
+        <span style="margin-inline-start:6px">خروج</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ملخص النظام</h2>
+    <p class="muted" id="summary">جاري جلب البيانات...</p>
+
+    <div class="grid">
+      <div class="tile">
+        <div class="icon"><i class="fa fa-users"></i></div>
+        <div>
+          <div class="small">المستخدمون</div>
+          <div id="usersCount" style="font-weight:700">—</div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="icon"><i class="fa fa-user-shield"></i></div>
+        <div>
+          <div class="small">الأدوار والصلاحيات</div>
+          <div id="rolesCount" style="font-weight:700">—</div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="icon"><i class="fa fa-chart-line"></i></div>
+        <div>
+          <div class="small">التقارير</div>
+          <div><a class="small-link" href="/vehicle_management/public/reports.html">فتح التقارير</a></div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="icon"><i class="fa fa-gear"></i></div>
+        <div>
+          <div class="small">الإعدادات</div>
+          <div><a class="small-link" href="/vehicle_management/public/settings.html">فتح الإعدادات</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* index behavior: badge + open admin + notifications (same as previous instructions) */
+const LIST_ENDPOINT = '/vehicle_management/api/users/admin/list.php';
+const ADMIN_PAGE = '/vehicle_management/public/admin_users.html';
+const POLL_INTERVAL_MS = 60_000;
+
+const pendingBadge = document.getElementById('pendingBadge');
+const summary = document.getElementById('summary');
+const usersCountEl = document.getElementById('usersCount');
+const rolesCountEl = document.getElementById('rolesCount');
+
+document.getElementById('gotoAdmin').addEventListener('click', ()=> window.location.href = ADMIN_PAGE);
+
+async function fetchSummary(){
+  try {
+    const res = await fetch(LIST_ENDPOINT, { credentials:'same-origin' });
+    const j = await res.json();
+    if (!j || !j.success) {
+      summary.textContent = j ? (j.message || 'خطأ') : 'خطأ';
+      return;
+    }
+    const users = j.users || [];
+    const pending = users.filter(u => (u.is_active === 0 || u.is_active === '0' || u.is_active === null)).length;
+    pendingBadge.style.display = pending > 0 ? 'inline-block' : 'none';
+    pendingBadge.textContent = String(pending);
+    summary.textContent = 'المستخدمون الإجمالي: ' + users.length + ' — يحتاجون للتفعيل: ' + pending;
+    usersCountEl.textContent = users.length;
+    // roles count (if roles endpoint available)
+    try {
+      const rres = await fetch('/vehicle_management/api/permissions/roles/list.php', { credentials:'same-origin' });
+      const rj = await rres.json();
+      if (rj && rj.success) rolesCountEl.textContent = (rj.roles || []).length;
+      else rolesCountEl.textContent = '-';
+    } catch(e) { rolesCountEl.textContent = '-'; }
+  } catch(e){
+    console.error(e);
+    summary.textContent = 'خطأ في الاتصال';
+  }
+}
+
+fetchSummary();
+setInterval(fetchSummary, POLL_INTERVAL_MS);
+
+/* logout (simple) */
+document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+  try {
+    await fetch('/vehicle_management/api/auth/logout.php', { method:'POST', credentials:'same-origin' });
+  } catch(e){}
+  window.location.href = '/vehicle_management/public/login.html';
+});
+</script>
+</body>
+</html>

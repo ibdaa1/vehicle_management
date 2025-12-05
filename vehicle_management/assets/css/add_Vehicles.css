@@ -1,0 +1,26 @@
+/* vehicle_management/assets/css/add_Vehicles.css
+   Visual identity: background light, primary dark/olive green, small text gold/beige
+*/
+:root{
+  --bg: #fbfdfb;
+  --card: #fff;
+  --primary: #254b2a; /* dark/olive green */
+  --accent: #3f6e3f;
+  --muted: #bda36b; /* gold/dark-beige */
+  --text: #0f2a18;
+  --border: #e9efe9;
+  --radius: 12px;
+}
+
+body{background:var(--bg);color:var(--text);font-family:"Tajawal",system-ui,Arial,sans-serif}
+.container{max-width:980px;margin:28px auto;padding:16px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:0 6px 22px rgba(15,40,20,0.04)}
+.logo{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff}
+h1{color:var(--primary)}
+.subtitle, .form-help{color:var(--muted)}
+label{color:var(--text)}
+.btn{background:var(--primary);color:#fff;border-radius:8px;padding:10px 14px;font-weight:700}
+.btn.ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
+.form-control{border:1px solid var(--border);border-radius:8px;padding:10px}
+.select-row .form-control{width:48%}
+@media(max-width:640px){ .select-row .form-control{width:100%} }

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>الملف الشخصي</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/vehicle_management/assets/css/global.css">
+
+  <style>
+    /* Page-specific styles kept close to original look */
+    :root{
+      --bg:#f4f6f8;
+      --card:#fff;
+      --accent:#1f6f2b;
+      --muted:#6b7280;
+      --text:#0d2b16;
+      --border:#e6e9eb;
+      --radius:12px;
+      font-family:"Tajawal",system-ui,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;font-size:16px}
+    .wrap{max-width:980px;margin:22px auto;padding:18px}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#2e7a2f);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px}
+    h1{margin:0;font-size:1.15rem}
+    .subtitle{color:var(--muted);font-size:0.95rem}
+    .card{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);box-shadow:0 8px 20px rgba(15,46,14,0.04)}
+    .grid{display:grid;grid-template-columns:1fr;gap:18px}
+    form .row{display:flex;gap:12px;margin-top:12px;flex-wrap:wrap}
+    .col{flex:1;min-width:150px}
+    label{display:block;margin-bottom:8px;font-weight:600}
+    input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:15px}
+    .actions{display:flex;gap:10px;margin-top:16px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
+    .btn.ghost{background:#fff;color:var(--text);border:1px solid var(--border)}
+    .small{font-size:0.9rem;color:var(--muted)}
+    .msg{margin-top:12px;padding:10px;border-radius:8px}
+    .msg.success{background:#eaf7ec;color:#066324;border:1px solid #d6efd9}
+    .msg.error{background:#fff0f0;color:#811a1a;border:1px solid #f3caca}
+    @media(max-width:520px){.logo{width:48px;height:48px}}
+    input:focus, select:focus {outline:2px solid rgba(31,111,43,0.08);border-color:rgba(31,111,43,0.12)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand" aria-hidden="true">
+        <div class="logo">H</div>
+        <div>
+          <h1 id="title">الملف الشخصي</h1>
+          <div class="subtitle" id="subtitle">البيانات بحسب الحساب</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a id="backBtn" class="btn ghost" href="/vehicle_management/public/index.html" title="عودة"><i class="fa fa-arrow-right"></i></a>
+        <button id="logoutBtn" class="btn ghost" title="خروج"><i class="fa fa-sign-out-alt"></i></button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <main>
+        <div class="card">
+          <!-- keep action pointing to existing update endpoint -->
+          <form id="profileForm" autocomplete="off" novalidate method="post" action="/vehicle_management/api/users/update_user_session.php" data-department-id="" data-section-id="" data-division-id="">
+            <div class="row">
+              <div class="col">
+                <label id="label_emp_id">الرمز الوظيفي</label>
+                <input id="emp_id" name="emp_id" type="text" readonly>
+              </div>
+              <div class="col">
+                <label id="label_username">اسم المستخدم</label>
+                <input id="username" name="username" type="text" required>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <label id="label_email">البريد الإلكتروني</label>
+                <input id="email" name="email" type="email" required>
+              </div>
+              <div class="col">
+                <label id="label_phone">الهاتف</label>
+                <input id="phone" name="phone" type="text" placeholder="9715...">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <label id="label_language">اللغة</label>
+                <select id="preferred_language" name="preferred_language">
+                  <option value="ar">العربية</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div class="col">
+                <label id="label_display_name">الاسم الظاهر</label>
+                <input id="display_name" name="display_name" type="text" placeholder="">
+              </div>
+            </div>
+
+            <hr style="margin:16px 0;border-top:1px solid var(--border)">
+
+            <div class="row">
+              <div class="col">
+                <label id="label_department">الإدارة</label>
+                <select id="department_id" name="department_id" class="form-control"></select>
+              </div>
+              <div class="col">
+                <label id="label_section">القسم</label>
+                <select id="section_id" name="section_id" class="form-control"></select>
+              </div>
+              <div class="col">
+                <label id="label_division">الشعبة</label>
+                <select id="division_id" name="division_id" class="form-control"></select>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="small" id="pwd_hint">لتغيير كلمة المرور أدخل كلمة المرور الحالية ثم الجديدة، وإلا اترك الحقول فارغة.</div>
+
+            <div class="row" style="margin-top:10px">
+              <div class="col">
+                <label id="label_current_password">كلمة المرور الحالية</label>
+                <input id="current_password" name="current_password" type="password" autocomplete="current-password">
+              </div>
+              <div class="col">
+                <label id="label_new_password">كلمة المرور الجديدة</label>
+                <input id="new_password" name="new_password" type="password" autocomplete="new-password">
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="submit" id="saveBtn" class="btn"><i class="fa fa-save"></i> <span id="saveLabel">حفظ</span></button>
+              <button type="button" id="cancelBtn" class="btn ghost"><i class="fa fa-times"></i> <span id="cancelLabel">إلغاء</span></button>
+            </div>
+
+            <div id="messages" aria-live="polite"></div>
+          </form>
+        </div>
+      </main>
+    </div>
+  </div>
+
+<script src="/vehicle_management/assets/js/profile.js"></script>
+<script>
+/*
+  Small inline fallback to ensure logout/cancel buttons work even if profile.js fails to load.
+  profile.js contains the full cascade + submit logic.
+*/
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutBtn = document.getElementById('logoutBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+    try { await fetch('/vehicle_management/public/logout.php', { credentials: 'same-origin' }); } catch(e){}
+    location.href = '/vehicle_management/public/login.html';
+  });
+  if (cancelBtn) cancelBtn.addEventListener('click', () => { location.href = '/vehicle_management/public/index.html'; });
+});
+</script>
+</body>
+</html>

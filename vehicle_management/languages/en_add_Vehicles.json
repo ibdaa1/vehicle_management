@@ -1,0 +1,31 @@
+{
+  "title": "Add New Vehicle",
+  "subtitle": "Enter vehicle data. Selections are linked: department → section → division",
+  "label_plate": "Vehicle Code (vehicle_code)",
+  "label_type": "Type",
+  "label_year": "Manufacture Year",
+  "label_mode": "Vehicle Mode",
+  "label_emp": "Employee ID (emp_id)",
+  "label_assigned": "Assigned user ID",
+  "label_driver": "Driver Name",
+  "label_driver_phone": "Driver Phone",
+  "label_notes": "Notes",
+  "submit": "Save Vehicle",
+  "cancel": "Cancel",
+  "msg_no_auth": "Not authenticated — please sign in",
+  "msg_no_perm": "You don't have permission to add vehicles",
+  "msg_saving": "Saving...",
+  "msg_saved": "Vehicle saved successfully",
+  "msg_failed": "Save failed",
+  "msg_loading": "Loading vehicle data...",
+  "vehicle_mode_options": {
+    "shift": "Shift / Operational",
+    "private": "Private"
+  },
+  "status_options": {
+    "operational": "Operational",
+    "maintenance": "Maintenance",
+    "out_of_service": "Out of service"
+  },
+  "orgName": "HCS Department"
+}

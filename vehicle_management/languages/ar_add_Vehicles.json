@@ -1,0 +1,31 @@
+{
+  "title": "تسجيل مركبة جديدة",
+  "subtitle": "أدخل بيانات المركبة. الاختيارات مرتبطة: الإدارة → القسم → الشعبة",
+  "label_plate": "رقم المركبة (vehicle_code)",
+  "label_type": "النوع (type)",
+  "label_year": "سنة الصنع (manufacture_year)",
+  "label_mode": "نمط المركبة",
+  "label_emp": "الرمز الوظيفي (emp_id)",
+  "label_assigned": "ID المستخدم المكلف",
+  "label_driver": "اسم السائق",
+  "label_driver_phone": "هاتف السائق",
+  "label_notes": "ملاحظات",
+  "submit": "حفظ المركبة",
+  "cancel": "إلغاء",
+  "msg_no_auth": "غير مسموح — الرجاء تسجيل الدخول",
+  "msg_no_perm": "لا تملك صلاحية إضافة مركبات",
+  "msg_saving": "جاري الحفظ...",
+  "msg_saved": "تم حفظ المركبة بنجاح",
+  "msg_failed": "فشل الحفظ",
+  "msg_loading": "جاري تحميل بيانات المركبة...",
+  "vehicle_mode_options": {
+    "shift": "خدمة/وردية",
+    "private": "خاصة"
+  },
+  "status_options": {
+    "operational": "قيد التشغيل",
+    "maintenance": "صيانة",
+    "out_of_service": "خارج الخدمة"
+  },
+  "orgName": "HCS Department"
+}

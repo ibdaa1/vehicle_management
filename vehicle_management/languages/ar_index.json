@@ -1,0 +1,17 @@
+{
+  "title": "لوحة التحكم",
+  "subtitle": "البيانات بحسب الحساب",
+  "addVehicle": "إضافة مركبة",
+  "assignments": "التعيينات",
+  "maintenance": "الصيانة",
+  "vehicles": "المركبات",
+  "manage": "إدارة",
+  "reports": "التقارير",
+  "open": "فتح",
+  "logout": "تسجيل خروج",
+  "plate": "رقم اللوحة",
+  "model": "الموديل",
+  "department": "الإدارة",
+  "save": "حفظ",
+  "back": "العودة"
+}
