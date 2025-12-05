@@ -10,17 +10,60 @@
   --text: #0f2a18;
   --border: #e9efe9;
   --radius: 12px;
+  --danger: #dc2626;
 }
 
 body{background:var(--bg);color:var(--text);font-family:"Tajawal",system-ui,Arial,sans-serif}
-.container{max-width:980px;margin:28px auto;padding:16px}
+.container{max-width:1200px;margin:28px auto;padding:16px}
 .card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:0 6px 22px rgba(15,40,20,0.04)}
 .logo{background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff}
 h1{color:var(--primary)}
+h2{color:var(--primary);font-size:1.15rem;margin:16px 0 12px 0}
 .subtitle, .form-help{color:var(--muted)}
 label{color:var(--text)}
-.btn{background:var(--primary);color:#fff;border-radius:8px;padding:10px 14px;font-weight:700}
+.btn{background:var(--primary);color:#fff;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer;border:0}
+.btn:hover{opacity:0.9}
 .btn.ghost{background:#fff;border:1px solid var(--border);color:var(--text)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.danger{background:var(--danger)}
+.btn.small{padding:6px 10px;font-size:0.85rem}
 .form-control{border:1px solid var(--border);border-radius:8px;padding:10px}
 .select-row .form-control{width:48%}
-@media(max-width:640px){ .select-row .form-control{width:100%} }
+
+/* Search Section */
+.search-section{margin:16px 0;padding:16px;background:var(--bg);border-radius:8px}
+.search-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-input{flex:1;min-width:200px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:15px}
+.filter-select{padding:10px;border:1px solid var(--border);border-radius:8px;min-width:150px;font-size:15px}
+
+/* Results Section */
+.results-section{margin-top:16px}
+.results-header{margin-bottom:12px}
+.table-container{overflow-x:auto;margin:12px 0}
+.vehicles-table{width:100%;border-collapse:collapse;font-size:0.95rem}
+.vehicles-table th,.vehicles-table td{padding:10px;text-align:right;border:1px solid var(--border)}
+.vehicles-table th{background:var(--primary);color:#fff;font-weight:700}
+.vehicles-table tbody tr:hover{background:var(--bg)}
+.vehicles-table tbody tr:nth-child(even){background:#fafafa}
+.status-badge{padding:4px 8px;border-radius:4px;font-size:0.85rem;font-weight:600}
+.status-operational{background:#d1fae5;color:#065f46}
+.status-maintenance{background:#fed7aa;color:#92400e}
+.status-out_of_service{background:#fecaca;color:#991b1b}
+.action-buttons{display:flex;gap:6px;justify-content:center}
+
+/* Pagination */
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:16px;align-items:center}
+.page-btn{padding:6px 12px;border:1px solid var(--border);background:#fff;border-radius:6px;cursor:pointer;font-size:0.9rem}
+.page-btn:hover{background:var(--bg)}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.page-btn:disabled{opacity:0.5;cursor:not-allowed}
+.page-info{font-size:0.9rem;color:var(--muted)}
+
+/* Form Section */
+.form-section{margin-top:24px;padding-top:24px;border-top:2px solid var(--border)}
+
+@media(max-width:640px){ 
+  .select-row .form-control{width:100%} 
+  .search-row{flex-direction:column}
+  .search-input,.filter-select,.btn{width:100%}
+}
