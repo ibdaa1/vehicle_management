@@ -30,12 +30,15 @@ if (!$id) {
     exit;
 }
 
-// fetch vehicle with related names
+// fetch vehicle with related names using LEFT JOINs
 $sql = "SELECT v.*, 
-  (SELECT name_ar FROM departments d WHERE d.id = v.department_id LIMIT 1) AS department_name,
-  (SELECT name_ar FROM sections s WHERE s.id = v.section_id LIMIT 1) AS section_name,
-  (SELECT name_ar FROM divisions dv WHERE dv.id = v.division_id LIMIT 1) AS division_name
+  d.name_ar AS department_name,
+  s.name_ar AS section_name,
+  dv.name_ar AS division_name
   FROM vehicles v
+  LEFT JOIN departments d ON d.id = v.department_id
+  LEFT JOIN sections s ON s.id = v.section_id
+  LEFT JOIN divisions dv ON dv.id = v.division_id
   WHERE v.id = ?
   LIMIT 1";
 

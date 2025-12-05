@@ -34,6 +34,7 @@
   const formTitle = document.getElementById('formTitle');
   
   const DEFAULT_DEPARTMENT = '1';
+  const DEFAULT_SECTION = '1';
   const DEFAULT_DIVISION = '1';
   let globalSessionId = null;
   let currentSession = null;
@@ -165,9 +166,9 @@
         <td>${v.driver_name || '-'}</td>
         <td>${v.driver_phone || '-'}</td>
         <td>${v.emp_id || '-'}</td>
-        <td>${v.department_name || '-'}</td>
-        <td>${v.section_name || '-'}</td>
-        <td>${v.division_name || '-'}</td>
+        <td>${v.department_name || 'غير محدد'}</td>
+        <td>${v.section_name || 'غير محدد'}</td>
+        <td>${v.division_name || 'غير محدد'}</td>
         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         <td class="action-buttons">
           ${currentPermissions && currentPermissions.can_edit ? 
@@ -352,6 +353,7 @@
     if (fd.has('year')) { const v = fd.get('year'); fd.delete('year'); fd.append('manufacture_year', v); }
     if (!fd.get('emp_id') || fd.get('emp_id') === '') fd.set('emp_id', session.user.emp_id || '');
     if (!fd.get('department_id') || fd.get('department_id') === '') fd.set('department_id', DEFAULT_DEPARTMENT);
+    if (!fd.get('section_id') || fd.get('section_id') === '') fd.set('section_id', DEFAULT_SECTION);
     if (!fd.get('division_id') || fd.get('division_id') === '') fd.set('division_id', DEFAULT_DIVISION);
     if (!fd.get('status')) fd.set('status', 'operational');
     if (!fd.get('vehicle_mode')) fd.set('vehicle_mode', 'shift');
