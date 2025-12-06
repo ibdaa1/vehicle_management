@@ -166,7 +166,11 @@
     }
     
     const vehicles = r.json.vehicles || [];
+    const hasActiveVehicle = r.json.has_active_vehicle || false;
+    const activeVehicleCode = r.json.active_vehicle_code || null;
+    
     console.log('Loaded vehicles count:', vehicles.length);
+    console.log('User has active vehicle:', hasActiveVehicle, activeVehicleCode);
     
     if (vehicles.length === 0) {
       vehiclesContainer.innerHTML = `<div class="empty-state">
@@ -180,6 +184,17 @@
       return;
     }
     
+    // Show message if user has an active vehicle
+    let messageHtml = '';
+    if (hasActiveVehicle) {
+      messageHtml = `<div class="alert alert-info" style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:8px;margin-bottom:16px;text-align:center;">
+        <strong>⚠️ لديك مركبة مستلمة حالياً:</strong> ${activeVehicleCode}
+        <br>
+        <span style="font-size:0.9rem">يجب إرجاع المركبة الحالية قبل استلام مركبة أخرى</span>
+      </div>`;
+    }
+    
+    vehiclesContainer.innerHTML = messageHtml;
     renderVehicleCards(vehicles);
   }
 
@@ -272,11 +287,18 @@
                  </button>`;
       }
       
+      // Show disabled message if no actions available
+      if (!v.can_pickup && !v.can_return && v.availability_status === 'available') {
+        html += `<div style="font-size:0.85rem;color:#999;text-align:center;padding:8px;">
+                   يجب إرجاع المركبة الحالية أولاً
+                 </div>`;
+      }
+      
       html += '</div>'; // vehicle-actions
       html += '</div>'; // vehicle-card
     });
     
-    vehiclesContainer.innerHTML = html;
+    vehiclesContainer.innerHTML += html;
   }
 
   // Translate vehicle status

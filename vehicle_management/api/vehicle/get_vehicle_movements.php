@@ -105,6 +105,39 @@ if ($roleId > 0) {
     }
 }
 
+// Check if user has an active vehicle (unreturned pickup)
+$currentEmpId = $currentUser['emp_id'] ?? '';
+$hasActiveVehicle = false;
+$activeVehicleCode = null;
+
+if ($currentEmpId) {
+    // Find if user has any pickup without a subsequent return
+    $checkSql = "SELECT vm.vehicle_code 
+                 FROM vehicle_movements vm
+                 WHERE vm.performed_by = ?
+                 AND vm.operation_type = 'pickup'
+                 AND NOT EXISTS (
+                     SELECT 1 FROM vehicle_movements vm2
+                     WHERE vm2.vehicle_code = vm.vehicle_code
+                     AND vm2.performed_by = vm.performed_by
+                     AND vm2.operation_type = 'return'
+                     AND vm2.id > vm.id
+                 )
+                 LIMIT 1";
+    
+    $checkStmt = $conn->prepare($checkSql);
+    if ($checkStmt) {
+        $checkStmt->bind_param('s', $currentEmpId);
+        $checkStmt->execute();
+        $checkResult = $checkStmt->get_result();
+        if ($checkRow = $checkResult->fetch_assoc()) {
+            $hasActiveVehicle = true;
+            $activeVehicleCode = $checkRow['vehicle_code'];
+        }
+        $checkStmt->close();
+    }
+}
+
 // Read filter params
 $filterDepartment = $_GET['department_id'] ?? '';
 $filterSection = $_GET['section_id'] ?? '';
@@ -215,7 +248,7 @@ while ($r = $result->fetch_assoc()) {
     // Determine availability status
     $lastOp = $r['last_operation'];
     $lastPerformedBy = $r['last_performed_by'];
-    $currentEmpId = $currentUser['emp_id'] ?? '';
+    $vehicleCode = $r['vehicle_code'];
     
     $availabilityStatus = 'available'; // default: can pickup
     
@@ -231,9 +264,26 @@ while ($r = $result->fetch_assoc()) {
         $availabilityStatus = 'available';
     }
     
+    // Business rule: User can only pickup if they don't have an active vehicle
+    // OR if admin/staff with special permissions
+    $canPickup = false;
+    $canReturn = false;
+    
+    if ($availabilityStatus === 'available') {
+        // Can pickup only if:
+        // 1. User doesn't have an active vehicle OR
+        // 2. User has can_assign_vehicle permission (admin/staff)
+        if (!$hasActiveVehicle || $permissions['can_assign_vehicle']) {
+            $canPickup = true;
+        }
+    } elseif ($availabilityStatus === 'checked_out_by_me') {
+        // User can return their own vehicle
+        $canReturn = true;
+    }
+    
     $vehicles[] = [
         'id' => (int)$r['id'],
-        'vehicle_code' => $r['vehicle_code'] ?? null,
+        'vehicle_code' => $vehicleCode,
         'type' => $r['type'] ?? null,
         'manufacture_year' => $r['manufacture_year'] ? (int)$r['manufacture_year'] : null,
         'driver_name' => $r['driver_name'] ?? null,
@@ -249,13 +299,13 @@ while ($r = $result->fetch_assoc()) {
         'notes' => $r['notes'] ?? null,
         'availability_status' => $availabilityStatus,
         'last_operation' => $lastOp,
-        'can_pickup' => ($availabilityStatus === 'available'),
-        'can_return' => ($availabilityStatus === 'checked_out_by_me')
+        'can_pickup' => $canPickup,
+        'can_return' => $canReturn
     ];
 }
 $stmt->close();
 
-error_log('get_vehicle_movements.php: Returning ' . count($vehicles) . ' vehicles');
+error_log('get_vehicle_movements.php: Returning ' . count($vehicles) . ' vehicles. User has active vehicle: ' . ($hasActiveVehicle ? 'yes' : 'no'));
 
 echo json_encode([
     'success' => true,
@@ -266,6 +316,8 @@ echo json_encode([
         'username' => $currentUser['username'] ?? null,
         'department_id' => $currentUser['department_id'] ?? null
     ],
+    'has_active_vehicle' => $hasActiveVehicle,
+    'active_vehicle_code' => $activeVehicleCode,
     'debug' => [
         'total_vehicles' => count($vehicles),
         'where_clause' => $whereSql,
