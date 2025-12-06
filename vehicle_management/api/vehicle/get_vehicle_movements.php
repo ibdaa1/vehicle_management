@@ -99,13 +99,11 @@ $types = '';
 // Permission-based filtering
 if (!$canViewAll) {
     if ($canViewDepartment && !empty($currentUser['department_id'])) {
-        // Filter by user's department
-        $where[] = "(v.department_id = ? OR v.section_id = ? OR v.division_id = ?)";
+        // Filter by user's department - show movements of vehicles in same department
+        $where[] = "v.department_id = ?";
         $deptId = intval($currentUser['department_id']);
         $params[] = $deptId;
-        $params[] = $deptId;
-        $params[] = $deptId;
-        $types .= 'iii';
+        $types .= 'i';
     } else {
         // Only see own movements
         $where[] = "vm.performed_by = ?";

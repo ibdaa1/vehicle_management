@@ -121,7 +121,7 @@
     }
     
     const canDelete = currentPermissions?.can_delete || false;
-    const currentUserId = currentSession?.user?.id;
+    const currentUserId = parseInt(currentSession?.user?.id || 0);
     
     let html = '<div class="table-container"><table><thead><tr>';
     html += '<th>ID</th>';
@@ -135,7 +135,7 @@
     html += '</tr></thead><tbody>';
     
     movements.forEach(m => {
-      const isOwner = currentUserId && m.user_id && (parseInt(currentUserId) === parseInt(m.user_id));
+      const isOwner = currentUserId > 0 && m.user_id && (currentUserId === parseInt(m.user_id));
       const showDelete = canDelete || isOwner;
       
       html += '<tr>';
@@ -148,7 +148,8 @@
       html += '<td>';
       
       if (m.photos && m.photos.length > 0) {
-        html += `<button class="btn small ghost" onclick="window.showPhotos(${m.id}, ${JSON.stringify(m.photos).replace(/"/g, '&quot;')})">عرض (${m.photos.length})</button>`;
+        const photoData = encodeURIComponent(JSON.stringify(m.photos));
+        html += `<button class="btn small ghost" onclick="window.showPhotos(${m.id}, '${photoData}')">عرض (${m.photos.length})</button>`;
       } else {
         html += '-';
       }
@@ -220,7 +221,20 @@
   };
 
   // Show photos modal
-  window.showPhotos = function (movementId, photos) {
+  window.showPhotos = function (movementId, photosEncoded) {
+    if (!photosEncoded) {
+      alert('لا توجد صور');
+      return;
+    }
+    
+    let photos;
+    try {
+      photos = JSON.parse(decodeURIComponent(photosEncoded));
+    } catch (e) {
+      alert('خطأ في تحميل الصور');
+      return;
+    }
+    
     if (!photos || photos.length === 0) {
       alert('لا توجد صور');
       return;
