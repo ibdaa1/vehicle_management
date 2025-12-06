@@ -266,6 +266,28 @@ try {
             exit;
         }
         
+        // Validate that vehicle_code exists in vehicles table
+        $checkStmt = $conn->prepare("SELECT vehicle_code FROM vehicles WHERE vehicle_code = ? LIMIT 1");
+        if (!$checkStmt) {
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+            exit;
+        }
+        $checkStmt->bind_param('s', $vehicle_code);
+        $checkStmt->execute();
+        $checkResult = $checkStmt->get_result();
+        $vehicleExists = $checkResult->fetch_assoc();
+        $checkStmt->close();
+        
+        if (!$vehicleExists) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'الرجاء تسجيل المركبة أولاً',
+                'message_en' => 'Please register the vehicle first',
+                'error_code' => 'VEHICLE_NOT_FOUND'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        
         $sql = "INSERT INTO vehicle_maintenance (vehicle_code, visit_date, next_visit_date, maintenance_type, location, notes, created_by, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);
@@ -306,6 +328,28 @@ try {
         
         if ($vehicle_code === '') {
             echo json_encode(['success' => false, 'message' => 'vehicle_code required']);
+            exit;
+        }
+        
+        // Validate that vehicle_code exists in vehicles table
+        $checkStmt = $conn->prepare("SELECT vehicle_code FROM vehicles WHERE vehicle_code = ? LIMIT 1");
+        if (!$checkStmt) {
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+            exit;
+        }
+        $checkStmt->bind_param('s', $vehicle_code);
+        $checkStmt->execute();
+        $checkResult = $checkStmt->get_result();
+        $vehicleExists = $checkResult->fetch_assoc();
+        $checkStmt->close();
+        
+        if (!$vehicleExists) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'الرجاء تسجيل المركبة أولاً',
+                'message_en' => 'Please register the vehicle first',
+                'error_code' => 'VEHICLE_NOT_FOUND'
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
         

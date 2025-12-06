@@ -28,6 +28,8 @@
   let currentPermissions = null;
   let currentPage = 1;
   let perPage = 30;
+  let currentLang = 'ar';
+  let translations = {};
   
   function showMsg(text, type='info'){
     if (!msgEl) return;
@@ -41,6 +43,31 @@
     const m = document.cookie.match(re);
     const val = m ? decodeURIComponent(m[1]) : null;
     return val;
+  }
+  
+  async function loadTranslations(lang) {
+    try {
+      const r = await fetch(`/vehicle_management/languages/${lang}_Vehicle_Maintenance.json`, { credentials: 'include' });
+      if (r.ok) {
+        translations = await r.json();
+        applyTranslations();
+      }
+    } catch (e) {
+      console.error('Failed to load translations:', e);
+    }
+  }
+  
+  function applyTranslations() {
+    if (!translations) return;
+    const t = translations;
+    
+    // Update page elements
+    if (document.getElementById('pageTitle')) document.getElementById('pageTitle').textContent = t.title || 'إدارة صيانة المركبات';
+    if (document.getElementById('pageSubtitle')) document.getElementById('pageSubtitle').textContent = t.subtitle || '';
+    
+    // Update buttons
+    const backBtn = document.querySelector('a[href*="index.html"]');
+    if (backBtn) backBtn.textContent = currentLang === 'en' ? '🏠 Back to Home' : '🏠 العودة إلى الرئيسية';
   }
   
   async function fetchJson(url, opts = {}) {
@@ -276,6 +303,15 @@
     currentSession = sess;
     currentPermissions = await loadPermissions();
     
+    // Set language and direction based on user preference
+    currentLang = (sess.user && sess.user.preferred_language) ? sess.user.preferred_language.toLowerCase() : 'ar';
+    const htmlEl = document.documentElement;
+    htmlEl.lang = currentLang;
+    htmlEl.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+    
+    // Load translations
+    await loadTranslations(currentLang);
+    
     // Event listeners for search and add
     searchBtn.addEventListener('click', () => loadMaintenance(1));
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadMaintenance(1); });
@@ -283,7 +319,7 @@
     
     addNewBtn.addEventListener('click', () => {
       formSection.style.display = 'block';
-      formTitle.textContent = 'إضافة سجل صيانة جديد';
+      formTitle.textContent = translations.form_title_add || 'إضافة سجل صيانة جديد';
       form.reset();
       const hid = form.querySelector('input[name="id"]');
       if (hid) hid.remove();
@@ -298,7 +334,7 @@
       ev.preventDefault();
       clearMsg();
       submitBtn.disabled = true;
-      showMsg('جاري الحفظ...', 'info');
+      showMsg(translations.msg_saving || 'جاري الحفظ...', 'info');
       try {
         const fd = new FormData(form);
         const isUpdate = fd.has('id') && fd.get('id');
@@ -307,7 +343,7 @@
         
         const postRes = await fetchJson(API_MAINTENANCE, { method: 'POST', body: fd });
         if (postRes.ok && postRes.json && postRes.json.success) {
-          showMsg(postRes.json.message || 'تم الحفظ', 'success');
+          showMsg(postRes.json.message || translations.msg_saved || 'تم الحفظ', 'success');
           await loadMaintenance(currentPage);
           if (!isUpdate) {
             form.reset();
@@ -315,7 +351,12 @@
           }
         } else {
           const body = postRes.json || {};
-          showMsg((body && body.message) ? body.message : 'فشل الحفظ', 'error');
+          // Show appropriate message based on language and error code
+          let errorMsg = body.message || translations.msg_failed || 'فشل الحفظ';
+          if (body.error_code === 'VEHICLE_NOT_FOUND') {
+            errorMsg = currentLang === 'en' ? (body.message_en || 'Please register the vehicle first') : (body.message || 'الرجاء تسجيل المركبة أولاً');
+          }
+          showMsg(errorMsg, 'error');
         }
       } catch (e) {
         showMsg('خطأ في الاتصال', 'error');
