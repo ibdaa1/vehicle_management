@@ -4,6 +4,8 @@
   const API_SESSION = '/vehicle_management/api/users/session_check.php';
   const API_MAINTENANCE = '/vehicle_management/api/vehicle/Vehicle_Maintenance.php';
   const API_PERMISSIONS = '/vehicle_management/api/permissions/get_permissions.php';
+  const API_VEHICLES = '/vehicle_management/api/vehicle/list.php';
+  const API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
   const SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
   
   const form = document.getElementById('maintenanceForm');
@@ -14,6 +16,9 @@
   const orgNameEl = document.getElementById('orgName');
   const searchInput = document.getElementById('searchInput');
   const typeFilter = document.getElementById('typeFilter');
+  const deptFilter = document.getElementById('deptFilter');
+  const sectionFilter = document.getElementById('sectionFilter');
+  const divisionFilter = document.getElementById('divisionFilter');
   const searchBtn = document.getElementById('searchBtn');
   const addNewBtn = document.getElementById('addNewBtn');
   const resultsSection = document.getElementById('resultsSection');
@@ -22,6 +27,8 @@
   const totalCount = document.getElementById('totalCount');
   const pagination = document.getElementById('pagination');
   const formTitle = document.getElementById('formTitle');
+  const vehicleCodeSelect = document.getElementById('vehicle_code');
+  const vehicleDetailsDiv = document.getElementById('vehicleDetails');
   
   let globalSessionId = null;
   let currentSession = null;
@@ -30,6 +37,8 @@
   let perPage = 30;
   let currentLang = 'ar';
   let translations = {};
+  let vehiclesData = {};
+  let referencesData = {};
   
   function showMsg(text, type='info'){
     if (!msgEl) return;
@@ -90,21 +99,86 @@
   
   async function loadVehicles() {
     try {
-      const r = await fetchJson('/vehicle_management/api/vehicle/list.php?page=1&per_page=1000', { method: 'GET' });
+      const r = await fetchJson(API_VEHICLES + '?page=1&per_page=1000', { method: 'GET' });
       if (r.ok && r.json && r.json.success && r.json.vehicles) {
-        const datalist = document.getElementById('vehicleList');
-        if (datalist) {
-          datalist.innerHTML = '';
-          r.json.vehicles.forEach(v => {
+        vehiclesData = {};
+        vehicleCodeSelect.innerHTML = '<option value="">' + (translations.select_vehicle || 'اختر المركبة') + '</option>';
+        
+        r.json.vehicles.forEach(v => {
+          vehiclesData[v.vehicle_code] = v;
+          const option = document.createElement('option');
+          option.value = v.vehicle_code;
+          const driverName = v.driver_name || 'N/A';
+          const deptName = currentLang === 'ar' ? (v.department_name_ar || v.department_name || '-') : (v.department_name_en || v.department_name || '-');
+          option.textContent = `${v.vehicle_code} - ${driverName} - ${deptName}`;
+          vehicleCodeSelect.appendChild(option);
+        });
+        
+        // Add change event listener
+        vehicleCodeSelect.addEventListener('change', function() {
+          const code = this.value;
+          if (code && vehiclesData[code]) {
+            const v = vehiclesData[code];
+            document.getElementById('detailDriver').textContent = v.driver_name || '-';
+            const deptName = currentLang === 'ar' ? (v.department_name_ar || v.department_name || '-') : (v.department_name_en || v.department_name || '-');
+            const sectName = currentLang === 'ar' ? (v.section_name_ar || v.section_name || '-') : (v.section_name_en || v.section_name || '-');
+            const divName = currentLang === 'ar' ? (v.division_name_ar || v.division_name || '-') : (v.division_name_en || v.division_name || '-');
+            document.getElementById('detailDept').textContent = deptName;
+            document.getElementById('detailSection').textContent = sectName;
+            document.getElementById('detailDivision').textContent = divName;
+            vehicleDetailsDiv.style.display = 'block';
+          } else {
+            vehicleDetailsDiv.style.display = 'none';
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Failed to load vehicles:', e);
+    }
+  }
+  
+  async function loadReferences() {
+    try {
+      const lang = currentLang || 'ar';
+      const r = await fetchJson(API_REFERENCES + '?lang=' + lang, { method: 'GET' });
+      if (r.ok && r.json && r.json.success) {
+        referencesData = r.json;
+        
+        // Populate department filter
+        if (r.json.departments && deptFilter) {
+          deptFilter.innerHTML = '<option value="">' + (translations.filter_all_depts || 'كل الإدارات') + '</option>';
+          r.json.departments.forEach(dept => {
             const option = document.createElement('option');
-            option.value = v.vehicle_code;
-            option.textContent = `${v.vehicle_code} - ${v.driver_name || 'N/A'}`;
-            datalist.appendChild(option);
+            option.value = dept.id;
+            option.textContent = dept.name || dept.name_ar || dept.name_en;
+            deptFilter.appendChild(option);
+          });
+        }
+        
+        // Populate section filter
+        if (r.json.sections && sectionFilter) {
+          sectionFilter.innerHTML = '<option value="">' + (translations.filter_all_sections || 'كل الأقسام') + '</option>';
+          r.json.sections.forEach(sect => {
+            const option = document.createElement('option');
+            option.value = sect.id;
+            option.textContent = sect.name || sect.name_ar || sect.name_en;
+            sectionFilter.appendChild(option);
+          });
+        }
+        
+        // Populate division filter
+        if (r.json.divisions && divisionFilter) {
+          divisionFilter.innerHTML = '<option value="">' + (translations.filter_all_divisions || 'كل الشعب') + '</option>';
+          r.json.divisions.forEach(div => {
+            const option = document.createElement('option');
+            option.value = div.id;
+            option.textContent = div.name || div.name_ar || div.name_en;
+            divisionFilter.appendChild(option);
           });
         }
       }
     } catch (e) {
-      console.error('Failed to load vehicles:', e);
+      console.error('Failed to load references:', e);
     }
   }
   
@@ -168,12 +242,18 @@
   async function loadMaintenance(page = 1) {
     const q = searchInput.value.trim();
     const type = typeFilter.value;
+    const dept = deptFilter ? deptFilter.value : '';
+    const section = sectionFilter ? sectionFilter.value : '';
+    const division = divisionFilter ? divisionFilter.value : '';
     currentPage = page;
     
     const params = new URLSearchParams();
     params.append('action', 'list');
     if (q) params.append('q', q);
     if (type) params.append('type', type);
+    if (dept) params.append('department_id', dept);
+    if (section) params.append('section_id', section);
+    if (division) params.append('division_id', division);
     params.append('page', String(page));
     params.append('per_page', String(perPage));
     
@@ -197,7 +277,7 @@
     
     if (records.length === 0) {
       const noResultsMsg = translations.no_results || 'لا توجد نتائج';
-      maintenanceTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted)">${noResultsMsg}</td></tr>`;
+      maintenanceTableBody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:var(--muted)">${noResultsMsg}</td></tr>`;
       return;
     }
     
@@ -214,9 +294,19 @@
       const editBtnText = translations.btn_edit || '✏️ تعديل';
       const deleteBtnText = translations.btn_delete || '🗑️ حذف';
       
+      // Get vehicle details
+      const driverName = m.driver_name || '-';
+      const deptName = currentLang === 'ar' ? (m.department_name_ar || '-') : (m.department_name_en || '-');
+      const sectName = currentLang === 'ar' ? (m.section_name_ar || '-') : (m.section_name_en || '-');
+      const divName = currentLang === 'ar' ? (m.division_name_ar || '-') : (m.division_name_en || '-');
+      
       tr.innerHTML = `
         <td>${m.id}</td>
         <td>${m.vehicle_code || '-'}</td>
+        <td>${driverName}</td>
+        <td>${deptName}</td>
+        <td>${sectName}</td>
+        <td>${divName}</td>
         <td>${m.visit_date || '-'}</td>
         <td>${m.next_visit_date || '-'}</td>
         <td><span class="type-badge ${typeClass}">${typeText}</span></td>
@@ -362,6 +452,9 @@
     searchBtn.addEventListener('click', () => loadMaintenance(1));
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadMaintenance(1); });
     typeFilter.addEventListener('change', () => loadMaintenance(1));
+    if (deptFilter) deptFilter.addEventListener('change', () => loadMaintenance(1));
+    if (sectionFilter) sectionFilter.addEventListener('change', () => loadMaintenance(1));
+    if (divisionFilter) divisionFilter.addEventListener('change', () => loadMaintenance(1));
     
     addNewBtn.addEventListener('click', () => {
       formSection.style.display = 'block';
@@ -369,10 +462,14 @@
       form.reset();
       const hid = form.querySelector('input[name="id"]');
       if (hid) hid.remove();
+      vehicleDetailsDiv.style.display = 'none';
       formSection.scrollIntoView({ behavior: 'smooth' });
     });
     
-    // Load vehicle list for autocomplete
+    // Load references (departments, sections, divisions) for filters
+    await loadReferences();
+    
+    // Load vehicle list for dropdown
     await loadVehicles();
     
     // Load records initially

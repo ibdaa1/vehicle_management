@@ -123,23 +123,42 @@ try {
         
         if ($q !== '') {
             $qLike = '%' . $q . '%';
-            $where[] = "(vehicle_code LIKE ? OR location LIKE ?)";
+            $where[] = "(vm.vehicle_code LIKE ? OR vm.location LIKE ?)";
             $params[] = $qLike;
             $params[] = $qLike;
             $types .= 'ss';
         }
         
         if ($type !== '') {
-            $where[] = "maintenance_type = ?";
+            $where[] = "vm.maintenance_type = ?";
             $params[] = $type;
             $types .= 's';
+        }
+        
+        // Add filters for vehicle attributes
+        if (!empty($_GET['department_id'])) {
+            $where[] = "v.department_id = ?";
+            $params[] = intval($_GET['department_id']);
+            $types .= 'i';
+        }
+        if (!empty($_GET['section_id'])) {
+            $where[] = "v.section_id = ?";
+            $params[] = intval($_GET['section_id']);
+            $types .= 'i';
+        }
+        if (!empty($_GET['division_id'])) {
+            $where[] = "v.division_id = ?";
+            $params[] = intval($_GET['division_id']);
+            $types .= 'i';
         }
         
         $whereSql = '';
         if (!empty($where)) $whereSql = 'WHERE ' . implode(' AND ', $where);
         
-        // Count total
-        $countSql = "SELECT COUNT(*) AS cnt FROM vehicle_maintenance $whereSql";
+        // Count total with JOIN
+        $countSql = "SELECT COUNT(*) AS cnt FROM vehicle_maintenance vm 
+                     LEFT JOIN vehicles v ON vm.vehicle_code = v.vehicle_code 
+                     $whereSql";
         $stmt = $conn->prepare($countSql);
         if ($stmt === false) {
             echo json_encode(['success'=>false,'message'=>'Server error']);
@@ -158,8 +177,18 @@ try {
         $total = intval($row['cnt'] ?? 0);
         $stmt->close();
         
-        // Data query
-        $sql = "SELECT * FROM vehicle_maintenance $whereSql ORDER BY visit_date DESC, id DESC LIMIT ? OFFSET ?";
+        // Data query with JOINs to get vehicle details
+        $sql = "SELECT vm.*, v.driver_name, v.driver_phone, v.emp_id, v.status as vehicle_status,
+                       v.department_id, v.section_id, v.division_id,
+                       d.name_ar as department_name_ar, d.name_en as department_name_en,
+                       s.name_ar as section_name_ar, s.name_en as section_name_en,
+                       dv.name_ar as division_name_ar, dv.name_en as division_name_en
+                FROM vehicle_maintenance vm
+                LEFT JOIN vehicles v ON vm.vehicle_code = v.vehicle_code
+                LEFT JOIN Departments d ON v.department_id = d.department_id
+                LEFT JOIN Sections s ON v.section_id = s.section_id
+                LEFT JOIN Divisions dv ON v.division_id = dv.division_id
+                $whereSql ORDER BY vm.visit_date DESC, vm.id DESC LIMIT ? OFFSET ?";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
             echo json_encode(['success'=>false,'message'=>'Server error']);

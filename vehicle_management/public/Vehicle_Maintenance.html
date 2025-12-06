@@ -36,6 +36,15 @@
             <option value="Mechanical Repair" data-i18n="type_mechanical">إصلاح ميكانيكي</option>
             <option value="Other" data-i18n="type_other">أخرى</option>
           </select>
+          <select id="deptFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_depts">كل الإدارات</option>
+          </select>
+          <select id="sectionFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_sections">كل الأقسام</option>
+          </select>
+          <select id="divisionFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_divisions">كل الشعب</option>
+          </select>
           <button id="searchBtn" class="btn" type="button" data-i18n="btn_search">🔍 بحث</button>
           <button id="addNewBtn" class="btn success" type="button" data-i18n="btn_add">➕ إضافة صيانة</button>
         </div>
@@ -52,6 +61,10 @@
               <tr>
                 <th data-i18n="table_header_id">ID</th>
                 <th data-i18n="table_header_vehicle_code">رقم المركبة</th>
+                <th data-i18n="label_driver">السائق</th>
+                <th data-i18n="label_department">الإدارة</th>
+                <th data-i18n="label_section">القسم</th>
+                <th data-i18n="label_division">الشعبة</th>
                 <th data-i18n="table_header_visit_date">تاريخ الزيارة</th>
                 <th data-i18n="table_header_next_visit">الزيارة القادمة</th>
                 <th data-i18n="table_header_type">نوع الصيانة</th>
@@ -76,8 +89,15 @@
           <div class="form-row">
             <div class="col">
               <label for="vehicle_code" data-i18n="label_vehicle_code">رقم المركبة *</label>
-              <input id="vehicle_code" name="vehicle_code" list="vehicleList" class="form-control" placeholder="رقم المركبة" data-i18n-placeholder="placeholder_vehicle_code" required />
-              <datalist id="vehicleList"></datalist>
+              <select id="vehicle_code" name="vehicle_code" class="form-control" required>
+                <option value="" data-i18n="select_vehicle">اختر المركبة</option>
+              </select>
+              <div id="vehicleDetails" style="margin-top:8px;font-size:0.75rem;color:var(--muted);display:none;">
+                <div><strong data-i18n="label_driver">السائق:</strong> <span id="detailDriver">-</span></div>
+                <div><strong data-i18n="label_department">الإدارة:</strong> <span id="detailDept">-</span></div>
+                <div><strong data-i18n="label_section">القسم:</strong> <span id="detailSection">-</span></div>
+                <div><strong data-i18n="label_division">الشعبة:</strong> <span id="detailDivision">-</span></div>
+              </div>
             </div>
             <div class="col">
               <label for="maintenance_type" data-i18n="label_maintenance_type">نوع الصيانة *</label>
