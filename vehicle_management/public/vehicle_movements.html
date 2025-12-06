@@ -1,1 +1,109 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>حركة المركبات (استلام وإرجاع)</title>
+  <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_movements.css"> 
 
+  <style>
+    /* إضافة بعض الأنماط الأساسية للبطاقات */
+    .vehicle-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+    .vehicle-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: relative;
+      background: #fff;
+    }
+    .vehicle-card.available { border-left: 5px solid #28a745; }
+    .vehicle-card.checked-out { border-left: 5px solid #ffc107; }
+    .vehicle-card .vehicle-code {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .vehicle-card .vehicle-actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+    .vehicle-card .vehicle-status-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    .status-available { background-color: #28a745; color: white; }
+    .status-checked-out-by-me { background-color: #ffc107; color: #333; }
+    .vehicle-info-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #eee;
+      padding: 4px 0;
+      font-size: 0.9rem;
+    }
+    .info-label { color: #666; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card" id="movementsCard">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">HCS</div>
+          <div>
+            <h1 id="pageTitle">لوحة التحكم السريع للمركبات</h1>
+            <div class="subtitle" id="pageSubtitle">استلام وإرجاع المركبات المتاحة</div>
+          </div>
+        </div>
+        <div style="text-align:left">
+          <div class="meta" id="orgName">HCS Department</div>
+          <div class="userInfo" id="loggedUser">---</div>
+        </div>
+      </div>
+      
+      <div class="filter-controls">
+        <input type="text" id="searchInput" class="form-control" placeholder="بحث (رقم المركبة، السائق، النوع...)" />
+        
+        <select id="departmentFilter" class="form-control">
+          <option value="">جميع الإدارات</option>
+        </select>
+        
+        <select id="sectionFilter" class="form-control">
+          <option value="">جميع الأقسام</option>
+        </select>
+        
+        <select id="divisionFilter" class="form-control">
+          <option value="">جميع الشعب</option>
+        </select>
+
+        <select id="statusFilter" class="form-control">
+            <option value="">جميع الحالات التشغيلية</option>
+            <option value="operational">قيد التشغيل</option>
+            <option value="maintenance">صيانة</option>
+            <option value="out_of_service">خارج الخدمة</option>
+        </select>
+      </div>
+
+      <div id="loadingMsg" style="text-align: center; padding: 20px; display: none;">
+        جاري تحميل المركبات...
+      </div>
+      <div id="vehiclesContainer" class="vehicle-cards-grid">
+        </div>
+      
+    </section>
+  </main>
+
+  <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
+</body>
+</html>
