@@ -203,7 +203,6 @@ $sql = "SELECT v.*,
          WHERE vm.vehicle_code = v.vehicle_code 
          ORDER BY vm.id DESC LIMIT 1) AS last_performed_by
         FROM vehicles v
-        -- تم تصحيح الوصلات لاستخدام المفاتيح الصحيحة
         LEFT JOIN Departments d ON d.department_id = v.department_id
         LEFT JOIN Sections s ON s.section_id = v.section_id
         LEFT JOIN Divisions dv ON dv.division_id = v.division_id
@@ -234,24 +233,49 @@ $result = $stmt->get_result();
 // ----------------------------------------------------
 
 $vehicles = [];
+$currentEmpId = $currentUser['emp_id'] ?? '';
+
 while ($r = $result->fetch_assoc()) {
-    // Determine availability status
     $lastOp = $r['last_operation'];
     $lastPerformedBy = $r['last_performed_by'];
-    $currentEmpId = $currentUser['emp_id'] ?? '';
     
-    $availabilityStatus = 'available'; // default: can pickup
-    
+    $availabilityStatus = 'available';
+    $canPickup = false;
+    $canReturn = false;
+    $canOpenForm = false;
+
+    // تحقق إذا كان لدى المستخدم أي سيارة مستلمة مسبقاً
+    $userHasVehicleCheckedOut = false;
+    if (!$permissions['can_assign_vehicle']) {
+        $stmtChk = $conn->prepare("SELECT COUNT(*) AS cnt FROM vehicle_movements WHERE performed_by = ? AND operation_type = 'pickup' AND vehicle_code NOT IN (SELECT vehicle_code FROM vehicle_movements WHERE operation_type = 'return' AND performed_by = ?)");
+        $stmtChk->bind_param('ss', $currentEmpId, $currentEmpId);
+        $stmtChk->execute();
+        $resChk = $stmtChk->get_result()->fetch_assoc();
+        $userHasVehicleCheckedOut = ((int)($resChk['cnt'] ?? 0) > 0);
+        $stmtChk->close();
+    }
+
+    // حالة السيارة
     if ($lastOp === 'pickup') {
         if ($lastPerformedBy === $currentEmpId) {
-            $availabilityStatus = 'checked_out_by_me'; 
+            $availabilityStatus = 'checked_out_by_me';
+            $canReturn = true;
         } else {
-            $availabilityStatus = 'checked_out_by_other'; 
+            $availabilityStatus = 'checked_out_by_other';
+            $canReturn = $permissions['can_receive_vehicle'];
         }
     } elseif ($lastOp === 'return' || $lastOp === null) {
         $availabilityStatus = 'available';
+        if ($permissions['can_assign_vehicle'] || (!$permissions['can_assign_vehicle'] && !$userHasVehicleCheckedOut)) {
+            $canPickup = true;
+        }
     }
-    
+
+    // زر فتح النموذج لمن لديه صلاحية تسليم أو استلام أي شخص
+    if ($permissions['can_assign_vehicle'] || $permissions['can_receive_vehicle']) {
+        $canOpenForm = true;
+    }
+
     $vehicles[] = [
         'id' => (int)($r['id'] ?? 0),
         'vehicle_code' => $r['vehicle_code'] ?? null,
@@ -270,8 +294,9 @@ while ($r = $result->fetch_assoc()) {
         'notes' => $r['notes'] ?? null,
         'availability_status' => $availabilityStatus,
         'last_operation' => $lastOp,
-        'can_pickup' => ($availabilityStatus === 'available'),
-        'can_return' => ($availabilityStatus === 'checked_out_by_me')
+        'can_pickup' => $canPickup,
+        'can_return' => $canReturn,
+        'can_open_form' => $canOpenForm
     ];
 }
 $stmt->close();
