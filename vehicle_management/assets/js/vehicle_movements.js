@@ -66,14 +66,18 @@
 
   // Session check
   async function sessionCheck() {
+    console.log('Checking session...');
     const r = await fetchJson(API_SESSION, { method: 'GET' });
+    console.log('Session response:', r);
     
     if (!r.ok || !r.json || !r.json.success) {
+      console.error('Session check failed');
       vehiclesContainer.innerHTML = '<div class="empty-state"><h3>غير مصرح</h3><p>يرجى <a href="/vehicle_management/public/login.html">تسجيل الدخول</a></p></div>';
       return null;
     }
     
     currentSession = r.json;
+    console.log('Session user:', currentSession.user);
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
     if (orgNameEl) orgNameEl.textContent = r.json.user.orgName || 'HCS Department';
     
@@ -142,19 +146,37 @@
     if (divId) params.append('division_id', divId);
     if (status) params.append('status', status);
     
-    const r = await fetchJson(`${API_VEHICLES}?${params.toString()}`, { method: 'GET' });
+    const apiUrl = `${API_VEHICLES}?${params.toString()}`;
+    console.log('Loading vehicles from:', apiUrl);
+    
+    const r = await fetchJson(apiUrl, { method: 'GET' });
+    console.log('Vehicles API response:', r);
     
     if (loadingMsg) loadingMsg.style.display = 'none';
     
     if (!r.ok || !r.json || !r.json.success) {
-      vehiclesContainer.innerHTML = '<div class="empty-state"><h3>فشل التحميل</h3><p>' + (r.json?.message || 'خطأ في الاتصال') + '</p></div>';
+      console.error('Failed to load vehicles:', r);
+      const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال';
+      vehiclesContainer.innerHTML = `<div class="empty-state">
+        <h3>فشل التحميل</h3>
+        <p>${errorMsg}</p>
+        <p style="font-size:0.9rem;color:#999;margin-top:10px">Status: ${r.status}</p>
+      </div>`;
       return;
     }
     
     const vehicles = r.json.vehicles || [];
+    console.log('Loaded vehicles count:', vehicles.length);
     
     if (vehicles.length === 0) {
-      vehiclesContainer.innerHTML = '<div class="empty-state"><h3>لا توجد مركبات</h3><p>لا توجد مركبات متاحة حسب معايير البحث</p></div>';
+      vehiclesContainer.innerHTML = `<div class="empty-state">
+        <h3>لا توجد مركبات</h3>
+        <p>لا توجد مركبات مسجلة في جدول vehicles</p>
+        <p style="font-size:0.9rem;color:#999;margin-top:10px">
+          يرجى إضافة مركبات أولاً من صفحة 
+          <a href="/vehicle_management/public/add_Vehicles.html">إدارة المركبات</a>
+        </p>
+      </div>`;
       return;
     }
     
@@ -333,20 +355,28 @@
 
   // Initialize
   async function init() {
+    console.log('Initializing vehicle movements page...');
+    
     // Initialize session first
     await initSession();
     
     // Check session
     const session = await sessionCheck();
-    if (!session) return;
+    if (!session) {
+      console.error('No session, stopping initialization');
+      return;
+    }
     
     // Get permissions
+    console.log('Loading permissions...');
     await getPermissions();
     
     // Load references
+    console.log('Loading references...');
     await loadReferences();
     
     // Load vehicles
+    console.log('Loading vehicles...');
     await loadVehicles();
     
     // Event listeners

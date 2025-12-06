@@ -74,7 +74,8 @@ if (function_exists('get_current_session_user')) {
 
 if (!$currentUser || empty($currentUser['id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Not authenticated', 'debug' => 'No user in session']);
+    error_log('get_vehicle_movements.php: No user in session. SESSION: ' . print_r($_SESSION, true));
+    echo json_encode(['success' => false, 'message' => 'Not authenticated', 'debug' => 'No user in session', 'session_data' => $_SESSION]);
     exit;
 }
 
@@ -254,6 +255,8 @@ while ($r = $result->fetch_assoc()) {
 }
 $stmt->close();
 
+error_log('get_vehicle_movements.php: Returning ' . count($vehicles) . ' vehicles');
+
 echo json_encode([
     'success' => true,
     'vehicles' => $vehicles,
@@ -262,6 +265,17 @@ echo json_encode([
         'emp_id' => $currentUser['emp_id'] ?? null,
         'username' => $currentUser['username'] ?? null,
         'department_id' => $currentUser['department_id'] ?? null
+    ],
+    'debug' => [
+        'total_vehicles' => count($vehicles),
+        'where_clause' => $whereSql,
+        'filters_applied' => [
+            'department' => $filterDepartment ?? null,
+            'section' => $filterSection ?? null,
+            'division' => $filterDivision ?? null,
+            'status' => $filterStatus ?? null,
+            'search' => $q ?? null
+        ]
     ]
 ], JSON_UNESCAPED_UNICODE);
 exit;
