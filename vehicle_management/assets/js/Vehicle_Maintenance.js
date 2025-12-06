@@ -27,7 +27,8 @@
   const totalCount = document.getElementById('totalCount');
   const pagination = document.getElementById('pagination');
   const formTitle = document.getElementById('formTitle');
-  const vehicleCodeSelect = document.getElementById('vehicle_code');
+  const vehicleCodeInput = document.getElementById('vehicle_code');
+  const vehiclesList = document.getElementById('vehiclesList');
   const vehicleDetailsDiv = document.getElementById('vehicleDetails');
   
   let globalSessionId = null;
@@ -102,7 +103,7 @@
       const r = await fetchJson(API_VEHICLES + '?page=1&per_page=1000', { method: 'GET' });
       if (r.ok && r.json && r.json.success && r.json.vehicles) {
         vehiclesData = {};
-        vehicleCodeSelect.innerHTML = '<option value="">' + (translations.select_vehicle || 'اختر المركبة') + '</option>';
+        vehiclesList.innerHTML = '';
         
         r.json.vehicles.forEach(v => {
           vehiclesData[v.vehicle_code] = v;
@@ -111,12 +112,12 @@
           const driverName = v.driver_name || 'N/A';
           const deptName = currentLang === 'ar' ? (v.department_name_ar || v.department_name || '-') : (v.department_name_en || v.department_name || '-');
           option.textContent = `${v.vehicle_code} - ${driverName} - ${deptName}`;
-          vehicleCodeSelect.appendChild(option);
+          vehiclesList.appendChild(option);
         });
         
-        // Add change event listener
-        vehicleCodeSelect.addEventListener('change', function() {
-          const code = this.value;
+        // Add input event listener to show vehicle details when typing/selecting
+        vehicleCodeInput.addEventListener('input', function() {
+          const code = this.value.trim();
           if (code && vehiclesData[code]) {
             const v = vehiclesData[code];
             document.getElementById('detailDriver').textContent = v.driver_name || '-';
@@ -129,6 +130,14 @@
             vehicleDetailsDiv.style.display = 'block';
           } else {
             vehicleDetailsDiv.style.display = 'none';
+          }
+        });
+        
+        // Also add blur event to revalidate
+        vehicleCodeInput.addEventListener('blur', function() {
+          const code = this.value.trim();
+          if (code && !vehiclesData[code]) {
+            showMsg(translations.error_vehicle_not_found || 'رقم المركبة غير موجود. الرجاء اختيار مركبة من القائمة.', 'error');
           }
         });
       }

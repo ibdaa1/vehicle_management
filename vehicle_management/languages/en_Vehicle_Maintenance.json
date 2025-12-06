@@ -55,6 +55,7 @@
   "msg_deleting": "Deleting...",
   "msg_deleted": "Deleted successfully",
   "msg_delete_confirm": "Are you sure you want to delete this maintenance record?",
+  "error_vehicle_not_found": "Vehicle code not found. Please select a vehicle from the list.",
   "maintenance_type_options": {
     "Routine": "Routine",
     "Emergency": "Emergency",

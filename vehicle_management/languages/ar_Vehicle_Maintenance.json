@@ -55,6 +55,7 @@
   "msg_deleting": "جاري الحذف...",
   "msg_deleted": "تم الحذف بنجاح",
   "msg_delete_confirm": "هل أنت متأكد من حذف سجل الصيانة هذا؟",
+  "error_vehicle_not_found": "رقم المركبة غير موجود. الرجاء اختيار مركبة من القائمة.",
   "maintenance_type_options": {
     "Routine": "صيانة دورية",
     "Emergency": "صيانة طارئة",

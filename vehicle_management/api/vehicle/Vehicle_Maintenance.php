@@ -223,6 +223,19 @@ try {
                 'updated_by' => $r['updated_by'] ?? null,
                 'created_at' => $r['created_at'] ?? null,
                 'updated_at' => $r['updated_at'] ?? null,
+                'driver_name' => $r['driver_name'] ?? null,
+                'driver_phone' => $r['driver_phone'] ?? null,
+                'emp_id' => $r['emp_id'] ?? null,
+                'vehicle_status' => $r['vehicle_status'] ?? null,
+                'department_id' => isset($r['department_id']) ? (int)$r['department_id'] : null,
+                'section_id' => isset($r['section_id']) ? (int)$r['section_id'] : null,
+                'division_id' => isset($r['division_id']) ? (int)$r['division_id'] : null,
+                'department_name_ar' => $r['department_name_ar'] ?? null,
+                'department_name_en' => $r['department_name_en'] ?? null,
+                'section_name_ar' => $r['section_name_ar'] ?? null,
+                'section_name_en' => $r['section_name_en'] ?? null,
+                'division_name_ar' => $r['division_name_ar'] ?? null,
+                'division_name_en' => $r['division_name_en'] ?? null,
             ];
         }
         $stmt->close();

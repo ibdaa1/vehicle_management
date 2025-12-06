@@ -89,9 +89,8 @@
           <div class="form-row">
             <div class="col">
               <label for="vehicle_code" data-i18n="label_vehicle_code">رقم المركبة *</label>
-              <select id="vehicle_code" name="vehicle_code" class="form-control" required>
-                <option value="" data-i18n="select_vehicle">اختر المركبة</option>
-              </select>
+              <input type="text" id="vehicle_code" name="vehicle_code" class="form-control" list="vehiclesList" placeholder="اكتب أو اختر رقم المركبة" data-i18n-placeholder="select_vehicle" required />
+              <datalist id="vehiclesList"></datalist>
               <div id="vehicleDetails" style="margin-top:8px;font-size:0.75rem;color:var(--muted);display:none;">
                 <div><strong data-i18n="label_driver">السائق:</strong> <span id="detailDriver">-</span></div>
                 <div><strong data-i18n="label_department">الإدارة:</strong> <span id="detailDept">-</span></div>
