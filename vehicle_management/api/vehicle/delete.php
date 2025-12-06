@@ -26,8 +26,8 @@ if (file_exists($permPath)) require_once $permPath;
 
 // get current user using perm helper if available, else session
 $currentUser = null;
-if (function_exists('get_current_user')) {
-    $currentUser = get_current_user($conn);
+if (function_exists('get_current_session_user')) {
+    $currentUser = get_current_session_user($conn);
 } else {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     if (!empty($_SESSION['user'])) $currentUser = $_SESSION['user'];

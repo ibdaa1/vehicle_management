@@ -46,8 +46,20 @@ try {
     // determine current user's role (if authenticated)
     $currentRoleId = null;
     $currentUserId = null;
-    if (!empty($_SESSION['user_id'])) {
+    
+    // Check both $_SESSION['user']['id'] and $_SESSION['user_id'] for compatibility
+    if (!empty($_SESSION['user']['id'])) {
+        $currentUserId = (int)$_SESSION['user']['id'];
+        // If role_id is already in session, use it directly
+        if (!empty($_SESSION['user']['role_id'])) {
+            $currentRoleId = (int)$_SESSION['user']['role_id'];
+        }
+    } elseif (!empty($_SESSION['user_id'])) {
         $currentUserId = (int)$_SESSION['user_id'];
+    }
+    
+    // If we have user_id but not role_id, fetch it from database
+    if ($currentUserId && $currentRoleId === null) {
         if ($conn instanceof mysqli) {
             $st = $conn->prepare("SELECT role_id FROM users WHERE id = ? LIMIT 1");
             if ($st) {

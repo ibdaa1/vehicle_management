@@ -77,12 +77,17 @@ $row = $res->fetch_assoc();
 $total = intval($row['cnt'] ?? 0);
 $stmt->close();
 
-// data query: include joins for department/section/division names if exist
+// data query: use LEFT JOINs for department/section/division names
+// Note: Table names are capitalized (Departments, Sections, Divisions)
+// and they use department_id, section_id, division_id as primary keys
 $sql = "SELECT v.*, 
-  (SELECT name_ar FROM departments d WHERE d.id = v.department_id LIMIT 1) AS department_name,
-  (SELECT name_ar FROM sections s WHERE s.id = v.section_id LIMIT 1) AS section_name,
-  (SELECT name_ar FROM divisions dv WHERE dv.id = v.division_id LIMIT 1) AS division_name
+  d.name_ar AS department_name,
+  s.name_ar AS section_name,
+  dv.name_ar AS division_name
   FROM vehicles v
+  LEFT JOIN Departments d ON d.department_id = v.department_id
+  LEFT JOIN Sections s ON s.section_id = v.section_id
+  LEFT JOIN Divisions dv ON dv.division_id = v.division_id
   $whereSql
   ORDER BY v.id DESC
   LIMIT ? OFFSET ?";

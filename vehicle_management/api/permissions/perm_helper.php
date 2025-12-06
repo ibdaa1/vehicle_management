@@ -22,6 +22,26 @@ function current_user_row($conn) {
     return $u ?: null;
 }
 
+// get current user (alias for compatibility with delete.php)
+function get_current_session_user($conn) {
+    // try session first
+    if (!empty($_SESSION['user'])) {
+        return $_SESSION['user'];
+    }
+    // fallback to user_id lookup
+    $row = current_user_row($conn);
+    if ($row) {
+        // return compatible structure
+        return [
+            'id' => $row['id'],
+            'role_id' => $row['role_id'],
+            'department_id' => $row['department_id'] ?? null,
+            'username' => $row['username']
+        ];
+    }
+    return null;
+}
+
 // read role flags from roles table
 function role_flags($conn, $role_id) {
     if ($role_id === null) return null;

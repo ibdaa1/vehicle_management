@@ -46,8 +46,8 @@
         <div class="brand">
           <div class="logo" aria-hidden="true">HCS</div>
           <div>
-            <h1 id="pageTitle">تسجيل مركبة جديدة</h1>
-            <div class="subtitle" id="pageSubtitle">أدخل بيانات المركبة. الاختيارات مرتبطة: الإدارة → القسم → الشعبة</div>
+            <h1 id="pageTitle">إدارة المركبات</h1>
+            <div class="subtitle" id="pageSubtitle">بحث، إضافة، تعديل، وحذف المركبات</div>
           </div>
         </div>
         <div style="text-align:right">
@@ -55,7 +55,57 @@
           <div class="userInfo" id="loggedUser">---</div>
         </div>
       </div>
-      <form id="vehicleForm" autocomplete="off" novalidate data-department-id="1" data-division-id="1">
+      
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، الرمز الوظيفي، اسم السائق، هاتف السائق..." />
+          <select id="statusFilter" class="filter-select">
+            <option value="">كل الحالات</option>
+            <option value="operational">✅ قيد التشغيل</option>
+            <option value="maintenance">🔧 صيانة</option>
+            <option value="out_of_service">❌ خارج الخدمة</option>
+          </select>
+          <button id="searchBtn" class="btn" type="button">🔍 بحث</button>
+          <button id="addNewBtn" class="btn success" type="button">➕ إضافة مركبة</button>
+        </div>
+      </div>
+
+      <!-- Results Table Section -->
+      <div id="resultsSection" class="results-section" style="display:none;">
+        <div class="results-header">
+          <h2>نتائج البحث (<span id="totalCount">0</span>)</h2>
+        </div>
+        <div class="table-container">
+          <table id="vehiclesTable" class="vehicles-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>رقم المركبة</th>
+                <th>السائق</th>
+                <th>هاتف السائق</th>
+                <th>الرمز الوظيفي</th>
+                <th>الإدارة</th>
+                <th>القسم</th>
+                <th>الشعبة</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="vehiclesTableBody">
+              <!-- Results will be inserted here by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination">
+          <!-- Pagination controls will be inserted here by JS -->
+        </div>
+      </div>
+
+      <!-- Add/Edit Form Section -->
+      <div id="formSection" class="form-section" style="display:none;">
+        <h2 id="formTitle">نموذج المركبة</h2>
+        <form id="vehicleForm" autocomplete="off" novalidate data-department-id="1" data-division-id="1">
         <div class="form-row">
           <div class="col">
             <label for="plate_number" id="lbl_plate">رقم المركبة (vehicle_code)</label>
@@ -112,11 +162,12 @@
           </div>
         </div>
         <div class="actions">
-          <button id="submitBtn" class="btn" type="submit">حفظ المركبة</button>
-          <button id="cancelBtn" type="button" class="btn ghost">إلغاء</button>
+          <button id="submitBtn" class="btn success" type="submit">💾 حفظ المركبة</button>
+          <button id="cancelBtn" type="button" class="btn ghost">❌ إلغاء</button>
         </div>
         <div id="msg" class="form-help" role="status" aria-live="polite"></div>
       </form>
+      </div>
     </section>
   </main>
   <script src="/vehicle_management/assets/js/add_Vehicles.js"></script>
