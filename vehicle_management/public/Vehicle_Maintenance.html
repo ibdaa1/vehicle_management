@@ -27,36 +27,36 @@
       <!-- Search and Filter Section -->
       <div class="search-section">
         <div class="search-row">
-          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، الموقع..." />
-          <select id="typeFilter" class="filter-select">
-            <option value="">كل الأنواع</option>
-            <option value="Routine">صيانة دورية</option>
-            <option value="Emergency">صيانة طارئة</option>
-            <option value="Technical Check">فحص فني</option>
-            <option value="Mechanical Repair">إصلاح ميكانيكي</option>
-            <option value="Other">أخرى</option>
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، الموقع..." data-i18n-placeholder="search_placeholder" />
+          <select id="typeFilter" class="filter-select" data-i18n-label="label_maintenance_type">
+            <option value="" data-i18n="filter_all_types">كل الأنواع</option>
+            <option value="Routine" data-i18n="type_routine">صيانة دورية</option>
+            <option value="Emergency" data-i18n="type_emergency">صيانة طارئة</option>
+            <option value="Technical Check" data-i18n="type_technical">فحص فني</option>
+            <option value="Mechanical Repair" data-i18n="type_mechanical">إصلاح ميكانيكي</option>
+            <option value="Other" data-i18n="type_other">أخرى</option>
           </select>
-          <button id="searchBtn" class="btn" type="button">🔍 بحث</button>
-          <button id="addNewBtn" class="btn success" type="button">➕ إضافة صيانة</button>
+          <button id="searchBtn" class="btn" type="button" data-i18n="btn_search">🔍 بحث</button>
+          <button id="addNewBtn" class="btn success" type="button" data-i18n="btn_add">➕ إضافة صيانة</button>
         </div>
       </div>
 
       <!-- Results Table Section -->
       <div id="resultsSection" class="results-section" style="display:none;">
         <div class="results-header">
-          <h2>نتائج البحث (<span id="totalCount">0</span>)</h2>
+          <h2><span data-i18n="results_count">نتائج البحث</span> (<span id="totalCount">0</span>)</h2>
         </div>
         <div class="table-container">
           <table id="maintenanceTable" class="maintenance-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>رقم المركبة</th>
-                <th>تاريخ الزيارة</th>
-                <th>الزيارة القادمة</th>
-                <th>نوع الصيانة</th>
-                <th>الموقع</th>
-                <th>الإجراءات</th>
+                <th data-i18n="table_header_id">ID</th>
+                <th data-i18n="table_header_vehicle_code">رقم المركبة</th>
+                <th data-i18n="table_header_visit_date">تاريخ الزيارة</th>
+                <th data-i18n="table_header_next_visit">الزيارة القادمة</th>
+                <th data-i18n="table_header_type">نوع الصيانة</th>
+                <th data-i18n="table_header_location">الموقع</th>
+                <th data-i18n="table_header_actions">الإجراءات</th>
               </tr>
             </thead>
             <tbody id="maintenanceTableBody">
@@ -71,50 +71,51 @@
 
       <!-- Add/Edit Form Section -->
       <div id="formSection" class="form-section" style="display:none;">
-        <h2 id="formTitle">نموذج الصيانة</h2>
+        <h2 id="formTitle" data-i18n="form_title_add">نموذج الصيانة</h2>
         <form id="maintenanceForm" autocomplete="off" novalidate>
           <div class="form-row">
             <div class="col">
-              <label for="vehicle_code">رقم المركبة *</label>
-              <input id="vehicle_code" name="vehicle_code" class="form-control" placeholder="رقم المركبة" required />
+              <label for="vehicle_code" data-i18n="label_vehicle_code">رقم المركبة *</label>
+              <input id="vehicle_code" name="vehicle_code" list="vehicleList" class="form-control" placeholder="رقم المركبة" data-i18n-placeholder="placeholder_vehicle_code" required />
+              <datalist id="vehicleList"></datalist>
             </div>
             <div class="col">
-              <label for="maintenance_type">نوع الصيانة *</label>
+              <label for="maintenance_type" data-i18n="label_maintenance_type">نوع الصيانة *</label>
               <select id="maintenance_type" name="maintenance_type" class="form-control" required>
-                <option value="">اختر النوع</option>
-                <option value="Routine">صيانة دورية</option>
-                <option value="Emergency">صيانة طارئة</option>
-                <option value="Technical Check">فحص فني</option>
-                <option value="Mechanical Repair">إصلاح ميكانيكي</option>
-                <option value="Other">أخرى</option>
+                <option value="" data-i18n="select_type">اختر النوع</option>
+                <option value="Routine" data-i18n="type_routine">صيانة دورية</option>
+                <option value="Emergency" data-i18n="type_emergency">صيانة طارئة</option>
+                <option value="Technical Check" data-i18n="type_technical">فحص فني</option>
+                <option value="Mechanical Repair" data-i18n="type_mechanical">إصلاح ميكانيكي</option>
+                <option value="Other" data-i18n="type_other">أخرى</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="col">
-              <label for="visit_date">تاريخ الزيارة *</label>
+              <label for="visit_date" data-i18n="label_visit_date">تاريخ الزيارة *</label>
               <input id="visit_date" name="visit_date" type="date" class="form-control" required />
             </div>
             <div class="col">
-              <label for="next_visit_date">تاريخ الزيارة القادمة</label>
+              <label for="next_visit_date" data-i18n="label_next_visit_date">تاريخ الزيارة القادمة</label>
               <input id="next_visit_date" name="next_visit_date" type="date" class="form-control" />
             </div>
           </div>
           <div class="form-row">
             <div class="col">
-              <label for="location">الموقع</label>
-              <input id="location" name="location" class="form-control" placeholder="مثال: ورشة الصيانة الرئيسية" />
+              <label for="location" data-i18n="label_location">الموقع</label>
+              <input id="location" name="location" class="form-control" placeholder="مثال: ورشة الصيانة الرئيسية" data-i18n-placeholder="placeholder_location" />
             </div>
           </div>
           <div class="form-row">
             <div class="col">
-              <label for="notes">ملاحظات</label>
-              <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="ملاحظات إضافية..."></textarea>
+              <label for="notes" data-i18n="label_notes">ملاحظات</label>
+              <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="ملاحظات إضافية..." data-i18n-placeholder="placeholder_notes"></textarea>
             </div>
           </div>
           <div class="actions">
-            <button id="submitBtn" class="btn success" type="submit">💾 حفظ</button>
-            <button id="cancelBtn" type="button" class="btn ghost">❌ إلغاء</button>
+            <button id="submitBtn" class="btn success" type="submit" data-i18n="btn_save">💾 حفظ</button>
+            <button id="cancelBtn" type="button" class="btn ghost" data-i18n="btn_cancel">❌ إلغاء</button>
           </div>
           <div id="msg" class="form-help" role="status" aria-live="polite"></div>
         </form>

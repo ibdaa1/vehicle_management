@@ -68,6 +68,44 @@
     // Update buttons
     const backBtn = document.querySelector('a[href*="index.html"]');
     if (backBtn) backBtn.textContent = currentLang === 'en' ? '🏠 Back to Home' : '🏠 العودة إلى الرئيسية';
+    
+    // Apply translations to all elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key]) el.textContent = t[key];
+    });
+    
+    // Apply translations to placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (t[key]) el.placeholder = t[key];
+    });
+    
+    // Update option elements in selects
+    document.querySelectorAll('option[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key]) el.textContent = t[key];
+    });
+  }
+  
+  async function loadVehicles() {
+    try {
+      const r = await fetchJson('/vehicle_management/api/vehicle/list.php?page=1&per_page=1000', { method: 'GET' });
+      if (r.ok && r.json && r.json.success && r.json.vehicles) {
+        const datalist = document.getElementById('vehicleList');
+        if (datalist) {
+          datalist.innerHTML = '';
+          r.json.vehicles.forEach(v => {
+            const option = document.createElement('option');
+            option.value = v.vehicle_code;
+            option.textContent = `${v.vehicle_code} - ${v.driver_name || 'N/A'}`;
+            datalist.appendChild(option);
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load vehicles:', e);
+    }
   }
   
   async function fetchJson(url, opts = {}) {
@@ -158,16 +196,23 @@
     maintenanceTableBody.innerHTML = '';
     
     if (records.length === 0) {
-      maintenanceTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted)">لا توجد نتائج</td></tr>';
+      const noResultsMsg = translations.no_results || 'لا توجد نتائج';
+      maintenanceTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--muted)">${noResultsMsg}</td></tr>`;
       return;
     }
     
     records.forEach(m => {
       const tr = document.createElement('tr');
       
-      // Type badge
+      // Type badge with translation
       const typeClass = `type-${(m.maintenance_type || 'Other').replace(/\s+/g, '')}`;
-      const typeText = m.maintenance_type || 'غير محدد';
+      let typeText = m.maintenance_type || 'Other';
+      // Translate type if available
+      const typeKey = `type_${(m.maintenance_type || 'other').toLowerCase().replace(/\s+/g, '_').replace('check', 'technical').replace('repair', 'mechanical')}`;
+      if (translations[typeKey]) typeText = translations[typeKey];
+      
+      const editBtnText = translations.btn_edit || '✏️ تعديل';
+      const deleteBtnText = translations.btn_delete || '🗑️ حذف';
       
       tr.innerHTML = `
         <td>${m.id}</td>
@@ -178,9 +223,9 @@
         <td>${m.location || '-'}</td>
         <td class="action-buttons">
           ${currentPermissions && currentPermissions.can_edit ? 
-            `<button class="btn small ghost" data-action="edit" data-id="${m.id}">✏️ تعديل</button>` : ''}
+            `<button class="btn small ghost" data-action="edit" data-id="${m.id}">${editBtnText}</button>` : ''}
           ${currentPermissions && currentPermissions.can_delete ? 
-            `<button class="btn small danger" data-action="delete" data-id="${m.id}">🗑️ حذف</button>` : ''}
+            `<button class="btn small danger" data-action="delete" data-id="${m.id}">${deleteBtnText}</button>` : ''}
         </td>
       `;
       
@@ -272,12 +317,13 @@
       }
       hid.value = m.id;
     } else {
-      showMsg('فشل تحميل بيانات الصيانة', 'error');
+      showMsg(translations.msg_failed || 'فشل تحميل بيانات الصيانة', 'error');
     }
   }
   
   async function deleteMaintenance(id) {
-    if (!confirm('هل أنت متأكد من حذف سجل الصيانة هذا؟')) return;
+    const confirmMsg = translations.msg_delete_confirm || 'هل أنت متأكد من حذف سجل الصيانة هذا؟';
+    if (!confirm(confirmMsg)) return;
     
     const fd = new FormData();
     fd.append('action', 'delete');
@@ -286,7 +332,7 @@
     const r = await fetchJson(API_MAINTENANCE, { method: 'POST', body: fd });
     
     if (r.ok && r.json && r.json.success) {
-      showMsg(r.json.message || 'تم الحذف بنجاح', 'success');
+      showMsg(r.json.message || translations.msg_deleted || 'تم الحذف بنجاح', 'success');
       await loadMaintenance(currentPage);
     } else {
       showMsg((r.json && r.json.message) || 'فشل الحذف', 'error');
@@ -325,6 +371,9 @@
       if (hid) hid.remove();
       formSection.scrollIntoView({ behavior: 'smooth' });
     });
+    
+    // Load vehicle list for autocomplete
+    await loadVehicles();
     
     // Load records initially
     await loadMaintenance(1);
