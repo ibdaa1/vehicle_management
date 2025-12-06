@@ -1,1 +1,26 @@
-
+{
+  "page_title": "حركة المركبات",
+  "page_subtitle": "عرض وبحث حركة المركبات",
+  "search_placeholder": "بحث (رقم المركبة، نوع العملية، الموظف...)...",
+  "all_operations": "جميع العمليات",
+  "pickup": "استلام",
+  "return": "إرجاع",
+  "vehicle_code": "رقم المركبة",
+  "operation_type": "نوع العملية",
+  "performed_by": "الموظف",
+  "movement_date": "التاريخ",
+  "location": "الموقع",
+  "photos": "الصور",
+  "actions": "الإجراءات",
+  "view_photos": "عرض",
+  "delete": "حذف",
+  "no_results": "لا توجد نتائج",
+  "loading": "جاري التحميل...",
+  "not_authenticated": "غير مصرح - يرجى تسجيل الدخول",
+  "delete_confirm": "هل أنت متأكد من حذف هذه الحركة؟",
+  "delete_success": "تم الحذف بنجاح",
+  "delete_failed": "فشل الحذف",
+  "load_failed": "فشل تحميل القائمة",
+  "no_photos": "لا توجد صور",
+  "photos_title": "الصور"
+}

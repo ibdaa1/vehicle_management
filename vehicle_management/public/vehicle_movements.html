@@ -1,1 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>حركة المركبات</title>
+  <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_movements.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card" id="movementsCard">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">HCS</div>
+          <div>
+            <h1 id="pageTitle">حركة المركبات</h1>
+            <div class="subtitle" id="pageSubtitle">عرض وبحث حركة المركبات</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="meta" id="orgName">HCS Department</div>
+          <div class="userInfo" id="loggedUser">---</div>
+        </div>
+      </div>
+      
+      <div class="search-controls">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="form-control" placeholder="بحث (رقم المركبة، نوع العملية، الموظف...)..." />
+          <select id="operationFilter" class="form-control">
+            <option value="">جميع العمليات</option>
+            <option value="pickup">استلام</option>
+            <option value="return">إرجاع</option>
+          </select>
+          <select id="perPageSelect" class="form-control">
+            <option value="10">10</option>
+            <option value="30" selected>30</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="movementsList"></div>
+      
+      <div id="paginationControls" class="pagination-controls"></div>
+    </section>
+  </main>
 
+  <!-- Photo Modal -->
+  <div id="photoModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="window.closePhotoModal()">&times;</span>
+      <h2>الصور</h2>
+      <div id="photoGallery"></div>
+    </div>
+  </div>
+
+  <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
+</body>
+</html>
