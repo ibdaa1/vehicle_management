@@ -1,1 +1,26 @@
-
+{
+  "page_title": "Vehicle Movements",
+  "page_subtitle": "View and search vehicle movements",
+  "search_placeholder": "Search (vehicle code, operation, employee...)...",
+  "all_operations": "All Operations",
+  "pickup": "Pickup",
+  "return": "Return",
+  "vehicle_code": "Vehicle Code",
+  "operation_type": "Operation Type",
+  "performed_by": "Employee",
+  "movement_date": "Date",
+  "location": "Location",
+  "photos": "Photos",
+  "actions": "Actions",
+  "view_photos": "View",
+  "delete": "Delete",
+  "no_results": "No results",
+  "loading": "Loading...",
+  "not_authenticated": "Not authenticated - please login",
+  "delete_confirm": "Are you sure you want to delete this movement?",
+  "delete_success": "Deleted successfully",
+  "delete_failed": "Delete failed",
+  "load_failed": "Failed to load list",
+  "no_photos": "No photos",
+  "photos_title": "Photos"
+}

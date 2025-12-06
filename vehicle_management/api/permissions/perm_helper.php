@@ -22,6 +22,11 @@ function current_user_row($conn) {
     return $u ?: null;
 }
 
+// get current session user (alias to avoid conflicts with built-in functions)
+function get_current_session_user($conn) {
+    return current_user_row($conn);
+}
+
 // read role flags from roles table
 function role_flags($conn, $role_id) {
     if ($role_id === null) return null;

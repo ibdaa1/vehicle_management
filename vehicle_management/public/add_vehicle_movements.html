@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>استلام وإرجاع المركبات</title>
+  <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_movements.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card header-card">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">HCS</div>
+          <div>
+            <h1 id="pageTitle">استلام وإرجاع المركبات</h1>
+            <div class="subtitle" id="pageSubtitle">اختر مركبة للاستلام أو الإرجاع</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="meta" id="orgName">HCS Department</div>
+          <div class="userInfo" id="loggedUser">---</div>
+        </div>
+      </div>
+      
+      <div class="search-controls">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="form-control" placeholder="بحث برقم المركبة أو النوع..." />
+          
+          <select id="departmentFilter" class="form-control">
+            <option value="">جميع الإدارات</option>
+          </select>
+          
+          <select id="sectionFilter" class="form-control">
+            <option value="">جميع الأقسام</option>
+          </select>
+          
+          <select id="divisionFilter" class="form-control">
+            <option value="">جميع الشعب</option>
+          </select>
+          
+          <select id="statusFilter" class="form-control">
+            <option value="">جميع الحالات</option>
+            <option value="operational">قيد التشغيل</option>
+            <option value="maintenance">صيانة</option>
+            <option value="out_of_service">خارج الخدمة</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div id="vehiclesContainer" class="vehicles-grid"></div>
+    
+    <div id="loadingMsg" class="loading" style="display:none;">جاري التحميل...</div>
+  </main>
+
+  <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
+</body>
+</html>
