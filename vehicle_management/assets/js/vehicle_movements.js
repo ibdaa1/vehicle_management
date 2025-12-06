@@ -1,30 +1,31 @@
 // vehicle_management/assets/js/vehicle_movements.js
+// Card-based vehicle selection for pickup/return
 (function () {
   'use strict';
 
   // API Endpoints
+  const API_SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
   const API_SESSION = '/vehicle_management/api/users/session_check.php';
   const API_PERMISSIONS = '/vehicle_management/api/permissions/get_permissions.php';
-  const API_MOVEMENTS = '/vehicle_management/api/vehicle/get_vehicle_movements.php';
-  const API_DELETE = '/vehicle_management/api/vehicle/delete.php';
+  const API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
+  const API_VEHICLES = '/vehicle_management/api/vehicle/get_vehicle_movements.php';
+  const API_VEHICLE_LIST = '/vehicle_management/api/vehicle/list.php';
 
   // DOM elements
   const searchInput = document.getElementById('searchInput');
-  const operationFilter = document.getElementById('operationFilter');
-  const perPageSelect = document.getElementById('perPageSelect');
-  const movementsList = document.getElementById('movementsList');
-  const paginationControls = document.getElementById('paginationControls');
+  const departmentFilter = document.getElementById('departmentFilter');
+  const sectionFilter = document.getElementById('sectionFilter');
+  const divisionFilter = document.getElementById('divisionFilter');
+  const statusFilter = document.getElementById('statusFilter');
+  const vehiclesContainer = document.getElementById('vehiclesContainer');
+  const loadingMsg = document.getElementById('loadingMsg');
   const loggedUserEl = document.getElementById('loggedUser');
   const orgNameEl = document.getElementById('orgName');
-  const photoModal = document.getElementById('photoModal');
-  const photoGallery = document.getElementById('photoGallery');
 
   // State
   let currentSession = null;
   let currentPermissions = null;
-  let currentPage = 1;
-  let totalPages = 1;
-  let totalRecords = 0;
+  let references = { departments: [], sections: [], divisions: [] };
 
   // Fetch helper with credentials
   async function fetchJson(url, opts = {}) {
@@ -36,7 +37,7 @@
     
     const token = localStorage.getItem('api_token');
     if (token) {
-      opts.headers['Authorization'] = `Bearer ${token}`;
+      opts.headers['Authorization'] = `******;
     }
     
     try {
@@ -54,17 +55,26 @@
     }
   }
 
+  // Initialize session
+  async function initSession() {
+    try {
+      await fetchJson(API_SESSION_INIT, { method: 'GET' });
+    } catch (e) {
+      console.error('Session init error:', e);
+    }
+  }
+
   // Session check
   async function sessionCheck() {
     const r = await fetchJson(API_SESSION, { method: 'GET' });
     
     if (!r.ok || !r.json || !r.json.success) {
-      movementsList.innerHTML = '<div class="loading">غير مصرح - يرجى <a href="/vehicle_management/public/login.html">تسجيل الدخول</a></div>';
+      vehiclesContainer.innerHTML = '<div class="empty-state"><h3>غير مصرح</h3><p>يرجى <a href="/vehicle_management/public/login.html">تسجيل الدخول</a></p></div>';
       return null;
     }
     
     currentSession = r.json;
-    if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (ID: ${r.json.user.emp_id || ''})`;
+    if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
     if (orgNameEl) orgNameEl.textContent = r.json.user.orgName || 'HCS Department';
     
     return r.json;
@@ -82,239 +92,302 @@
     return null;
   }
 
-  // Load movements
-  async function loadMovements() {
-    const q = searchInput.value.trim();
-    const operation = operationFilter.value;
-    const per_page = parseInt(perPageSelect.value) || 30;
+  // Load references
+  async function loadReferences() {
+    const lang = 'ar';
+    const res = await fetchJson(`${API_REFERENCES}?lang=${lang}`, { method: 'GET' });
     
-    movementsList.innerHTML = '<div class="loading">جاري التحميل...</div>';
+    if (res.ok && res.json) {
+      references.departments = res.json.departments || [];
+      references.sections = res.json.sections || [];
+      references.divisions = res.json.divisions || [];
+      
+      // Populate filters
+      populateFilter(departmentFilter, references.departments, 'جميع الإدارات');
+    }
     
-    const params = new URLSearchParams({
-      page: currentPage,
-      per_page: per_page
+    return references;
+  }
+
+  // Populate filter dropdown
+  function populateFilter(select, items, placeholder) {
+    if (!select) return;
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    
+    (items || []).forEach(it => {
+      const id = String(it.id ?? it.department_id ?? it.section_id ?? it.division_id ?? '');
+      const label = it.name_ar || it.name || id;
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = label;
+      select.appendChild(o);
     });
+  }
+
+  // Load vehicles
+  async function loadVehicles() {
+    const q = searchInput.value.trim();
+    const deptId = departmentFilter.value;
+    const secId = sectionFilter.value;
+    const divId = divisionFilter.value;
+    const status = statusFilter.value;
     
+    if (loadingMsg) loadingMsg.style.display = 'block';
+    vehiclesContainer.innerHTML = '';
+    
+    const params = new URLSearchParams();
     if (q) params.append('q', q);
-    if (operation) params.append('operation_type', operation);
+    if (deptId) params.append('department_id', deptId);
+    if (secId) params.append('section_id', secId);
+    if (divId) params.append('division_id', divId);
+    if (status) params.append('status', status);
     
-    const r = await fetchJson(`${API_MOVEMENTS}?${params.toString()}`, { method: 'GET' });
+    const r = await fetchJson(`${API_VEHICLES}?${params.toString()}`, { method: 'GET' });
+    
+    if (loadingMsg) loadingMsg.style.display = 'none';
     
     if (!r.ok || !r.json || !r.json.success) {
-      movementsList.innerHTML = '<div class="loading" style="color:#dc2626">فشل تحميل القائمة</div>';
+      vehiclesContainer.innerHTML = '<div class="empty-state"><h3>فشل التحميل</h3><p>' + (r.json?.message || 'خطأ في الاتصال') + '</p></div>';
       return;
     }
     
-    const data = r.json;
-    totalRecords = data.total || 0;
-    totalPages = Math.ceil(totalRecords / per_page);
+    const vehicles = r.json.vehicles || [];
     
-    renderMovementsTable(data.movements || []);
-    renderPagination();
+    if (vehicles.length === 0) {
+      vehiclesContainer.innerHTML = '<div class="empty-state"><h3>لا توجد مركبات</h3><p>لا توجد مركبات متاحة حسب معايير البحث</p></div>';
+      return;
+    }
+    
+    renderVehicleCards(vehicles);
   }
 
-  // Render movements table
-  function renderMovementsTable(movements) {
-    if (movements.length === 0) {
-      movementsList.innerHTML = '<div class="loading">لا توجد نتائج</div>';
-      return;
-    }
+  // Render vehicle cards
+  function renderVehicleCards(vehicles) {
+    let html = '';
     
-    const canDelete = currentPermissions?.can_delete || false;
-    const currentUserId = parseInt(currentSession?.user?.id || 0);
-    
-    let html = '<div class="table-container"><table><thead><tr>';
-    html += '<th>ID</th>';
-    html += '<th>رقم المركبة</th>';
-    html += '<th>نوع العملية</th>';
-    html += '<th>الموظف</th>';
-    html += '<th>التاريخ</th>';
-    html += '<th>الموقع</th>';
-    html += '<th>الصور</th>';
-    html += '<th>الإجراءات</th>';
-    html += '</tr></thead><tbody>';
-    
-    movements.forEach(m => {
-      const isOwner = currentUserId > 0 && m.user_id && (currentUserId === parseInt(m.user_id));
-      const showDelete = canDelete || isOwner;
+    vehicles.forEach(v => {
+      const statusClass = v.availability_status === 'available' ? 'available' : 
+                         v.availability_status === 'checked_out_by_me' ? 'checked-out' : 
+                         'unavailable';
       
-      html += '<tr>';
-      html += `<td>${m.id}</td>`;
-      html += `<td>${m.vehicle_code || '-'}</td>`;
-      html += `<td>${translateOperation(m.operation_type)}</td>`;
-      html += `<td>${m.performed_by || '-'}</td>`;
-      html += `<td>${m.movement_date || '-'}</td>`;
-      html += `<td>${m.location || '-'}</td>`;
-      html += '<td>';
+      const statusText = v.availability_status === 'available' ? 'متاحة للاستلام' :
+                        v.availability_status === 'checked_out_by_me' ? 'مستلمة من قبلك' :
+                        'غير متاحة';
       
-      if (m.photos && m.photos.length > 0) {
-        const photoData = encodeURIComponent(JSON.stringify(m.photos));
-        html += `<button class="btn small ghost" onclick="window.showPhotos(${m.id}, '${photoData}')">عرض (${m.photos.length})</button>`;
-      } else {
-        html += '-';
+      const statusBadgeClass = v.availability_status === 'available' ? 'status-available' :
+                               v.availability_status === 'checked_out_by_me' ? 'status-checked-out-by-me' :
+                               'status-checked-out-by-other';
+      
+      html += `<div class="vehicle-card ${statusClass}" data-vehicle-id="${v.id}">`;
+      html += `<div class="vehicle-code">${v.vehicle_code || 'N/A'}</div>`;
+      
+      html += '<div class="vehicle-info">';
+      
+      if (v.type) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">النوع</span>';
+        html += `<span class="info-value">${v.type}</span>`;
+        html += '</div>';
       }
       
-      html += '</td>';
-      html += '<td><div class="action-buttons">';
-      
-      if (showDelete) {
-        html += `<button class="btn small danger" onclick="window.deleteMovement(${m.id})">حذف</button>`;
+      if (v.manufacture_year) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">سنة الصنع</span>';
+        html += `<span class="info-value">${v.manufacture_year}</span>`;
+        html += '</div>';
       }
       
-      html += '</div></td>';
-      html += '</tr>';
+      if (v.driver_name) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">السائق</span>';
+        html += `<span class="info-value">${v.driver_name}</span>`;
+        html += '</div>';
+      }
+      
+      if (v.driver_phone) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">الهاتف</span>';
+        html += `<span class="info-value">${v.driver_phone}</span>`;
+        html += '</div>';
+      }
+      
+      if (v.department_name) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">الإدارة</span>';
+        html += `<span class="info-value">${v.department_name}</span>`;
+        html += '</div>';
+      }
+      
+      if (v.section_name) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">القسم</span>';
+        html += `<span class="info-value">${v.section_name}</span>`;
+        html += '</div>';
+      }
+      
+      if (v.status) {
+        html += '<div class="vehicle-info-row">';
+        html += '<span class="info-label">حالة المركبة</span>';
+        html += `<span class="info-value">${translateVehicleStatus(v.status)}</span>`;
+        html += '</div>';
+      }
+      
+      html += '</div>'; // vehicle-info
+      
+      html += `<div class="vehicle-status-badge ${statusBadgeClass}">${statusText}</div>`;
+      
+      html += '<div class="vehicle-actions">';
+      
+      if (v.can_pickup) {
+        html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')">
+                   <span>🚗</span> استلام
+                 </button>`;
+      }
+      
+      if (v.can_return) {
+        html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')">
+                   <span>↩️</span> إرجاع
+                 </button>`;
+      }
+      
+      html += '</div>'; // vehicle-actions
+      html += '</div>'; // vehicle-card
     });
     
-    html += '</tbody></table></div>';
-    movementsList.innerHTML = html;
+    vehiclesContainer.innerHTML = html;
   }
 
-  // Translate operation type
-  function translateOperation(op) {
+  // Translate vehicle status
+  function translateVehicleStatus(status) {
     const map = {
-      pickup: 'استلام',
-      return: 'إرجاع'
+      operational: 'قيد التشغيل',
+      maintenance: 'صيانة',
+      out_of_service: 'خارج الخدمة'
     };
-    return map[op] || op;
+    return map[status] || status;
   }
 
-  // Render pagination
-  function renderPagination() {
-    if (totalPages <= 1) {
-      paginationControls.innerHTML = '';
+  // Pickup vehicle
+  window.pickupVehicle = async function(vehicleCode) {
+    if (!confirm(`هل تريد استلام المركبة ${vehicleCode}؟`)) {
       return;
     }
     
-    let html = '<div class="pagination-info">';
-    html += `عرض ${totalRecords} نتيجة - صفحة ${currentPage} من ${totalPages}`;
-    html += '</div>';
-    
-    html += '<div class="pagination-buttons">';
-    
-    if (currentPage > 1) {
-      html += `<button class="btn ghost small" onclick="window.goToPage(${currentPage - 1})">السابق</button>`;
-    }
-    
-    const startPage = Math.max(1, currentPage - 2);
-    const endPage = Math.min(totalPages, currentPage + 2);
-    
-    for (let i = startPage; i <= endPage; i++) {
-      if (i === currentPage) {
-        html += `<button class="btn small" disabled>${i}</button>`;
-      } else {
-        html += `<button class="btn ghost small" onclick="window.goToPage(${i})">${i}</button>`;
-      }
-    }
-    
-    if (currentPage < totalPages) {
-      html += `<button class="btn ghost small" onclick="window.goToPage(${currentPage + 1})">التالي</button>`;
-    }
-    
-    html += '</div>';
-    paginationControls.innerHTML = html;
-  }
-
-  // Go to page
-  window.goToPage = function (page) {
-    currentPage = page;
-    loadMovements();
-  };
-
-  // Show photos modal
-  window.showPhotos = function (movementId, photosEncoded) {
-    if (!photosEncoded) {
-      alert('لا توجد صور');
+    const empId = currentSession?.user?.emp_id;
+    if (!empId) {
+      alert('خطأ: لا يوجد رمز وظيفي');
       return;
     }
     
-    let photos;
-    try {
-      photos = JSON.parse(decodeURIComponent(photosEncoded));
-    } catch (e) {
-      alert('خطأ في تحميل الصور');
-      return;
-    }
-    
-    if (!photos || photos.length === 0) {
-      alert('لا توجد صور');
-      return;
-    }
-    
-    let html = '<div class="photo-grid">';
-    photos.forEach(photo => {
-      const photoUrl = photo.startsWith('http') ? photo : `/vehicle_management/uploads/${photo}`;
-      html += `<div class="photo-item">`;
-      html += `<img src="${photoUrl}" alt="Photo" onclick="window.open('${photoUrl}', '_blank')" />`;
-      html += `</div>`;
-    });
-    html += '</div>';
-    
-    photoGallery.innerHTML = html;
-    photoModal.style.display = 'block';
-  };
-
-  // Close photo modal
-  window.closePhotoModal = function () {
-    photoModal.style.display = 'none';
-  };
-
-  // Close modal when clicking outside
-  window.onclick = function (event) {
-    if (event.target === photoModal) {
-      photoModal.style.display = 'none';
-    }
-  };
-
-  // Delete movement
-  window.deleteMovement = async function (id) {
-    if (!confirm('هل أنت متأكد من حذف هذه الحركة؟')) {
-      return;
-    }
-    
+    // Create movement record
     const fd = new FormData();
-    fd.append('id', id);
-    fd.append('type', 'movement');
+    fd.append('vehicle_code', vehicleCode);
+    fd.append('operation_type', 'pickup');
+    fd.append('performed_by', empId);
+    fd.append('movement_date', new Date().toISOString().split('T')[0]);
     
-    const r = await fetchJson(API_DELETE, {
+    const r = await fetchJson('/vehicle_management/api/vehicle/Vehicle_Maintenance.php', {
       method: 'POST',
       body: fd
     });
     
     if (r.ok && r.json && r.json.success) {
-      alert('تم الحذف بنجاح');
-      loadMovements();
+      alert('تم استلام المركبة بنجاح');
+      loadVehicles();
     } else {
-      alert(r.json?.message || 'فشل الحذف');
+      alert('فشل استلام المركبة: ' + (r.json?.message || 'خطأ'));
+    }
+  };
+
+  // Return vehicle
+  window.returnVehicle = async function(vehicleCode) {
+    if (!confirm(`هل تريد إرجاع المركبة ${vehicleCode}؟`)) {
+      return;
+    }
+    
+    const empId = currentSession?.user?.emp_id;
+    if (!empId) {
+      alert('خطأ: لا يوجد رمز وظيفي');
+      return;
+    }
+    
+    // Create movement record
+    const fd = new FormData();
+    fd.append('vehicle_code', vehicleCode);
+    fd.append('operation_type', 'return');
+    fd.append('performed_by', empId);
+    fd.append('movement_date', new Date().toISOString().split('T')[0]);
+    
+    const r = await fetchJson('/vehicle_management/api/vehicle/Vehicle_Maintenance.php', {
+      method: 'POST',
+      body: fd
+    });
+    
+    if (r.ok && r.json && r.json.success) {
+      alert('تم إرجاع المركبة بنجاح');
+      loadVehicles();
+    } else {
+      alert('فشل إرجاع المركبة: ' + (r.json?.message || 'خطأ'));
     }
   };
 
   // Initialize
   async function init() {
+    // Initialize session first
+    await initSession();
+    
+    // Check session
     const session = await sessionCheck();
     if (!session) return;
     
+    // Get permissions
     await getPermissions();
-    await loadMovements();
+    
+    // Load references
+    await loadReferences();
+    
+    // Load vehicles
+    await loadVehicles();
     
     // Event listeners
     if (searchInput) {
       searchInput.addEventListener('input', debounce(() => {
-        currentPage = 1;
-        loadMovements();
+        loadVehicles();
       }, 500));
     }
     
-    if (operationFilter) {
-      operationFilter.addEventListener('change', () => {
-        currentPage = 1;
-        loadMovements();
+    if (departmentFilter) {
+      departmentFilter.addEventListener('change', () => {
+        const deptId = departmentFilter.value;
+        const filteredSections = references.sections.filter(s => 
+          String(s.department_id ?? '') === String(deptId)
+        );
+        populateFilter(sectionFilter, filteredSections, 'جميع الأقسام');
+        divisionFilter.innerHTML = '<option value="">جميع الشعب</option>';
+        loadVehicles();
       });
     }
     
-    if (perPageSelect) {
-      perPageSelect.addEventListener('change', () => {
-        currentPage = 1;
-        loadMovements();
+    if (sectionFilter) {
+      sectionFilter.addEventListener('change', () => {
+        const secId = sectionFilter.value;
+        const filteredDivisions = references.divisions.filter(d => 
+          String(d.section_id ?? '') === String(secId)
+        );
+        populateFilter(divisionFilter, filteredDivisions, 'جميع الشعب');
+        loadVehicles();
+      });
+    }
+    
+    if (divisionFilter) {
+      divisionFilter.addEventListener('change', () => {
+        loadVehicles();
+      });
+    }
+    
+    if (statusFilter) {
+      statusFilter.addEventListener('change', () => {
+        loadVehicles();
       });
     }
   }
