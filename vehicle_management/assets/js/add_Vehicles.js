@@ -172,9 +172,9 @@
         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         <td class="action-buttons">
           ${currentPermissions && currentPermissions.can_edit ? 
-            `<button class="btn small ghost" data-action="edit" data-id="${v.id}">تعديل</button>` : ''}
+            `<button class="btn small ghost" data-action="edit" data-id="${v.id}">✏️ تعديل</button>` : ''}
           ${currentPermissions && currentPermissions.can_delete ? 
-            `<button class="btn small danger" data-action="delete" data-id="${v.id}">حذف</button>` : ''}
+            `<button class="btn small danger" data-action="delete" data-id="${v.id}">🗑️ حذف</button>` : ''}
         </td>
       `;
       

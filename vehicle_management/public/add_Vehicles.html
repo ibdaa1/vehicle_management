@@ -59,15 +59,15 @@
       <!-- Search and Filter Section -->
       <div class="search-section">
         <div class="search-row">
-          <input type="text" id="searchInput" class="search-input" placeholder="بحث: رقم المركبة، الرمز الوظيفي، اسم السائق، هاتف السائق..." />
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، الرمز الوظيفي، اسم السائق، هاتف السائق..." />
           <select id="statusFilter" class="filter-select">
             <option value="">كل الحالات</option>
-            <option value="operational">قيد التشغيل</option>
-            <option value="maintenance">صيانة</option>
-            <option value="out_of_service">خارج الخدمة</option>
+            <option value="operational">✅ قيد التشغيل</option>
+            <option value="maintenance">🔧 صيانة</option>
+            <option value="out_of_service">❌ خارج الخدمة</option>
           </select>
-          <button id="searchBtn" class="btn" type="button">بحث</button>
-          <button id="addNewBtn" class="btn" type="button">+ إضافة مركبة جديدة</button>
+          <button id="searchBtn" class="btn" type="button">🔍 بحث</button>
+          <button id="addNewBtn" class="btn success" type="button">➕ إضافة مركبة</button>
         </div>
       </div>
 
@@ -103,7 +103,7 @@
       </div>
 
       <!-- Add/Edit Form Section -->
-      <div id="formSection" class="form-section">
+      <div id="formSection" class="form-section" style="display:none;">
         <h2 id="formTitle">نموذج المركبة</h2>
         <form id="vehicleForm" autocomplete="off" novalidate data-department-id="1" data-division-id="1">
         <div class="form-row">
@@ -162,8 +162,8 @@
           </div>
         </div>
         <div class="actions">
-          <button id="submitBtn" class="btn" type="submit">حفظ المركبة</button>
-          <button id="cancelBtn" type="button" class="btn ghost">إلغاء</button>
+          <button id="submitBtn" class="btn success" type="submit">💾 حفظ المركبة</button>
+          <button id="cancelBtn" type="button" class="btn ghost">❌ إلغاء</button>
         </div>
         <div id="msg" class="form-help" role="status" aria-live="polite"></div>
       </form>
