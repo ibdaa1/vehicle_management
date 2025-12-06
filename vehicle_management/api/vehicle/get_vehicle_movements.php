@@ -57,11 +57,21 @@ if (!isset($conn) || !($conn instanceof mysqli)) {
 $permPath = __DIR__ . '/../permissions/perm_helper.php';
 if (file_exists($permPath)) require_once $permPath;
 
+// ----------------------------------------------------
 // Get current user from session
+// ----------------------------------------------------
 $currentUser = null;
-if (function_exists('get_current_session_user')) {
+
+// First check for $_SESSION['user'] which stores complete user data
+if (!empty($_SESSION['user']) && is_array($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
+    $currentUser = $_SESSION['user'];
+}
+// Fallback to get_current_session_user helper if available
+elseif (function_exists('get_current_session_user')) {
     $currentUser = get_current_session_user($conn);
-} elseif (!empty($_SESSION['user_id'])) {
+}
+// Fallback to $_SESSION['user_id']
+elseif (!empty($_SESSION['user_id'])) {
     $uid = (int)$_SESSION['user_id'];
     $stmt = $conn->prepare("SELECT id, role_id, department_id, section_id, division_id, emp_id, username FROM users WHERE id = ? LIMIT 1");
     if ($stmt) {
@@ -74,8 +84,8 @@ if (function_exists('get_current_session_user')) {
 
 if (!$currentUser || empty($currentUser['id'])) {
     http_response_code(401);
-    error_log('get_vehicle_movements.php: No user in session. SESSION: ' . print_r($_SESSION, true));
-    echo json_encode(['success' => false, 'message' => 'Not authenticated', 'debug' => 'No user in session', 'session_data' => $_SESSION]);
+    error_log('get_vehicle_movements.php: No user in session');
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
     exit;
 }
 
