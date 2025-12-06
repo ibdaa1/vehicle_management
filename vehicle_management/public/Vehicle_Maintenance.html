@@ -1,32 +1,125 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Maintenance</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>body{font-family:"Tajawal",sans-serif;margin:18px;background:#f6f7f9;color:#0d2b16} .card{background:#fff;padding:16px;border-radius:10px;border:1px solid #e6e9eb}</style>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>إدارة صيانة المركبات</title>
+  <link rel="stylesheet" href="/vehicle_management/assets/css/Vehicle_Maintenance.css">
 </head>
 <body>
-  <div class="card">
-    <h2 id="pageTitle">Maintenance</h2>
-    <div id="content">Loading…</div>
-  </div>
+  <main class="container">
+    <section class="card" id="maintenanceCard" aria-labelledby="pageTitle">
+      <div class="header">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">HCS</div>
+          <div>
+            <h1 id="pageTitle">إدارة صيانة المركبات</h1>
+            <div class="subtitle" id="pageSubtitle">عرض وإدارة سجلات صيانة المركبات</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="meta" id="orgName">HCS Department</div>
+          <div class="userInfo" id="loggedUser">---</div>
+        </div>
+      </div>
+      
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، الموقع..." />
+          <select id="typeFilter" class="filter-select">
+            <option value="">كل الأنواع</option>
+            <option value="Routine">صيانة دورية</option>
+            <option value="Emergency">صيانة طارئة</option>
+            <option value="Technical Check">فحص فني</option>
+            <option value="Mechanical Repair">إصلاح ميكانيكي</option>
+            <option value="Other">أخرى</option>
+          </select>
+          <button id="searchBtn" class="btn" type="button">🔍 بحث</button>
+          <button id="addNewBtn" class="btn success" type="button">➕ إضافة صيانة</button>
+        </div>
+      </div>
 
-<script src="session_check.js"></script>
-<script src="/vehicle_management/public/permissions.js"></script>
-<script>
-(async()=>{
-  const sess = await sessionCheck();
-  if (!sess || !sess.success) return location.href='login.html';
-  const lang = (sess.user.preferred_language||'ar').toLowerCase();
-  try {
-    const tr = await fetch(`/vehicle_management/languages/${lang}_index.json`, { credentials:'same-origin' }).then(r=>r.json()).catch(()=>({}));
-    document.getElementById('pageTitle').textContent = tr.maintenance || 'Maintenance';
-  } catch(e){}
-  await Permissions.loadForSession();
-  Permissions.apply();
-  const canManage = Permissions.has('manage_maintenance');
-  document.getElementById('content').innerHTML = canManage ? '<div>Maintenance UI goes here</div>' : '<div class="small">No permission for maintenance.</div>';
-})();
-</script>
+      <!-- Results Table Section -->
+      <div id="resultsSection" class="results-section" style="display:none;">
+        <div class="results-header">
+          <h2>نتائج البحث (<span id="totalCount">0</span>)</h2>
+        </div>
+        <div class="table-container">
+          <table id="maintenanceTable" class="maintenance-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>رقم المركبة</th>
+                <th>تاريخ الزيارة</th>
+                <th>الزيارة القادمة</th>
+                <th>نوع الصيانة</th>
+                <th>الموقع</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="maintenanceTableBody">
+              <!-- Results will be inserted here by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination">
+          <!-- Pagination controls will be inserted here by JS -->
+        </div>
+      </div>
+
+      <!-- Add/Edit Form Section -->
+      <div id="formSection" class="form-section" style="display:none;">
+        <h2 id="formTitle">نموذج الصيانة</h2>
+        <form id="maintenanceForm" autocomplete="off" novalidate>
+          <div class="form-row">
+            <div class="col">
+              <label for="vehicle_code">رقم المركبة *</label>
+              <input id="vehicle_code" name="vehicle_code" class="form-control" placeholder="رقم المركبة" required />
+            </div>
+            <div class="col">
+              <label for="maintenance_type">نوع الصيانة *</label>
+              <select id="maintenance_type" name="maintenance_type" class="form-control" required>
+                <option value="">اختر النوع</option>
+                <option value="Routine">صيانة دورية</option>
+                <option value="Emergency">صيانة طارئة</option>
+                <option value="Technical Check">فحص فني</option>
+                <option value="Mechanical Repair">إصلاح ميكانيكي</option>
+                <option value="Other">أخرى</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="visit_date">تاريخ الزيارة *</label>
+              <input id="visit_date" name="visit_date" type="date" class="form-control" required />
+            </div>
+            <div class="col">
+              <label for="next_visit_date">تاريخ الزيارة القادمة</label>
+              <input id="next_visit_date" name="next_visit_date" type="date" class="form-control" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="location">الموقع</label>
+              <input id="location" name="location" class="form-control" placeholder="مثال: ورشة الصيانة الرئيسية" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="notes">ملاحظات</label>
+              <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="ملاحظات إضافية..."></textarea>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="submitBtn" class="btn success" type="submit">💾 حفظ</button>
+            <button id="cancelBtn" type="button" class="btn ghost">❌ إلغاء</button>
+          </div>
+          <div id="msg" class="form-help" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script src="/vehicle_management/assets/js/Vehicle_Maintenance.js"></script>
 </body>
 </html>
