@@ -1,157 +1,304 @@
 <?php
 // vehicle_management/api/vehicle/get_vehicle_movements.php
-// ---------------- CORS ----------------
+// Returns available vehicles for pickup/return based on permissions and current state
+
+header('Content-Type: application/json; charset=utf-8');
+error_reporting(E_ALL);
+ini_set('display_errors', 0); 
+
+// CORS headers
 if (isset($_SERVER['HTTP_ORIGIN'])) {
     header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Auth-Token');
 }
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
-// ---------------- DB CONNECTION ----------------
-$paths = [
-    __DIR__ . '/../../config/db.php',
-    __DIR__ . '/../config/db.php',
-    __DIR__ . '/config/db.php'
+// Include session config first
+$sessionPaths = [
+    __DIR__ . '/../../config/session.php',
+    __DIR__ . '/../config/session.php'
 ];
-foreach ($paths as $p) { if (file_exists($p)) { require_once $p; break; } }
+foreach ($sessionPaths as $p) {
+    if (file_exists($p)) {
+        require_once $p;
+        break;
+    }
+}
 
-if (!isset($conn)) {
+// Start session if not active
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
+// Include DB (mysqli $conn)
+$dbPaths = [
+    __DIR__ . '/../../config/db.php',
+    __DIR__ . '/../config/db.php'
+];
+foreach ($dbPaths as $p) {
+    if (file_exists($p)) {
+        require_once $p;
+        break;
+    }
+}
+
+if (!isset($conn) || !($conn instanceof mysqli)) {
+    http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'DB connection missing']);
     exit;
 }
 
-// ---------------- SESSION (optional) ----------------
-$scPaths = [
-    __DIR__ . '/../../config/session.php',
-    __DIR__ . '/../config/session.php',
-    __DIR__ . '/config/session.php'
-];
-foreach ($scPaths as $p) { if (file_exists($p)) { require_once $p; break; } }
+// Include permissions helper (اختياري)
+$permPath = __DIR__ . '/../permissions/perm_helper.php';
+if (file_exists($permPath)) require_once $permPath;
 
-// ---------------- HEADER FUNCTION ----------------
-function get_all_headers_normalized(): array {
-    $h = [];
-    if (function_exists('getallheaders')) {
-        foreach (getallheaders() as $k => $v) $h[strtolower($k)] = $v;
-    } else {
-        foreach ($_SERVER as $k => $v) {
-            if (strpos($k, 'HTTP_') === 0) {
-                $name = strtolower(str_replace(' ', '-', str_replace('_', ' ', substr($k,5))));
-                $h[$name] = $v;
-            }
+// ----------------------------------------------------
+// تصحيح قراءة الجلسة والمصادقة
+// ----------------------------------------------------
+
+$currentUser = null;
+
+// التحقق أولاً من مفتاح 'user' الذي يخزن البيانات الكاملة
+if (!empty($_SESSION['user']) && is_array($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
+    $currentUser = $_SESSION['user'];
+} 
+// العودة للطريقة القديمة (البحث عن user_id) إذا كان المفتاح 'user' مفقودًا
+elseif (!empty($_SESSION['user_id'])) { 
+    $uid = (int)$_SESSION['user_id'];
+    
+    $stmt = $conn->prepare("SELECT id, role_id, department_id, section_id, division_id, emp_id, username FROM users WHERE id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $uid);
+        $stmt->execute();
+        $currentUser = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        if ($currentUser) {
+            $_SESSION['user'] = $currentUser;
         }
     }
-    return $h;
 }
 
-// ---------------- AUTH ----------------
-$headers = get_all_headers_normalized();
-
-if (!isset($headers['x-auth-token'])) {
-    echo json_encode(['success' => false, 'message' => 'Missing token']);
+if (!$currentUser || empty($currentUser['id'])) {
+    http_response_code(401);
+    error_log('get_vehicle_movements.php: No user in session.');
+    echo json_encode(['success' => false, 'message' => 'Not authenticated', 'debug' => 'No user in session', 'session_data' => $_SESSION]);
     exit;
 }
 
-$token = $conn->real_escape_string($headers['x-auth-token']);
+// ----------------------------------------------------
+// جلب الأذونات
+// ----------------------------------------------------
 
-$userQ = $conn->query("
-    SELECT u.*, r.can_view_all_vehicles, r.can_view_department_vehicles,
-           r.can_assign_vehicle, r.can_receive_vehicle,
-           r.can_override_department, r.can_self_assign_vehicle
-    FROM users u
-    LEFT JOIN roles r ON r.id = u.role_id
-    WHERE u.token = '$token'
-    LIMIT 1
-");
+$roleId = intval($currentUser['role_id'] ?? 0);
+$permissions = [
+    'can_view_all_vehicles' => false,
+    'can_view_department_vehicles' => false,
+    'can_assign_vehicle' => false,
+    'can_receive_vehicle' => false,
+    'can_self_assign_vehicle' => false,
+    'can_override_department' => false
+];
 
-if ($userQ->num_rows === 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid token']);
-    exit;
+if ($roleId > 0) {
+    $stmt = $conn->prepare("SELECT can_view_all_vehicles, can_view_department_vehicles, can_assign_vehicle, can_receive_vehicle, can_self_assign_vehicle, can_override_department FROM roles WHERE id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $roleId);
+        $stmt->execute();
+        $r = $stmt->get_result()->fetch_assoc();
+        if ($r) {
+            foreach ($permissions as $key => $val) {
+                $permissions[$key] = (bool)($r[$key] ?? 0);
+            }
+        }
+        $stmt->close();
+    }
 }
 
-$user = $userQ->fetch_assoc();
-$empId = $user['emp_id'];
+// ----------------------------------------------------
+// بناء استعلام جلب المركبات (مع تصحيح أسماء الأعمدة)
+// ----------------------------------------------------
 
-// ---------------- ACTIVE VEHICLE CHECK ----------------
-$activeQ = $conn->query("
-    SELECT vm.vehicle_code
-    FROM vehicle_movements vm
-    WHERE vm.performed_by = '$empId'
-      AND vm.operation_type = 'pickup'
-      AND NOT EXISTS (
-           SELECT 1 FROM vehicle_movements vm2
-           WHERE vm2.vehicle_code = vm.vehicle_code
-             AND vm2.performed_by = vm.performed_by
-             AND vm2.operation_type = 'return'
-             AND vm2.id > vm.id
-      )
-    LIMIT 1
-");
+// Read filter params
+$filterDepartment = $_GET['department_id'] ?? '';
+$filterSection = $_GET['section_id'] ?? '';
+$filterDivision = $_GET['division_id'] ?? '';
+$filterStatus = $_GET['status'] ?? '';
+$q = $_GET['q'] ?? '';
 
-$hasActiveVehicle = ($activeQ->num_rows > 0);
-
-// ---------------- VEHICLE QUERY BUILD ----------------
+// Build WHERE clause for vehicles
 $where = [];
+$params = [];
+$types = '';
 
-// 1 — إذا لديه صلاحية رؤية جميع السيارات
-if ($user['can_view_all_vehicles'] == 1) {
-    $where[] = "1=1";
-
-// 2 — إذا يشاهد سيارات إدارته فقط
-} elseif ($user['can_view_department_vehicles'] == 1) {
-    $where[] = "
-        (
-            v.department_id = '{$user['department_id']}'
-            OR v.section_id = '{$user['section_id']}'
-            OR v.division_id = '{$user['division_id']}'
-        )
-    ";
+// Permission-based filtering
+if (!$permissions['can_view_all_vehicles']) {
+    if ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
+        $where[] = "v.department_id = ?";
+        $params[] = intval($currentUser['department_id']);
+        $types .= 'i';
+    } else {
+        $where[] = "v.emp_id = ?";
+        $params[] = $currentUser['emp_id'] ?? '';
+        $types .= 's';
+    }
 }
 
-// 3 — وضع السيارة
-$where[] = "
-    (
-        v.vehicle_mode = 'shift'
-        OR
-        (v.vehicle_mode = 'private' AND v.emp_id = '$empId')
-    )
-";
-
-$finalWhere = implode(" AND ", $where);
-
-// ---------------- BASE SQL ----------------
-$sql = "
-    SELECT v.*
-    FROM vehicles v
-    WHERE $finalWhere
-";
-
-// عشوائية فقط إذا كان موظف عادي ولا يمتلك سيارة حالية
-$isNormalEmployee = ($user['can_view_all_vehicles'] == 0);
-
-if ($isNormalEmployee && !$hasActiveVehicle) {
-    $sql .= " ORDER BY RAND() LIMIT 1";
+// Additional filters
+if ($filterDepartment !== '') {
+    $where[] = "v.department_id = ?";
+    $params[] = intval($filterDepartment);
+    $types .= 'i';
 }
 
-$res = $conn->query($sql);
+if ($filterSection !== '') {
+    $where[] = "v.section_id = ?";
+    $params[] = intval($filterSection);
+    $types .= 'i';
+}
+
+if ($filterDivision !== '') {
+    $where[] = "v.division_id = ?";
+    $params[] = intval($filterDivision);
+    $types .= 'i';
+}
+
+if ($filterStatus !== '') {
+    $where[] = "v.status = ?";
+    $params[] = $filterStatus;
+    $types .= 's';
+}
+
+// Search filter
+if ($q !== '') {
+    $qLike = '%' . $q . '%';
+    $where[] = "(v.vehicle_code LIKE ? OR v.driver_name LIKE ? OR v.type LIKE ?)";
+    $params[] = $qLike;
+    $params[] = $qLike;
+    $params[] = $qLike;
+    $types .= 'sss';
+}
+
+$whereSql = '';
+if (!empty($where)) {
+    $whereSql = 'WHERE ' . implode(' AND ', $where);
+}
+
+// Query vehicles with their latest movement status
+$sql = "SELECT v.*,
+        d.name_ar AS department_name,
+        s.name_ar AS section_name,
+        dv.name_ar AS division_name,
+        (SELECT vm.operation_type 
+         FROM vehicle_movements vm 
+         WHERE vm.vehicle_code = v.vehicle_code 
+         ORDER BY vm.id DESC LIMIT 1) AS last_operation,
+        (SELECT vm.performed_by 
+         FROM vehicle_movements vm 
+         WHERE vm.vehicle_code = v.vehicle_code 
+         ORDER BY vm.id DESC LIMIT 1) AS last_performed_by
+        FROM vehicles v
+        -- تم تصحيح الوصلات لاستخدام المفاتيح الصحيحة
+        LEFT JOIN Departments d ON d.department_id = v.department_id
+        LEFT JOIN Sections s ON s.section_id = v.section_id
+        LEFT JOIN Divisions dv ON dv.division_id = v.division_id
+        $whereSql
+        ORDER BY v.id DESC";
+
+$stmt = $conn->prepare($sql);
+if ($stmt === false) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Server error: Prepare failed. MySQL Error: ' . $conn->error], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if (!empty($params)) {
+    $bindNames = [];
+    $bindNames[] = & $types;
+    for ($i = 0; $i < count($params); $i++) {
+        $bindNames[] = & $params[$i];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $bindNames);
+}
+
+$stmt->execute();
+$result = $stmt->get_result();
+
+// ----------------------------------------------------
+// معالجة النتائج وإخراج JSON
+// ----------------------------------------------------
+
 $vehicles = [];
-while ($row = $res->fetch_assoc()) {
-    $vehicles[] = $row;
+while ($r = $result->fetch_assoc()) {
+    // Determine availability status
+    $lastOp = $r['last_operation'];
+    $lastPerformedBy = $r['last_performed_by'];
+    $currentEmpId = $currentUser['emp_id'] ?? '';
+    
+    $availabilityStatus = 'available'; // default: can pickup
+    
+    if ($lastOp === 'pickup') {
+        if ($lastPerformedBy === $currentEmpId) {
+            $availabilityStatus = 'checked_out_by_me'; 
+        } else {
+            $availabilityStatus = 'checked_out_by_other'; 
+        }
+    } elseif ($lastOp === 'return' || $lastOp === null) {
+        $availabilityStatus = 'available';
+    }
+    
+    $vehicles[] = [
+        'id' => (int)($r['id'] ?? 0),
+        'vehicle_code' => $r['vehicle_code'] ?? null,
+        'type' => $r['type'] ?? null,
+        'manufacture_year' => $r['manufacture_year'] ? (int)$r['manufacture_year'] : null,
+        'driver_name' => $r['driver_name'] ?? null,
+        'driver_phone' => $r['driver_phone'] ?? null,
+        'status' => $r['status'] ?? null,
+        'vehicle_mode' => $r['vehicle_mode'] ?? null,
+        'department_id' => isset($r['department_id']) ? (int)$r['department_id'] : null,
+        'department_name' => $r['department_name'] ?? null,
+        'section_id' => isset($r['section_id']) ? (int)$r['section_id'] : null,
+        'section_name' => $r['section_name'] ?? null,
+        'division_id' => isset($r['division_id']) ? (int)$r['division_id'] : null,
+        'division_name' => $r['division_name'] ?? null,
+        'notes' => $r['notes'] ?? null,
+        'availability_status' => $availabilityStatus,
+        'last_operation' => $lastOp,
+        'can_pickup' => ($availabilityStatus === 'available'),
+        'can_return' => ($availabilityStatus === 'checked_out_by_me')
+    ];
 }
+$stmt->close();
 
-// ---------------- RESPONSE ----------------
+error_log('get_vehicle_movements.php: Returning ' . count($vehicles) . ' vehicles');
+
 echo json_encode([
     'success' => true,
-    'has_active_vehicle' => $hasActiveVehicle,
     'vehicles' => $vehicles,
-    'permissions' => [
-        'can_view_all_vehicles' => $user['can_view_all_vehicles'],
-        'can_assign_vehicle' => $user['can_assign_vehicle'],
-        'can_receive_vehicle' => $user['can_receive_vehicle'],
-        'can_self_assign_vehicle' => $user['can_self_assign_vehicle']
+    'permissions' => $permissions,
+    'current_user' => [
+        'emp_id' => $currentUser['emp_id'] ?? null,
+        'username' => $currentUser['username'] ?? null,
+        'department_id' => $currentUser['department_id'] ?? null
+    ],
+    'debug' => [
+        'total_vehicles' => count($vehicles),
+        'where_clause' => $whereSql,
+        'types' => $types,
+        'filters_applied' => [
+            'department' => $filterDepartment ?? null,
+            'section' => $filterSection ?? null,
+            'division' => $filterDivision ?? null,
+            'status' => $filterStatus ?? null,
+            'search' => $q ?? null
+        ]
     ]
-]);
-
+], JSON_UNESCAPED_UNICODE);
 exit;
+?>
