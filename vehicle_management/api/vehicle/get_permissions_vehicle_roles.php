@@ -80,7 +80,8 @@ if ($roleId > 0) {
 $adminRoles = ['super_admin', 'admin', 'shift_supervisor', 'maintenance_supervisor'];
 $isAdminRole = in_array($roleName, $adminRoles);
 $isCustomUser = ($roleName === 'custom_user');
-$isRegularUser = ($roleName === 'regular_user');
+// Treat any unrecognized role as regular_user (fallback)
+$isRegularUser = ($roleName === 'regular_user') || (!$isAdminRole && !$isCustomUser && !empty($roleName));
 
 // Build permissions based on role type
 $permissions = [
