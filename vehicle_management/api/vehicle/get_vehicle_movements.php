@@ -72,41 +72,46 @@ if (!$currentUser || empty($currentUser['id'])) {
     exit;
 }
 // ----------------------------------------------------
-// جلب الأذونات و override sections
+// جلب الدور والأذونات (النظام الجديد based on role names)
 // ----------------------------------------------------
 $roleId = intval($currentUser['role_id'] ?? 0);
-$permissions = [
-    'can_view_all_vehicles' => false,
-    'can_view_department_vehicles' => false,
-    'can_assign_vehicle' => false,
-    'can_receive_vehicle' => false,
-    'can_self_assign_vehicle' => false,
-    'can_override_department' => false
-];
-$overrideSections = []; // قائمة الأقسام الإضافية من description
+$roleName = '';
+$roleDescription = '';
+$overrideSections = []; // قائمة الأقسام الإضافية من description (لـ custom_user)
+
 if ($roleId > 0) {
-    $stmt = $conn->prepare("SELECT can_view_all_vehicles, can_view_department_vehicles, can_assign_vehicle, can_receive_vehicle, can_self_assign_vehicle, can_override_department, description FROM roles WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT name_en, description FROM roles WHERE id = ? LIMIT 1");
     if ($stmt) {
         $stmt->bind_param('i', $roleId);
         $stmt->execute();
         $r = $stmt->get_result()->fetch_assoc();
         if ($r) {
-            $permissions['can_view_all_vehicles'] = (bool)($r['can_view_all_vehicles'] ?? 0);
-            $permissions['can_view_department_vehicles'] = (bool)($r['can_view_department_vehicles'] ?? 0);
-            $permissions['can_assign_vehicle'] = (bool)($r['can_assign_vehicle'] ?? 0);
-            $permissions['can_receive_vehicle'] = (bool)($r['can_receive_vehicle'] ?? 0);
-            $permissions['can_self_assign_vehicle'] = (bool)($r['can_self_assign_vehicle'] ?? 0);
-            $permissions['can_override_department'] = (bool)($r['can_override_department'] ?? 0);
+            $roleName = strtolower(trim($r['name_en'] ?? ''));
+            $roleDescription = trim($r['description'] ?? '');
             
-            // Parse override sections from description (format: "1+2+5")
-            if ($permissions['can_override_department'] && !empty($r['description'])) {
-                $parts = explode('+', $r['description']);
+            // Parse override sections for custom_user from description (format: "1+2+5")
+            if ($roleName === 'custom_user' && !empty($roleDescription)) {
+                $parts = explode('+', $roleDescription);
                 $overrideSections = array_values(array_filter(array_map('intval', $parts), function($v) { return $v > 0; }));
             }
         }
         $stmt->close();
     }
 }
+
+// تحديد نوع الدور (role type)
+$adminRoles = ['super_admin', 'admin', 'shift_supervisor', 'maintenance_supervisor'];
+$isAdminRole = in_array($roleName, $adminRoles);
+$isCustomUser = ($roleName === 'custom_user');
+$isRegularUser = ($roleName === 'regular_user');
+
+// Build permissions based on role type
+$permissions = [
+    'is_admin' => $isAdminRole,
+    'is_custom_user' => $isCustomUser,
+    'is_regular_user' => $isRegularUser,
+    'role_name' => $roleName
+];
 // ----------------------------------------------------
 // التحقق من وجود سيارة مستلمة لدى المستخدم (مستلمة ولم يتم إرجاعها)
 // ----------------------------------------------------
@@ -205,67 +210,42 @@ $where = [];
 $params = [];
 $types = '';
 
-// Permission-based filtering with proper visibility rules:
-// CRITICAL RULES:
-// 1. Only operational vehicles visible by default (status='operational')
-// 2. Users with can_view_all_vehicles, can_self_assign_vehicle, or can_override_department can see all statuses
-// 3. Private vehicles only visible to: owner (emp_id match) OR users with special permissions above
-// 4. Regular users (can_assign_vehicle only) see only their section's operational vehicles
+// Permission-based filtering with NEW role-based rules:
+// NEW SYSTEM:
+// 1. Admin roles (super_admin, admin, shift_supervisor, maintenance_supervisor): See ALL vehicles, all statuses
+// 2. custom_user: See shift vehicles in sections from roles.description (e.g., "1+2+3"), operational only
+// 3. regular_user: See shift vehicles in their section only, operational only
+// All users can see their own private vehicles (not in main list for lottery)
 
 $visibilityClauses = [];
-$canViewAllStatuses = $permissions['can_view_all_vehicles'] || $permissions['can_self_assign_vehicle'] || $permissions['can_override_department'];
 
-// Status filter: Only operational vehicles unless user has special permissions
-if (!$canViewAllStatuses) {
-    $where[] = "v.status = 'operational'";
-}
-
-if ($permissions['can_view_all_vehicles'] || $permissions['can_self_assign_vehicle']) {
-    // Users with these permissions can see all vehicles (including all statuses and private)
-    // No specific visibility restriction needed
+if ($isAdminRole) {
+    // Admin roles: See everything, all statuses, all vehicle modes
+    // No filtering needed
 } else {
-    // Build visibility based on section, department, and override sections
-    // IMPORTANT: Regular users (Inspector) should NOT see private vehicles in the main list
-    // Private vehicles are not part of the lottery system
+    // Non-admin users: Only operational vehicles
+    $where[] = "v.status = 'operational'";
     
-    // 1. Default: User sees SHIFT vehicles in their section_id
-    // Users without section_id will see NO vehicles
-    if (!empty($currentUser['section_id'])) {
-        $visibilityClauses[] = "(v.section_id = ? AND v.vehicle_mode = 'shift')";
-        $params[] = intval($currentUser['section_id']);
-        $types .= 'i';
-    }
-    
-    // 2. If can_view_department_vehicles, add department SHIFT vehicles
-    if ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
-        $visibilityClauses[] = "(v.department_id = ? AND v.vehicle_mode = 'shift')";
-        $params[] = intval($currentUser['department_id']);
-        $types .= 'i';
-    }
-    
-    // 3. If can_override_department, add override sections SHIFT vehicles
-    if (!empty($overrideSections)) {
+    if ($isCustomUser && !empty($overrideSections)) {
+        // custom_user: See SHIFT vehicles in specified sections from description
         $placeholders = implode(',', array_fill(0, count($overrideSections), '?'));
         $visibilityClauses[] = "(v.section_id IN ($placeholders) AND v.vehicle_mode = 'shift')";
         foreach ($overrideSections as $sec) {
             $params[] = intval($sec);
             $types .= 'i';
         }
+    } elseif ($isRegularUser && !empty($currentUser['section_id'])) {
+        // regular_user: See SHIFT vehicles in their section only
+        $visibilityClauses[] = "(v.section_id = ? AND v.vehicle_mode = 'shift')";
+        $params[] = intval($currentUser['section_id']);
+        $types .= 'i';
     }
-    
-    // 4. Admin users with can_override_department can see all private vehicles
-    if ($permissions['can_override_department']) {
-        $visibilityClauses[] = "v.vehicle_mode = 'private'";
-    }
-    // Note: Regular Inspector users do NOT see private vehicles in main list
-    // Private vehicles are handled separately (not in lottery system)
     
     // Add visibility clause to WHERE
     if (!empty($visibilityClauses)) {
         $where[] = '(' . implode(' OR ', $visibilityClauses) . ')';
     } else {
-        // If no visibility clauses, user sees nothing
-        // This prevents users with null section_id from seeing any vehicles
+        // If no visibility clauses (no section_id or no sections in description), user sees nothing
         $where[] = "1=0";  // Always false - no vehicles visible
     }
 }
@@ -285,15 +265,15 @@ if ($filterDivision !== '') {
     $params[] = intval($filterDivision);
     $types .= 'i';
 }
-// Status filter: Only allow filtering if user has permission to see all statuses
+// Status filter: Only allow filtering if user is admin
 if ($filterStatus !== '') {
-    if ($canViewAllStatuses) {
-        // User can filter by any status
+    if ($isAdminRole) {
+        // Admin can filter by any status
         $where[] = "v.status = ?";
         $params[] = $filterStatus;
         $types .= 's';
     } else {
-        // User can only filter operational vehicles (already enforced above)
+        // Regular/custom users can only see operational (already enforced above)
         // Ignore the filter parameter for security
     }
 }
@@ -385,10 +365,8 @@ $result = $stmt->get_result();
 // ----------------------------------------------------
 // معالجة النتائج وإخراج JSON
 // ----------------------------------------------------
-// Check if user has elevated permissions (calculated once for all vehicles)
-$hasElevatedPermissions = $permissions['can_self_assign_vehicle'] 
-                        || $permissions['can_view_all_vehicles'] 
-                        || $permissions['can_override_department'];
+// Check if user is admin (calculated once for all vehicles)
+$hasElevatedPermissions = $isAdminRole;
 
 $vehicles = [];
 while ($r = $result->fetch_assoc()) {
@@ -414,7 +392,8 @@ while ($r = $result->fetch_assoc()) {
                     $canReturn = true;
                 } else {
                     $availabilityStatus = 'checked_out_by_other';
-                    $canReturn = $permissions['can_receive_vehicle'];
+                    // Admin can return any vehicle, regular/custom users cannot return others' vehicles
+                    $canReturn = $hasElevatedPermissions;
                 }
             } else {
                 $availabilityStatus = 'private';
@@ -441,7 +420,8 @@ while ($r = $result->fetch_assoc()) {
                 $canReturn = true;
             } else {
                 $availabilityStatus = 'checked_out_by_other';
-                $canReturn = $permissions['can_receive_vehicle'];
+                // Admin can return any vehicle, regular/custom users cannot return others' vehicles
+                $canReturn = $hasElevatedPermissions;
             }
         } else {
             $availabilityStatus = 'available';
