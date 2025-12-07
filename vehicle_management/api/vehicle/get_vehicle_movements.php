@@ -100,7 +100,8 @@ if ($roleId > 0) {
             
             // Parse override sections from description (format: "1+2+5")
             if ($permissions['can_override_department'] && !empty($r['description'])) {
-                $overrideSections = array_map('intval', array_filter(explode('+', $r['description'])));
+                $parts = explode('+', $r['description']);
+                $overrideSections = array_values(array_filter(array_map('intval', $parts), function($v) { return $v > 0; }));
             }
         }
         $stmt->close();

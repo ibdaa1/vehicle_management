@@ -77,7 +77,8 @@ if ($roleId > 0) {
             $permissions['allow_registration'] = (bool)($r['allow_registration'] ?? 0);
             if ($permissions['can_override_department'] && !empty($r['description'])) {
                 // description format: "1+2+5" للأقسام (section_id)
-                $overrideSections = array_map('intval', array_filter(explode('+', $r['description'])));
+                $parts = explode('+', $r['description']);
+                $overrideSections = array_values(array_filter(array_map('intval', $parts), function($v) { return $v > 0; }));
             }
         }
         $stmt->close();
