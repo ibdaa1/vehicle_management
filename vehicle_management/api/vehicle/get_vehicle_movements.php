@@ -214,8 +214,8 @@ $types = '';
 $visibilityClauses = [];
 
 if ($permissions['can_view_all_vehicles']) {
-    // يمكنه رؤية جميع المركبات التشغيلية
-    $visibilityClauses[] = "v.status = 'operational'";
+    // يمكنه رؤية جميع المركبات التشغيلية - no specific visibility restriction
+    // We'll still add status filter separately
 } else {
     // Build visibility based on section, department, and override sections
     
@@ -247,11 +247,11 @@ if ($permissions['can_view_all_vehicles']) {
     $visibilityClauses[] = "(v.vehicle_mode = 'private' AND v.emp_id = ?)";
     $params[] = $currentEmpId;
     $types .= 's';
-}
-
-// Add visibility clause to WHERE
-if (!empty($visibilityClauses)) {
-    $where[] = '(' . implode(' OR ', $visibilityClauses) . ')';
+    
+    // Add visibility clause to WHERE
+    if (!empty($visibilityClauses)) {
+        $where[] = '(' . implode(' OR ', $visibilityClauses) . ')';
+    }
 }
 // Additional filters
 if ($filterDepartment !== '') {
