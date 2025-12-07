@@ -72,7 +72,7 @@ if (!$currentUser || empty($currentUser['id'])) {
     exit;
 }
 // ----------------------------------------------------
-// جلب الأذونات
+// جلب الأذونات و override sections
 // ----------------------------------------------------
 $roleId = intval($currentUser['role_id'] ?? 0);
 $permissions = [
@@ -83,8 +83,9 @@ $permissions = [
     'can_self_assign_vehicle' => false,
     'can_override_department' => false
 ];
+$overrideSections = []; // قائمة الأقسام الإضافية من description
 if ($roleId > 0) {
-    $stmt = $conn->prepare("SELECT can_view_all_vehicles, can_view_department_vehicles, can_assign_vehicle, can_receive_vehicle, can_self_assign_vehicle, can_override_department FROM roles WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT can_view_all_vehicles, can_view_department_vehicles, can_assign_vehicle, can_receive_vehicle, can_self_assign_vehicle, can_override_department, description FROM roles WHERE id = ? LIMIT 1");
     if ($stmt) {
         $stmt->bind_param('i', $roleId);
         $stmt->execute();
@@ -96,6 +97,11 @@ if ($roleId > 0) {
             $permissions['can_receive_vehicle'] = (bool)($r['can_receive_vehicle'] ?? 0);
             $permissions['can_self_assign_vehicle'] = (bool)($r['can_self_assign_vehicle'] ?? 0);
             $permissions['can_override_department'] = (bool)($r['can_override_department'] ?? 0);
+            
+            // Parse override sections from description (format: "1+2+5")
+            if ($permissions['can_override_department'] && !empty($r['description'])) {
+                $overrideSections = array_map('intval', array_filter(explode('+', $r['description'])));
+            }
         }
         $stmt->close();
     }
@@ -197,19 +203,55 @@ $q = $_GET['q'] ?? '';
 $where = [];
 $params = [];
 $types = '';
-// Permission-based filtering
+
+// Permission-based filtering with proper visibility rules:
+// Default: User can see vehicles in their section_id (minimum)
+// If can_view_department_vehicles: Add department vehicles
+// If can_override_department + description has sections: Add those sections
+// If can_view_all_vehicles: See all operational vehicles
+// Private vehicles: Only visible to owner (emp_id)
+
+$visibilityClauses = [];
+
 if ($permissions['can_view_all_vehicles']) {
-    // يمكنه رؤية جميع المركبات، لا نضيف شرطًا
-} elseif ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
-    // يمكنه رؤية مركبات الإدارة الخاصة به
-    $where[] = "v.department_id = ?";
-    $params[] = intval($currentUser['department_id']);
-    $types .= 'i';
+    // يمكنه رؤية جميع المركبات التشغيلية
+    $visibilityClauses[] = "v.status = 'operational'";
 } else {
-    // يمكنه رؤية المركبات المخصصة له فقط في حالة private فقط
-    $where[] = "v.emp_id = ? AND v.vehicle_mode = 'private'";
+    // Build visibility based on section, department, and override sections
+    
+    // 1. Default: User sees vehicles in their section_id
+    if (!empty($currentUser['section_id'])) {
+        $visibilityClauses[] = "v.section_id = ?";
+        $params[] = intval($currentUser['section_id']);
+        $types .= 'i';
+    }
+    
+    // 2. If can_view_department_vehicles, add department vehicles
+    if ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
+        $visibilityClauses[] = "v.department_id = ?";
+        $params[] = intval($currentUser['department_id']);
+        $types .= 'i';
+    }
+    
+    // 3. If can_override_department, add override sections from description
+    if (!empty($overrideSections)) {
+        $placeholders = implode(',', array_fill(0, count($overrideSections), '?'));
+        $visibilityClauses[] = "v.section_id IN ($placeholders)";
+        foreach ($overrideSections as $sec) {
+            $params[] = intval($sec);
+            $types .= 'i';
+        }
+    }
+    
+    // 4. Always include private vehicles assigned to current user
+    $visibilityClauses[] = "(v.vehicle_mode = 'private' AND v.emp_id = ?)";
     $params[] = $currentEmpId;
     $types .= 's';
+}
+
+// Add visibility clause to WHERE
+if (!empty($visibilityClauses)) {
+    $where[] = '(' . implode(' OR ', $visibilityClauses) . ')';
 }
 // Additional filters
 if ($filterDepartment !== '') {
@@ -435,25 +477,35 @@ while ($r = $result->fetch_assoc()) {
     ];
 }
 $stmt->close();
-echo json_encode([
+
+// Build response object
+$response = [
     'success' => true,
     'vehicles' => $vehicles,
     'permissions' => $permissions,
     'current_user' => [
         'emp_id' => $currentUser['emp_id'] ?? null,
         'username' => $currentUser['username'] ?? null,
-        'department_id' => $currentUser['department_id'] ?? null
+        'department_id' => $currentUser['department_id'] ?? null,
+        'section_id' => $currentUser['section_id'] ?? null
     ],
     'user_has_vehicle_checked_out' => $userHasVehicleCheckedOut,
     'user_checked_out_vehicle_code' => $userCheckedOutVehicleCode,
     'user_has_private_vehicle' => $userHasPrivateVehicle,
     'user_private_vehicle_code' => $userPrivateVehicleCode,
-    'recently_assigned_vehicles' => $recentlyAssignedVehicles,
-    'debug' => [
+    'recently_assigned_vehicles' => $recentlyAssignedVehicles
+];
+
+// Only add debug info if debug=1 parameter is present
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    $response['debug'] = [
         'total_vehicles' => count($vehicles),
         'where_clause' => $whereSql,
         'timezone' => date_default_timezone_get(),
-        'current_time' => date('Y-m-d H:i:s')
-    ]
-], JSON_UNESCAPED_UNICODE);
+        'current_time' => date('Y-m-d H:i:s'),
+        'override_sections' => $overrideSections
+    ];
+}
+
+echo json_encode($response, JSON_UNESCAPED_UNICODE);
 ?>

@@ -78,7 +78,12 @@ if ($roleId > 0) {
     }
 }
 $empId = $currentUser['emp_id'] ?? '';
-error_log("Debug: User ID={$currentUser['id']} | section_id=" . ($currentUser['section_id'] ?? 'NULL') . " | department_id=" . ($currentUser['department_id'] ?? 'NULL') . " | overrideSections=" . implode(',', $overrideSections) . " | can_view_all_vehicles=" . ($permissions['can_view_all_vehicles'] ? 'true' : 'false'));
+
+// Only log debug info when debug=1 parameter is present
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    error_log("Debug: User ID={$currentUser['id']} | section_id=" . ($currentUser['section_id'] ?? 'NULL') . " | department_id=" . ($currentUser['department_id'] ?? 'NULL') . " | overrideSections=" . implode(',', $overrideSections) . " | can_view_all_vehicles=" . ($permissions['can_view_all_vehicles'] ? 'true' : 'false'));
+}
+
 // ------------------ Prevent user who already has picked vehicle ------------------
 $activeCheckStmt = $conn->prepare("
     SELECT vm.vehicle_code
@@ -96,7 +101,9 @@ $activeCheckStmt->bind_param('s', $empId);
 $activeCheckStmt->execute();
 $activeResult = $activeCheckStmt->get_result()->fetch_assoc();
 $activeCheckStmt->close();
-if ($activeResult) {
+
+// Only prevent if user doesn't have can_assign_vehicle permission
+if ($activeResult && !$permissions['can_assign_vehicle']) {
     echo json_encode(['success' => false, 'message' => 'لديك سيارة مستلمة (' . $activeResult['vehicle_code'] . '). أرجعها أولاً.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -110,6 +117,23 @@ if ($privateResult['cnt'] > 0) {
     echo json_encode(['success' => false, 'message' => 'لديك سيارة خاصة. لا يمكن القرعة.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+// ------------------ Get recently assigned vehicles (within 24 hours) ------------------
+$recentlyAssignedVehicles = [];
+$recentStmt = $conn->prepare("
+    SELECT DISTINCT vehicle_code
+    FROM vehicle_movements
+    WHERE performed_by = ?
+    AND operation_type = 'pickup'
+    AND movement_datetime >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+");
+$recentStmt->bind_param('s', $empId);
+$recentStmt->execute();
+$recentResult = $recentStmt->get_result();
+while ($row = $recentResult->fetch_assoc()) {
+    $recentlyAssignedVehicles[] = $row['vehicle_code'];
+}
+$recentStmt->close();
 // ------------------ Build WHERE filters for visible vehicles ------------------
 $where = [];
 $params = [];
@@ -232,6 +256,14 @@ if (!$canAssignThis) {
     echo json_encode(['success' => false, 'message' => 'لا توجد صلاحية لاستلام هذه السيارة.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+// ------------------ Check if vehicle was recently assigned (24 hours) ------------------
+$vehicleCode = $availableVehicle['vehicle_code'];
+if (in_array($vehicleCode, $recentlyAssignedVehicles) && !$permissions['can_assign_vehicle']) {
+    echo json_encode(['success' => false, 'message' => 'لا يمكن استلام نفس السيارة خلال 24 ساعة. السيارة: ' . $vehicleCode], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 // ------------------ Insert movement (pickup) ------------------
 $createdBy = $currentUser['emp_id'] ?? $empId;
 $notes = 'قرعة عشوائية - المستخدم: ' . $createdBy;
@@ -240,7 +272,6 @@ if ($insertStmt === false) {
     echo json_encode(['success' => false, 'message' => 'خطأ في تحضير تسجيل الحركة: ' . $conn->error], JSON_UNESCAPED_UNICODE);
     exit;
 }
-$vehicleCode = $availableVehicle['vehicle_code'];
 $insertStmt->bind_param('sssss', $vehicleCode, $empId, $notes, $createdBy, $createdBy);
 if ($insertStmt->execute()) {
     echo json_encode([

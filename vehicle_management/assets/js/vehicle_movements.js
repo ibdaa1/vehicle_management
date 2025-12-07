@@ -137,6 +137,7 @@
     userHasVehicleCheckedOut = r.json.user_has_vehicle_checked_out || false;
     userHasPrivateVehicle = r.json.user_has_private_vehicle || false;
     recentlyAssignedVehicles = r.json.recently_assigned_vehicles || [];
+    const showRaffleButton = r.json.show_raffle_button || permissions.can_self_assign_vehicle || permissions.can_assign_vehicle;
     
     // عرض تحذير إذا كان لدى المستخدم سيارة مستلمة
     if (userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
@@ -144,7 +145,7 @@
     }
     
     // عرض زر القرعة إذا كان المستخدم مؤهلاً
-    if (!userHasVehicleCheckedOut && !userHasPrivateVehicle && permissions.can_self_assign_vehicle) {
+    if (!userHasVehicleCheckedOut && !userHasPrivateVehicle && showRaffleButton) {
       showRandomAssignmentButton();
     }
     
@@ -208,10 +209,12 @@
                 'هاتف السائق: ' + r.json.vehicle.driver_phone);
           loadVehicles(); // إعادة تحميل القائمة
         } else {
-          alert('فشل السحب العشوائي: ' + r.json.message);
+          // Display error message from JSON response
+          alert('فشل السحب العشوائي: ' + (r.json.message || 'خطأ غير معروف'));
         }
       } else {
-        alert('خطأ في الاتصال بالخادم');
+        const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال بالخادم';
+        alert('خطأ في الاتصال بالخادم: ' + errorMsg);
       }
     });
     

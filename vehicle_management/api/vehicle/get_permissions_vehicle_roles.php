@@ -84,7 +84,11 @@ if ($roleId > 0) {
     }
 }
 $empId = $currentUser['emp_id'] ?? '';
-error_log("Debug Vehicle Permissions: User ID={$currentUser['id']} | Role ID={$roleId} | Permissions: " . json_encode($permissions) . " | Override Sections: " . implode(',', $overrideSections));
+
+// Only log debug info when debug=1 parameter is present
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    error_log("Debug Vehicle Permissions: User ID={$currentUser['id']} | Role ID={$roleId} | Permissions: " . json_encode($permissions) . " | Override Sections: " . implode(',', $overrideSections));
+}
 
 // ------------------ Check for private vehicle (للظهور: إذا كان لديه سيارة خاصة، أظهرها) ------------------
 $hasPrivateVehicle = false;
@@ -145,7 +149,10 @@ $showRaffleButton = $permissions['can_assign_vehicle'] || $permissions['can_self
 // can_view_raffle_vehicles: للعرض في وضع القرعة (بناءً على visibility rules)
 $canViewRaffleVehicles = !empty($currentUser['section_id']) || $permissions['can_view_department_vehicles'] || !empty($overrideSections) || $permissions['can_view_all_vehicles'];
 
-error_log("Debug Vehicle Flags: showRaffleButton={$showRaffleButton} | canViewRaffleVehicles={$canViewRaffleVehicles} | Has Private={$hasPrivateVehicle} | Has Checked Out={$hasCheckedOutVehicle}");
+// Only log debug info when debug=1 parameter is present
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    error_log("Debug Vehicle Flags: showRaffleButton={$showRaffleButton} | canViewRaffleVehicles={$canViewRaffleVehicles} | Has Private={$hasPrivateVehicle} | Has Checked Out={$hasCheckedOutVehicle}");
+}
 
 // ------------------ Response (مخصص للعرض والقرعة) ------------------
 echo json_encode([
