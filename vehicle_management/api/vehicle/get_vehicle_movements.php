@@ -225,45 +225,48 @@ if ($permissions['can_view_all_vehicles'] || $permissions['can_self_assign_vehic
     // No specific visibility restriction needed
 } else {
     // Build visibility based on section, department, and override sections
+    // IMPORTANT: Regular users (Inspector) should NOT see private vehicles in the main list
+    // Private vehicles are not part of the lottery system
     
-    // 1. Default: User sees vehicles in their section_id
+    // 1. Default: User sees SHIFT vehicles in their section_id
+    // Users without section_id will see NO vehicles
     if (!empty($currentUser['section_id'])) {
-        $visibilityClauses[] = "v.section_id = ?";
+        $visibilityClauses[] = "(v.section_id = ? AND v.vehicle_mode = 'shift')";
         $params[] = intval($currentUser['section_id']);
         $types .= 'i';
     }
     
-    // 2. If can_view_department_vehicles, add department vehicles
+    // 2. If can_view_department_vehicles, add department SHIFT vehicles
     if ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
-        $visibilityClauses[] = "v.department_id = ?";
+        $visibilityClauses[] = "(v.department_id = ? AND v.vehicle_mode = 'shift')";
         $params[] = intval($currentUser['department_id']);
         $types .= 'i';
     }
     
-    // 3. If can_override_department, add override sections from description
+    // 3. If can_override_department, add override sections SHIFT vehicles
     if (!empty($overrideSections)) {
         $placeholders = implode(',', array_fill(0, count($overrideSections), '?'));
-        $visibilityClauses[] = "v.section_id IN ($placeholders)";
+        $visibilityClauses[] = "(v.section_id IN ($placeholders) AND v.vehicle_mode = 'shift')";
         foreach ($overrideSections as $sec) {
             $params[] = intval($sec);
             $types .= 'i';
         }
     }
     
-    // 4. Private vehicles: only visible to owner OR users with can_override_department
+    // 4. Admin users with can_override_department can see all private vehicles
     if ($permissions['can_override_department']) {
-        // Users with can_override_department can see all private vehicles
         $visibilityClauses[] = "v.vehicle_mode = 'private'";
-    } else {
-        // Regular users only see their own private vehicles
-        $visibilityClauses[] = "(v.vehicle_mode = 'private' AND v.emp_id = ?)";
-        $params[] = $currentEmpId;
-        $types .= 's';
     }
+    // Note: Regular Inspector users do NOT see private vehicles in main list
+    // Private vehicles are handled separately (not in lottery system)
     
     // Add visibility clause to WHERE
     if (!empty($visibilityClauses)) {
         $where[] = '(' . implode(' OR ', $visibilityClauses) . ')';
+    } else {
+        // If no visibility clauses, user sees nothing
+        // This prevents users with null section_id from seeing any vehicles
+        $where[] = "1=0";  // Always false - no vehicles visible
     }
 }
 // Additional filters
@@ -414,10 +417,14 @@ while ($r = $result->fetch_assoc()) {
                     $canReturn = $permissions['can_receive_vehicle'];
                 }
             } else {
-                $availabilityStatus = 'available';
-                // للمركبات الخاصة، فقط المالك يمكنه استلامها
-                if (!$userHasVehicleCheckedOut) {
+                $availabilityStatus = 'private';
+                // Private vehicles should NOT be directly pickable by Inspector role
+                // They are not part of the shift/lottery system
+                // Only elevated permissions can manage private vehicles
+                if ($hasElevatedPermissions) {
                     $canPickup = true;
+                } else {
+                    $canPickup = false;  // Inspector cannot pickup even their own private vehicle via this interface
                 }
             }
         } else {
