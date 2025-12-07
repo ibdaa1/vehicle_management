@@ -382,6 +382,11 @@ $result = $stmt->get_result();
 // ----------------------------------------------------
 // معالجة النتائج وإخراج JSON
 // ----------------------------------------------------
+// Check if user has elevated permissions (calculated once for all vehicles)
+$hasElevatedPermissions = $permissions['can_self_assign_vehicle'] 
+                        || $permissions['can_view_all_vehicles'] 
+                        || $permissions['can_override_department'];
+
 $vehicles = [];
 while ($r = $result->fetch_assoc()) {
     $lastOp = $r['last_operation'];
@@ -437,27 +442,11 @@ while ($r = $result->fetch_assoc()) {
             // NEW LOGIC: Shift vehicles can only be picked up via random assignment for regular users
             // Only users with can_self_assign_vehicle or admin permissions can directly pickup
             // Regular users (can_assign_vehicle + can_receive_vehicle only) must use random button
-            
-            // Check if user has elevated permissions (not just can_assign_vehicle)
-            $hasElevatedPermissions = $permissions['can_self_assign_vehicle'] 
-                                    || $permissions['can_view_all_vehicles'] 
-                                    || $permissions['can_override_department'];
-            
-            if ($hasElevatedPermissions) {
-                // Admin users can directly pickup
-                $canPickup = true;
-            } else {
-                // Regular users (Inspector role) cannot directly pickup shift vehicles
-                // They must use the random assignment button
-                $canPickup = false;
-            }
+            $canPickup = $hasElevatedPermissions;
         }
     }
     // زر فتح النموذج - فقط للمستخدمين الذين لديهم صلاحيات إدارية
     // المستخدمون العاديون (Inspector) لا يمكنهم فتح النموذج
-    $hasElevatedPermissions = $permissions['can_self_assign_vehicle'] 
-                            || $permissions['can_view_all_vehicles'] 
-                            || $permissions['can_override_department'];
     if ($hasElevatedPermissions) {
         $canOpenForm = true;
     }
