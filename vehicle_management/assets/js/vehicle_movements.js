@@ -214,7 +214,7 @@
         }
       } else {
         const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال بالخادم';
-        alert('خطأ في الاتصال بالخادم: ' + errorMsg);
+        alert(errorMsg.includes('خطأ') ? errorMsg : 'خطأ في الاتصال بالخادم: ' + errorMsg);
       }
     });
     
