@@ -206,17 +206,23 @@ $params = [];
 $types = '';
 
 // Permission-based filtering with proper visibility rules:
-// Default: User can see vehicles in their section_id (minimum)
-// If can_view_department_vehicles: Add department vehicles
-// If can_override_department + description has sections: Add those sections
-// If can_view_all_vehicles: See all operational vehicles
-// Private vehicles: Only visible to owner (emp_id)
+// CRITICAL RULES:
+// 1. Only operational vehicles visible by default (status='operational')
+// 2. Users with can_view_all_vehicles, can_self_assign_vehicle, or can_override_department can see all statuses
+// 3. Private vehicles only visible to: owner (emp_id match) OR users with special permissions above
+// 4. Regular users (can_assign_vehicle only) see only their section's operational vehicles
 
 $visibilityClauses = [];
+$canViewAllStatuses = $permissions['can_view_all_vehicles'] || $permissions['can_self_assign_vehicle'] || $permissions['can_override_department'];
 
-if ($permissions['can_view_all_vehicles']) {
-    // يمكنه رؤية جميع المركبات التشغيلية - no specific visibility restriction
-    // We'll still add status filter separately
+// Status filter: Only operational vehicles unless user has special permissions
+if (!$canViewAllStatuses) {
+    $where[] = "v.status = 'operational'";
+}
+
+if ($permissions['can_view_all_vehicles'] || $permissions['can_self_assign_vehicle']) {
+    // Users with these permissions can see all vehicles (including all statuses and private)
+    // No specific visibility restriction needed
 } else {
     // Build visibility based on section, department, and override sections
     
@@ -244,10 +250,16 @@ if ($permissions['can_view_all_vehicles']) {
         }
     }
     
-    // 4. Always include private vehicles assigned to current user
-    $visibilityClauses[] = "(v.vehicle_mode = 'private' AND v.emp_id = ?)";
-    $params[] = $currentEmpId;
-    $types .= 's';
+    // 4. Private vehicles: only visible to owner OR users with can_override_department
+    if ($permissions['can_override_department']) {
+        // Users with can_override_department can see all private vehicles
+        $visibilityClauses[] = "v.vehicle_mode = 'private'";
+    } else {
+        // Regular users only see their own private vehicles
+        $visibilityClauses[] = "(v.vehicle_mode = 'private' AND v.emp_id = ?)";
+        $params[] = $currentEmpId;
+        $types .= 's';
+    }
     
     // Add visibility clause to WHERE
     if (!empty($visibilityClauses)) {
