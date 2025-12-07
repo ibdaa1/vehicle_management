@@ -48,24 +48,33 @@ if (!isset($conn) || !($conn instanceof mysqli)) {
     exit;
 }
 // ----------------------------------------------------
-// تصحيح قراءة الجلسة والمصادقة
+// تصحيح قراءة الجلسة والمصادقة - تحديث دائم من قاعدة البيانات
 // ----------------------------------------------------
 $currentUser = null;
+$userId = null;
+
+// Get user ID from session
 if (!empty($_SESSION['user']) && is_array($_SESSION['user']) && !empty($_SESSION['user']['id'])) {
-    $currentUser = $_SESSION['user'];
+    $userId = (int)$_SESSION['user']['id'];
 } elseif (!empty($_SESSION['user_id'])) {
-    $uid = (int)$_SESSION['user_id'];
+    $userId = (int)$_SESSION['user_id'];
+}
+
+// Always refresh user data from database to ensure section_id and other fields are up-to-date
+if ($userId > 0) {
     $stmt = $conn->prepare("SELECT id, role_id, department_id, section_id, division_id, emp_id, username FROM users WHERE id = ? LIMIT 1");
     if ($stmt) {
-        $stmt->bind_param('i', $uid);
+        $stmt->bind_param('i', $userId);
         $stmt->execute();
         $currentUser = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         if ($currentUser) {
+            // Update session with fresh data
             $_SESSION['user'] = $currentUser;
         }
     }
 }
+
 if (!$currentUser || empty($currentUser['id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
