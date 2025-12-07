@@ -282,10 +282,17 @@ if ($filterDivision !== '') {
     $params[] = intval($filterDivision);
     $types .= 'i';
 }
+// Status filter: Only allow filtering if user has permission to see all statuses
 if ($filterStatus !== '') {
-    $where[] = "v.status = ?";
-    $params[] = $filterStatus;
-    $types .= 's';
+    if ($canViewAllStatuses) {
+        // User can filter by any status
+        $where[] = "v.status = ?";
+        $params[] = $filterStatus;
+        $types .= 's';
+    } else {
+        // User can only filter operational vehicles (already enforced above)
+        // Ignore the filter parameter for security
+    }
 }
 // Search filter
 if ($q !== '') {
