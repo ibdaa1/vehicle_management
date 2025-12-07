@@ -49,46 +49,53 @@ if (!$currentUser || empty($currentUser['id'])) {
     exit;
 }
 
-// ------------------ Load role permissions & override sections ------------------
+// ------------------ Load role and build permissions (NEW role-based system) ------------------
 $roleId = intval($currentUser['role_id'] ?? 0);
-$permissions = [
-    'can_view_all_vehicles' => false, // عرض كل السيارات بدون قيود
-    'can_view_department_vehicles' => false, // عرض سيارات الإدارة (بناءً على department_id)
-    'can_assign_vehicle' => false, // تسجيل (pickup) للمركبات باسمه فقط (نفس section_id)
-    'can_receive_vehicle' => false, // استرجاع (return) لنفسه فقط
-    'can_self_assign_vehicle' => false, // تسجيل واسترجاع للجميع بدون قيود
-    'can_override_department' => false, // التعامل مع أقسام محددة من description (section_id مثل 1+2+3)
-    'allow_registration' => false // فتح النموذج (add_vehicle_movements.html)
-];
+$roleName = '';
+$roleDescription = '';
 $overrideSections = [];
+
 if ($roleId > 0) {
-    $stmt = $conn->prepare("SELECT * FROM roles WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT name_en, description, allow_registration FROM roles WHERE id = ? LIMIT 1");
     if ($stmt) {
         $stmt->bind_param('i', $roleId);
         $stmt->execute();
         $r = $stmt->get_result()->fetch_assoc();
         if ($r) {
-            $permissions['can_view_all_vehicles'] = (bool)($r['can_view_all_vehicles'] ?? 0);
-            $permissions['can_view_department_vehicles'] = (bool)($r['can_view_department_vehicles'] ?? 0);
-            $permissions['can_assign_vehicle'] = (bool)($r['can_assign_vehicle'] ?? 0);
-            $permissions['can_receive_vehicle'] = (bool)($r['can_receive_vehicle'] ?? 0);
-            $permissions['can_self_assign_vehicle'] = (bool)($r['can_self_assign_vehicle'] ?? 0);
-            $permissions['can_override_department'] = (bool)($r['can_override_department'] ?? 0);
-            $permissions['allow_registration'] = (bool)($r['allow_registration'] ?? 0);
-            if ($permissions['can_override_department'] && !empty($r['description'])) {
-                // description format: "1+2+5" للأقسام (section_id)
-                $parts = explode('+', $r['description']);
+            $roleName = strtolower(trim($r['name_en'] ?? ''));
+            $roleDescription = trim($r['description'] ?? '');
+            $allowRegistration = (bool)($r['allow_registration'] ?? 0);
+            
+            // Parse override sections for custom_user from description (format: "1+2+5")
+            if ($roleName === 'custom_user' && !empty($roleDescription)) {
+                $parts = explode('+', $roleDescription);
                 $overrideSections = array_values(array_filter(array_map('intval', $parts), function($v) { return $v > 0; }));
             }
         }
         $stmt->close();
     }
 }
+
+// Determine role type
+$adminRoles = ['super_admin', 'admin', 'shift_supervisor', 'maintenance_supervisor'];
+$isAdminRole = in_array($roleName, $adminRoles);
+$isCustomUser = ($roleName === 'custom_user');
+$isRegularUser = ($roleName === 'regular_user');
+
+// Build permissions based on role type
+$permissions = [
+    'is_admin' => $isAdminRole,
+    'is_custom_user' => $isCustomUser,
+    'is_regular_user' => $isRegularUser,
+    'role_name' => $roleName,
+    'allow_registration' => $allowRegistration ?? false
+];
+
 $empId = $currentUser['emp_id'] ?? '';
 
 // Only log debug info when debug=1 parameter is present
 if (isset($_GET['debug']) && $_GET['debug'] === '1') {
-    error_log("Debug Vehicle Permissions: User ID={$currentUser['id']} | Role ID={$roleId} | Permissions: " . json_encode($permissions) . " | Override Sections: " . implode(',', $overrideSections));
+    error_log("Debug Vehicle Permissions: User ID={$currentUser['id']} | Role={$roleName} | Admin={$isAdminRole} | Custom={$isCustomUser} | Regular={$isRegularUser} | Override Sections: " . implode(',', $overrideSections));
 }
 
 // ------------------ Check for private vehicle (للظهور: إذا كان لديه سيارة خاصة، أظهرها) ------------------
@@ -145,10 +152,10 @@ if ($checkoutResult) {
 $checkoutStmt->close();
 
 // ------------------ Additional flags for display and raffle ------------------
-// show_raffle_button: للمفتش أو من لديه can_assign_vehicle (للقرعة العشوائية)
-$showRaffleButton = $permissions['can_assign_vehicle'] || $permissions['can_self_assign_vehicle'];
-// can_view_raffle_vehicles: للعرض في وضع القرعة (بناءً على visibility rules)
-$canViewRaffleVehicles = !empty($currentUser['section_id']) || $permissions['can_view_department_vehicles'] || !empty($overrideSections) || $permissions['can_view_all_vehicles'];
+// show_raffle_button: regular_user and custom_user use random assignment
+$showRaffleButton = ($isRegularUser || $isCustomUser);
+// can_view_raffle_vehicles: Check if user can see any vehicles for raffle
+$canViewRaffleVehicles = $isAdminRole || (!empty($currentUser['section_id']) && $isRegularUser) || (!empty($overrideSections) && $isCustomUser);
 
 // Only log debug info when debug=1 parameter is present
 if (isset($_GET['debug']) && $_GET['debug'] === '1') {
