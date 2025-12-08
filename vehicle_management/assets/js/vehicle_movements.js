@@ -16,10 +16,13 @@
   const sectionFilter = document.getElementById('sectionFilter');
   const divisionFilter = document.getElementById('divisionFilter');
   const statusFilter = document.getElementById('statusFilter');
+  const checkoutStatusFilter = document.getElementById('checkoutStatusFilter');
   const vehiclesContainer = document.getElementById('vehiclesContainer');
   const loadingMsg = document.getElementById('loadingMsg');
   const loggedUserEl = document.getElementById('loggedUser');
   const orgNameEl = document.getElementById('orgName');
+  const returnVehicleBtn = document.getElementById('returnVehicleBtn');
+  const vehicleCountEl = document.getElementById('vehicleCount');
   
   // State
   let currentSession = null;
@@ -108,6 +111,7 @@
     const secId = sectionFilter?.value || '';
     const divId = divisionFilter?.value || '';
     const status = statusFilter?.value || '';
+    const checkoutStatus = checkoutStatusFilter?.value || '';
     
     if (loadingMsg) loadingMsg.style.display = 'block';
     if (vehiclesContainer) vehiclesContainer.innerHTML = '';
@@ -132,12 +136,33 @@
       return;
     }
     
-    const vehicles = r.json.vehicles || [];
+    let vehicles = r.json.vehicles || [];
     permissions = r.json.permissions || {};
     userHasVehicleCheckedOut = r.json.user_has_vehicle_checked_out || false;
     userHasPrivateVehicle = r.json.user_has_private_vehicle || false;
     recentlyAssignedVehicles = r.json.recently_assigned_vehicles || [];
     const showRaffleButton = r.json.show_raffle_button || permissions.can_self_assign_vehicle || permissions.can_assign_vehicle;
+    
+    // Apply client-side checkout status filter
+    if (checkoutStatus === 'available') {
+      vehicles = vehicles.filter(v => v.availability_status === 'available' || !v.is_currently_checked_out);
+    } else if (checkoutStatus === 'checked_out') {
+      vehicles = vehicles.filter(v => v.is_currently_checked_out);
+    }
+    
+    // Update vehicle count
+    if (vehicleCountEl) {
+      vehicleCountEl.textContent = `عدد المركبات: ${vehicles.length}`;
+    }
+    
+    // Show return button for admins only (is_admin = true or permissions indicate admin)
+    if (returnVehicleBtn) {
+      if (permissions.is_admin || permissions.can_self_assign_vehicle) {
+        returnVehicleBtn.style.display = 'inline-block';
+      } else {
+        returnVehicleBtn.style.display = 'none';
+      }
+    }
     
     // عرض تحذير إذا كان لدى المستخدم سيارة مستلمة
     if (userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
@@ -308,24 +333,9 @@
         
         html += `<div class="vehicle-status-badge ${statusBadgeClass}">${statusText}</div>`;
         
-        html += '<div class="vehicle-actions">';
+        // لا توجد أزرار في البطاقات - العرض فقط
+        // الأزرار تم إزالتها حسب طلب المستخدم
         
-        // تحديد الأزرار المتاحة
-        if (v.can_pickup && !userHasVehicleCheckedOut) {
-          html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> استلام</button>`;
-        } else if (v.availability_status === 'available' && userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
-          html += `<button class="btn btn-disabled" disabled><span>🚫</span> لديك سيارة مستلمة</button>`;
-        }
-        
-        if (v.can_return) {
-          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> إرجاع</button>`;
-        }
-        
-        if (v.can_open_form) {
-          html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> نموذج حركة</button>`;
-        }
-        
-        html += '</div>';
         html += '</div>';
       });
       
@@ -411,6 +421,13 @@
     await loadReferences();
     await loadVehicles();
     
+    // Event listener for return vehicle button
+    if (returnVehicleBtn) {
+      returnVehicleBtn.addEventListener('click', () => {
+        window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank', 'width=800,height=600');
+      });
+    }
+    
     // Event listeners
     if (searchInput) searchInput.addEventListener('input', debounce(() => loadVehicles(), 500));
     
@@ -431,6 +448,7 @@
     
     if (divisionFilter) divisionFilter.addEventListener('change', () => loadVehicles());
     if (statusFilter) statusFilter.addEventListener('change', () => loadVehicles());
+    if (checkoutStatusFilter) checkoutStatusFilter.addEventListener('change', () => loadVehicles());
   }
   
   // Debounce helper
