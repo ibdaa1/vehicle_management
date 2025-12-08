@@ -81,17 +81,6 @@
         </div>
       </div>
      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <button id="returnVehicleBtn" class="btn" style="background-color: #dc3545; color: white; display: none;">
-            ↩️ إرجاع مركبة
-          </button>
-          <div id="vehicleCount" style="font-weight: bold; color: #666; padding: 8px 12px; background: #f0f0f0; border-radius: 4px;">
-            عدد المركبات: 0
-          </div>
-        </div>
-      </div>
-      
       <div class="filter-controls">
         <input type="text" id="searchInput" class="form-control" placeholder="بحث (رقم المركبة، السائق، النوع...)" />
        
@@ -111,11 +100,6 @@
             <option value="operational">قيد التشغيل</option>
             <option value="maintenance">صيانة</option>
             <option value="out_of_service">خارج الخدمة</option>
-        </select>
-        <select id="checkoutStatusFilter" class="form-control">
-            <option value="">حالة الاستلام: الكل</option>
-            <option value="available">متاحة</option>
-            <option value="checked_out">مستلمة</option>
         </select>
       </div>
       <div id="loadingMsg" style="text-align: center; padding: 20px; display: none;">
