@@ -89,7 +89,11 @@ $permissions = [
     'is_custom_user' => $isCustomUser,
     'is_regular_user' => $isRegularUser,
     'role_name' => $roleName,
-    'allow_registration' => $allowRegistration ?? false
+    'allow_registration' => $allowRegistration ?? false,
+    // Add boolean permission fields for frontend compatibility
+    'can_assign_vehicle' => ($isRegularUser || $isCustomUser),
+    'can_self_assign_vehicle' => $isAdminRole,
+    'can_override_department' => $isCustomUser
 ];
 
 $empId = $currentUser['emp_id'] ?? '';
