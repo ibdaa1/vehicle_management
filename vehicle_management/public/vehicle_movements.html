@@ -81,6 +81,19 @@
         </div>
       </div>
      
+      <!-- Action buttons at top -->
+      <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+        <button id="randomAssignmentBtn" class="btn btn-primary" style="display: none; background-color: #4F46E5; padding: 10px 20px; font-size: 1.1rem;">
+          🎲 سحب عشوائي لسيارة
+        </button>
+        <button id="adminReturnBtn" class="btn btn-secondary" style="display: none; background-color: #059669; padding: 10px 20px;">
+          ↩️ إرجاع مركبة
+        </button>
+        <div id="vehicleCount" style="margin-right: auto; font-weight: bold; font-size: 1.1rem; color: #333;">
+          عدد المركبات: 0
+        </div>
+      </div>
+      
       <div class="filter-controls">
         <input type="text" id="searchInput" class="form-control" placeholder="بحث (رقم المركبة، السائق، النوع...)" />
        
@@ -95,11 +108,30 @@
         <select id="divisionFilter" class="form-control">
           <option value="">جميع الشعب</option>
         </select>
+        
         <select id="statusFilter" class="form-control">
             <option value="">جميع الحالات التشغيلية</option>
             <option value="operational">قيد التشغيل</option>
             <option value="maintenance">صيانة</option>
             <option value="out_of_service">خارج الخدمة</option>
+        </select>
+        
+        <select id="checkoutStatusFilter" class="form-control">
+            <option value="">حالة الاستلام: الكل</option>
+            <option value="available">متاحة</option>
+            <option value="checked_out">مستلمة</option>
+        </select>
+        
+        <select id="vehicleTypeFilter" class="form-control">
+            <option value="">نوع المركبة: الكل</option>
+            <option value="shift">ورديات</option>
+            <option value="private">خاصة</option>
+        </select>
+        
+        <select id="movementTypeFilter" class="form-control">
+            <option value="">نوع الحركة: الكل</option>
+            <option value="pickup">استلام</option>
+            <option value="return">إرجاع</option>
         </select>
       </div>
       <div id="loadingMsg" style="text-align: center; padding: 20px; display: none;">
