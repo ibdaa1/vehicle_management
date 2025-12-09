@@ -53,8 +53,24 @@
   }
   
   // دالة الترجمة: تُرجع النص المقابل للمفتاح، أو المفتاح نفسه إذا لم يُوجد
+  // تدعم المسارات المتداخلة مثل 'page.title' أو 'labels.type'
   function t(key, fallback = null) {
-    return translations[key] || fallback || key;
+    if (!key) return fallback || '';
+    
+    // دعم المسارات المتداخلة باستخدام النقطة
+    const keys = key.split('.');
+    let value = translations;
+    
+    for (const k of keys) {
+      if (value && typeof value === 'object' && k in value) {
+        value = value[k];
+      } else {
+        // المفتاح غير موجود، استخدم fallback
+        return fallback || key;
+      }
+    }
+    
+    return value || fallback || key;
   }
   
   // Fetch helper
@@ -92,7 +108,7 @@
     if (!r.ok || !r.json || !r.json.success) {
       const errorMsg = r.json?.message || r.text || 'Unknown session error';
       console.error('Session check failed:', errorMsg);
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('not_authenticated', 'غير مصرح')}</h3><p>${t('please_login', 'يرجى')} <a href="/vehicle_management/public/login.html">${t('login', 'تسجيل الدخول')}</a></p><p>${t('details', 'تفاصيل')}: ${errorMsg}</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('auth.unauthorized', 'غير مصرح')}</h3><p>${t('auth.login_prompt', 'يرجى')} <a href="/vehicle_management/public/login.html">${t('auth.login', 'تسجيل الدخول')}</a></p><p>${t('labels.details', 'تفاصيل')}: ${errorMsg}</p></div>`;
       return null;
     }
     currentSession = r.json;
@@ -121,22 +137,22 @@
   function updatePageTexts() {
     // تحديث عنوان المستند
     const docTitle = document.getElementById('docTitle');
-    if (docTitle) docTitle.textContent = t('doc_title', userLang === 'ar' ? 'حركة المركبات (استلام وإرجاع)' : 'Vehicle Movements (Pickup & Return)');
+    if (docTitle) docTitle.textContent = t('page.title', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Vehicle Movements Dashboard');
     
     // تحديث العناوين
     const pageTitle = document.getElementById('pageTitle');
     const pageSubtitle = document.getElementById('pageSubtitle');
-    if (pageTitle) pageTitle.textContent = t('page_header', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Quick Vehicle Control Panel');
-    if (pageSubtitle) pageSubtitle.textContent = t('page_header_subtitle', userLang === 'ar' ? 'استلام وإرجاع المركبات المتاحة' : 'Pick up and return available vehicles');
+    if (pageTitle) pageTitle.textContent = t('page.title', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Vehicle Movements Dashboard');
+    if (pageSubtitle) pageSubtitle.textContent = t('page.subtitle', userLang === 'ar' ? 'استلام وإرجاع المركبات المتاحة' : 'Manage vehicle pickup and return operations');
     
     // تحديث placeholder للبحث
-    if (searchInput) searchInput.placeholder = t('search_input_placeholder', userLang === 'ar' ? 'بحث (رقم المركبة، السائق، النوع...)' : 'Search (vehicle code, driver, type...)');
+    if (searchInput) searchInput.placeholder = t('filter.search_placeholder', userLang === 'ar' ? 'بحث (رقم المركبة، السائق، النوع...)' : 'Search (vehicle code, driver, type...)');
     
     // تحديث خيارات الفلاتر الافتراضية
-    const allStatusText = t('all_statuses', userLang === 'ar' ? 'جميع الحالات التشغيلية' : 'All Operational Statuses');
-    const operationalText = t('status_operational', userLang === 'ar' ? 'قيد التشغيل' : 'Operational');
-    const maintenanceText = t('status_maintenance', userLang === 'ar' ? 'صيانة' : 'Maintenance');
-    const outOfServiceText = t('status_out_of_service', userLang === 'ar' ? 'خارج الخدمة' : 'Out of Service');
+    const allStatusText = t('filter.all_operational_status', userLang === 'ar' ? 'جميع الحالات التشغيلية' : 'All Operational Statuses');
+    const operationalText = t('status.operational', userLang === 'ar' ? 'قيد التشغيل' : 'Operational');
+    const maintenanceText = t('status.maintenance', userLang === 'ar' ? 'صيانة' : 'Maintenance');
+    const outOfServiceText = t('status.out_of_service', userLang === 'ar' ? 'خارج الخدمة' : 'Out of Service');
     
     if (statusFilter && statusFilter.options.length > 0) {
       statusFilter.options[0].textContent = allStatusText;
@@ -153,7 +169,7 @@
       references.departments = res.json.departments || [];
       references.sections = res.json.sections || [];
       references.divisions = res.json.divisions || [];
-      populateFilter(departmentFilter, references.departments, t('all_departments', 'جميع الإدارات'));
+      populateFilter(departmentFilter, references.departments, t('filter.all_departments', 'جميع الإدارات'));
       if (statusFilter) statusFilter.value = '';
     } else {
       console.error('References load failed');
@@ -186,7 +202,7 @@
     
     if (loadingMsg) {
       loadingMsg.style.display = 'block';
-      loadingMsg.textContent = t('loading', 'جاري التحميل...');
+      loadingMsg.textContent = t('messages.loading_vehicles', 'جاري التحميل...');
     }
     if (vehiclesContainer) vehiclesContainer.innerHTML = '';
     
@@ -205,9 +221,9 @@
     if (loadingMsg) loadingMsg.style.display = 'none';
     
     if (!r.ok || !r.json || !r.json.success) {
-      const errorMsg = r.json?.message || r.text || t('connection_error', 'خطأ في الاتصال');
+      const errorMsg = r.json?.message || r.text || t('errors.server_unreachable', 'خطأ في الاتصال');
       console.error('Load vehicles error:', { status: r.status, text: r.text?.substring(0, 200), json: r.json });
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('load_failed', 'فشل التحميل')}</h3><p>${errorMsg}</p><p>${t('check_console', 'تحقق من Console للتفاصيل.')}</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('errors.load_failed', 'فشل التحميل')}</h3><p>${errorMsg}</p><p>${t('empty.check_console', 'تحقق من Console للتفاصيل.')}</p></div>`;
       return;
     }
     
@@ -228,7 +244,7 @@
     }
     
     if (vehicles.length === 0) {
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('no_vehicles', 'لا توجد مركبات')}</h3><p>${t('check_filters', 'تحقق من الفلاتر أو الصلاحيات.')}</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('empty.no_vehicles', 'لا توجد مركبات')}</h3><p>${t('empty.check_filters', 'تحقق من الفلاتر أو الصلاحيات.')}</p></div>`;
       return;
     }
     
@@ -246,7 +262,7 @@
     warningDiv.className = 'warning-message';
     warningDiv.innerHTML = `
       <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 12px; margin: 15px 0; color: #92400e;">
-        <strong>⚠️ ${t('warning', 'تنبيه')}:</strong> ${t('vehicle_checked_out_warning', 'لديك سيارة مستلمة حالياً. يجب إرجاعها قبل استلام سيارة جديدة.')}
+        <strong>⚠️ ${t('warnings.attention', 'تنبيه')}:</strong> ${t('warnings.has_active_vehicle', 'لديك سيارة مستلمة حالياً. يجب إرجاعها قبل استلام سيارة جديدة.')}
       </div>
     `;
     
@@ -264,7 +280,7 @@
     
     const randomButton = document.createElement('button');
     randomButton.className = 'btn btn-random random-assignment-btn';
-    randomButton.innerHTML = '🎲 ' + t('random_assignment', 'سحب عشوائي لسيارة');
+    randomButton.innerHTML = '🎲 ' + t('actions.random_assignment', 'سحب عشوائي لسيارة');
     randomButton.style.backgroundColor = '#8B5CF6';
     randomButton.style.color = 'white';
     randomButton.style.border = 'none';
@@ -275,26 +291,26 @@
     randomButton.style.fontWeight = 'bold';
     
     randomButton.addEventListener('click', async function() {
-      if (!confirm(t('random_assignment_confirm', 'هل تريد سحب سيارة عشوائية؟ سيتم تعيين سيارة لك بشكل عشوائي.'))) return;
+      if (!confirm(t('confirm.random_assignment', 'هل تريد سحب سيارة عشوائية؟ سيتم تعيين سيارة لك بشكل عشوائي.'))) return;
       
       // إضافة معامل lang إلى API_RANDOM_ASSIGNMENT
       const r = await fetchJson(`${API_RANDOM_ASSIGNMENT}?lang=${userLang}`, { method: 'POST' });
       if (r.ok && r.json) {
         if (r.json.success) {
           // عرض الرسالة من السيرفر (message_en أو message_ar حسب اللغة، أو message fallback)
-          const msg = r.json.message || t('assignment_success', 'تم التعيين بنجاح');
+          const msg = r.json.message || t('messages.pickup_success', 'تم التعيين بنجاح');
           const vehicleInfo = r.json.vehicle || {};
-          alert(msg + '\n\n' + t('vehicle_details', 'تفاصيل السيارة:') + '\n' +
-                t('vehicle_code', 'رمز المركبة') + ': ' + (vehicleInfo.code || '') + '\n' +
-                t('vehicle_type', 'نوع المركبة') + ': ' + (vehicleInfo.type || '') + '\n' +
-                t('driver_name', 'اسم السائق') + ': ' + (vehicleInfo.driver_name || '') + '\n' +
-                t('driver_phone', 'هاتف السائق') + ': ' + (vehicleInfo.driver_phone || ''));
+          alert(msg + '\n\n' + t('labels.vehicle_details', 'تفاصيل السيارة:') + '\n' +
+                t('labels.vehicle_code', 'رمز المركبة') + ': ' + (vehicleInfo.code || '') + '\n' +
+                t('label.type', 'نوع المركبة') + ': ' + (vehicleInfo.type || '') + '\n' +
+                t('label.driver', 'اسم السائق') + ': ' + (vehicleInfo.driver_name || '') + '\n' +
+                t('label.phone', 'هاتف السائق') + ': ' + (vehicleInfo.driver_phone || ''));
           loadVehicles(); // إعادة تحميل القائمة
         } else {
-          alert(t('assignment_failed', 'فشل السحب العشوائي') + ': ' + (r.json.message || ''));
+          alert(t('errors.random_failed', 'فشل السحب العشوائي') + ': ' + (r.json.message || ''));
         }
       } else {
-        alert(t('connection_error', 'خطأ في الاتصال بالخادم'));
+        alert(t('errors.server_unreachable', 'خطأ في الاتصال بالخادم'));
       }
     });
     
@@ -307,7 +323,7 @@
   // Translate vehicle status
   function translateVehicleStatus(status) {
     // استخدام دالة الترجمة بدلاً من الـ hardcoded map
-    const key = `status_${status}`;
+    const key = `status.${status}`;
     const fallbackMap = {
       operational: 'قيد التشغيل',
       maintenance: 'صيانة',
@@ -318,7 +334,7 @@
   
   // Translate vehicle mode
   function translateVehicleMode(mode) {
-    const key = `mode_${mode}`;
+    const key = `mode.${mode}`;
     const fallbackMap = {
       private: userLang === 'ar' ? 'خاصة' : 'Private',
       shift: userLang === 'ar' ? 'ورديات' : 'Shift'
@@ -328,7 +344,7 @@
   
   // Translate availability status
   function translateAvailabilityStatus(status) {
-    const key = `availability_${status}`;
+    const key = `availability.${status}`;
     const fallbackMap = {
       'private_unavailable': userLang === 'ar' ? 'خاصة - غير متاحة' : 'Private - Unavailable',
       'available': userLang === 'ar' ? 'متاحة للاستلام' : 'Available',
@@ -366,15 +382,15 @@
         
         // استخدام أسماء الحقول المترجمة من السيرفر أو fallback
         const fields = [
-          { label: t('label_type', 'النوع'), key: 'type' },
-          { label: t('label_year', 'سنة الصنع'), key: 'manufacture_year' },
-          { label: t('label_driver', 'السائق'), key: 'driver_name' },
-          { label: t('label_phone', 'الهاتف'), key: 'driver_phone' },
-          { label: t('label_department', 'الإدارة'), key: 'department_name' },
-          { label: t('label_section', 'القسم'), key: 'section_name' },
-          { label: t('label_division', 'الشعبة'), key: 'division_name' },
-          { label: t('label_mode', 'وضع الاستخدام'), key: 'vehicle_mode', translator: translateVehicleMode },
-          { label: t('label_status', 'حالة المركبة'), key: 'status', translator: translateVehicleStatus }
+          { label: t('label.type', 'النوع'), key: 'type' },
+          { label: t('label.manufacture_year', 'سنة الصنع'), key: 'manufacture_year' },
+          { label: t('label.driver', 'السائق'), key: 'driver_name' },
+          { label: t('label.phone', 'الهاتف'), key: 'driver_phone' },
+          { label: t('label.department', 'الإدارة'), key: 'department_name' },
+          { label: t('label.section', 'القسم'), key: 'section_name' },
+          { label: t('label.division', 'الشعبة'), key: 'division_name' },
+          { label: t('label.mode', 'وضع الاستخدام'), key: 'vehicle_mode', translator: translateVehicleMode },
+          { label: t('label.status', 'حالة المركبة'), key: 'status', translator: translateVehicleStatus }
         ];
         
         fields.forEach(field => {
@@ -397,17 +413,17 @@
         
         // تحديد الأزرار المتاحة - استخدام الترجمة
         if (v.can_pickup && !userHasVehicleCheckedOut) {
-          html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> ${t('btn_pickup', 'استلام')}</button>`;
+          html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> ${t('actions.pickup', 'استلام')}</button>`;
         } else if (v.availability_status === 'available' && userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
-          html += `<button class="btn btn-disabled" disabled><span>🚫</span> ${t('btn_already_checked', 'لديك سيارة مستلمة')}</button>`;
+          html += `<button class="btn btn-disabled" disabled><span>🚫</span> ${t('messages.you_have_vehicle', 'لديك سيارة مستلمة')}</button>`;
         }
         
         if (v.can_return) {
-          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> ${t('btn_return', 'إرجاع')}</button>`;
+          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> ${t('actions.return', 'إرجاع')}</button>`;
         }
         
         if (v.can_open_form) {
-          html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> ${t('btn_movement_form', 'نموذج حركة')}</button>`;
+          html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> ${t('actions.open_form', 'نموذج حركة')}</button>`;
         }
         
         html += '</div>';
@@ -417,30 +433,30 @@
       if (vehiclesContainer) vehiclesContainer.innerHTML = html;
     } catch (e) {
       console.error("FATAL RENDERING ERROR:", e);
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('error_render', 'خطأ في عرض البيانات')}</h3><p>${t('error_render_desc', 'حدث خطأ أثناء محاولة بناء البطاقات.')}</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('errors.render_failed', 'خطأ في عرض البيانات')}</h3><p>${t('errors.contact_admin', 'حدث خطأ أثناء محاولة بناء البطاقات.')}</p></div>`;
     }
   }
   
   // Pickup vehicle - إضافة معامل lang
   window.pickupVehicle = async function(vehicleCode) {
-    const confirmMsg = t('pickup_confirm', 'هل تريد استلام المركبة @@؟').replace('@@', vehicleCode);
+    const confirmMsg = t('confirm.pickup', 'هل تريد استلام المركبة {code}؟').replace('{code}', vehicleCode).replace('{{code}}', vehicleCode);
     if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
-      alert(t('error_no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
+      alert(t('errors.no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
       return;
     }
     
     // التحقق مرة أخرى إذا كان لدى المستخدم سيارة مستلمة
     if (!permissions.can_assign_vehicle && userHasVehicleCheckedOut) {
-      alert(t('error_already_checked_out', 'لا يمكنك استلام سيارة جديدة لأن لديك سيارة مستلمة حالياً. يرجى إرجاع السيارة أولاً.'));
+      alert(t('errors.cannot_pickup_has_active', 'لا يمكنك استلام سيارة جديدة لأن لديك سيارة مستلمة حالياً. يرجى إرجاع السيارة أولاً.'));
       return;
     }
     
     // التحقق من عدم استلام نفس السيارة في آخر 24 ساعة
     if (recentlyAssignedVehicles.includes(vehicleCode) && !permissions.can_assign_vehicle) {
-      alert(t('error_recently_assigned', 'لا يمكنك استلام نفس السيارة خلال 24 ساعة من آخر استلام. يرجى اختيار سيارة أخرى.'));
+      alert(t('errors.cannot_pickup_recent', 'لا يمكنك استلام نفس السيارة خلال 24 ساعة من آخر استلام. يرجى اختيار سيارة أخرى.'));
       return;
     }
     
@@ -452,21 +468,21 @@
     // إضافة معامل lang إلى URL
     const r = await fetchJson(`${API_ADD_MOVEMENT}?lang=${userLang}`, { method: 'POST', body: fd });
     if (r.ok && r.json && r.json.success) {
-      alert(t('pickup_success', 'تم استلام المركبة بنجاح'));
+      alert(t('messages.pickup_success', 'تم استلام المركبة بنجاح'));
       loadVehicles();
     } else {
-      alert(t('pickup_failed', 'فشل استلام المركبة') + ': ' + (r.json?.message || r.text || t('unknown_error', 'خطأ غير معروف')));
+      alert(t('errors.pickup_failed', 'فشل استلام المركبة') + ': ' + (r.json?.message || r.text || t('errors.unknown_session', 'خطأ غير معروف')));
     }
   };
   
   // Return vehicle - إضافة معامل lang
   window.returnVehicle = async function(vehicleCode) {
-    const confirmMsg = t('return_confirm', 'هل تريد إرجاع المركبة @@؟').replace('@@', vehicleCode);
+    const confirmMsg = t('confirm.return', 'هل تريد إرجاع المركبة {code}؟').replace('{code}', vehicleCode).replace('{{code}}', vehicleCode);
     if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
-      alert(t('error_no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
+      alert(t('errors.no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
       return;
     }
     
@@ -478,10 +494,10 @@
     // إضافة معامل lang إلى URL
     const r = await fetchJson(`${API_ADD_MOVEMENT}?lang=${userLang}`, { method: 'POST', body: fd });
     if (r.ok && r.json && r.json.success) {
-      alert(t('return_success', 'تم إرجاع المركبة بنجاح'));
+      alert(t('messages.return_success', 'تم إرجاع المركبة بنجاح'));
       loadVehicles();
     } else {
-      alert(t('return_failed', 'فشل إرجاع المركبة') + ': ' + (r.json?.message || r.text || t('unknown_error', 'خطأ غير معروف')));
+      alert(t('errors.return_failed', 'فشل إرجاع المركبة') + ': ' + (r.json?.message || r.text || t('errors.unknown_session', 'خطأ غير معروف')));
     }
   };
   
@@ -506,15 +522,15 @@
     if (departmentFilter) departmentFilter.addEventListener('change', () => {
       const deptId = departmentFilter.value;
       const filteredSections = references.sections.filter(s => String(s.department_id ?? '') === String(deptId));
-      populateFilter(sectionFilter, filteredSections, t('all_sections', 'جميع الأقسام'));
-      if (divisionFilter) divisionFilter.innerHTML = '<option value="">' + t('all_divisions', 'جميع الشعب') + '</option>';
+      populateFilter(sectionFilter, filteredSections, t('filter.all_sections', 'جميع الأقسام'));
+      if (divisionFilter) divisionFilter.innerHTML = '<option value="">' + t('filter.all_divisions', 'جميع الشعب') + '</option>';
       loadVehicles();
     });
     
     if (sectionFilter) sectionFilter.addEventListener('change', () => {
       const secId = sectionFilter.value;
       const filteredDivisions = references.divisions.filter(d => String(d.section_id ?? '') === String(secId));
-      populateFilter(divisionFilter, filteredDivisions, t('all_divisions', 'جميع الشعب'));
+      populateFilter(divisionFilter, filteredDivisions, t('filter.all_divisions', 'جميع الشعب'));
       loadVehicles();
     });
     
