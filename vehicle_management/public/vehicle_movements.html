@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -21,8 +21,13 @@
       position: relative;
       background: #fff;
     }
-    .vehicle-card.available { border-left: 5px solid #28a745; }
-    .vehicle-card.checked-out { border-left: 5px solid #ffc107; }
+    /* RTL styles */
+    [dir="rtl"] .vehicle-card.available { border-right: 5px solid #28a745; border-left: none; }
+    [dir="rtl"] .vehicle-card.checked-out { border-right: 5px solid #ffc107; border-left: none; }
+    /* LTR styles */
+    [dir="ltr"] .vehicle-card.available { border-left: 5px solid #28a745; border-right: none; }
+    [dir="ltr"] .vehicle-card.checked-out { border-left: 5px solid #ffc107; border-right: none; }
+    
     .vehicle-card .vehicle-code {
       font-size: 1.25rem;
       font-weight: bold;
@@ -36,12 +41,14 @@
     .vehicle-card .vehicle-status-badge {
       position: absolute;
       top: 15px;
-      left: 15px;
       padding: 3px 8px;
       border-radius: 4px;
       font-size: 0.8rem;
       font-weight: bold;
     }
+    [dir="rtl"] .vehicle-card .vehicle-status-badge { right: 15px; }
+    [dir="ltr"] .vehicle-card .vehicle-status-badge { left: 15px; }
+    
     .status-available { background-color: #28a745; color: white; }
     .status-checked-out-by-me { background-color: #ffc107; color: #333; }
     .vehicle-info-row {
@@ -52,6 +59,14 @@
       font-size: 0.9rem;
     }
     .info-label { color: #666; }
+    .checkout-user-info {
+      margin-top: 10px;
+      padding: 8px;
+      background: #f0f9ff;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: #1e40af;
+    }
     .filter-controls {
       display: flex;
       gap: 12px;
@@ -61,6 +76,64 @@
     .filter-controls .form-control {
       flex: 1;
       min-width: 150px;
+    }
+    
+    /* Sidebar styles */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .sidebar-panel {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+    }
+    [dir="rtl"] .sidebar-panel { left: 0; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); }
+    [dir="ltr"] .sidebar-panel { right: 0; transform: translateX(100%); }
+    
+    .sidebar-panel.open {
+      transform: translateX(0);
+    }
+    .sidebar-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8f9fa;
+    }
+    .sidebar-close {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+    .sidebar-body {
+      flex: 1;
+      overflow: hidden;
+    }
+    .sidebar-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
@@ -142,6 +215,19 @@
      
     </section>
   </main>
+  
+  <!-- Sidebar for form -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="sidebar-panel" id="sidebarPanel">
+    <div class="sidebar-header">
+      <h3 style="margin: 0;">نموذج حركة المركبات</h3>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <div class="sidebar-body">
+      <iframe id="sidebarFrame" src="about:blank"></iframe>
+    </div>
+  </div>
+  
   <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
 </body>
 </html>

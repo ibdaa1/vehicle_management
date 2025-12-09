@@ -76,6 +76,13 @@
     }
     currentSession = r.json;
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
+    
+    // Set language and direction dynamically
+    const userLang = r.json.user?.lang || 'ar';
+    const htmlRoot = document.getElementById('htmlRoot') || document.documentElement;
+    htmlRoot.setAttribute('lang', userLang);
+    htmlRoot.setAttribute('dir', userLang === 'ar' ? 'rtl' : 'ltr');
+    
     return r.json;
   }
   
@@ -355,20 +362,30 @@
         });
         html += '</div>';
         
+        // Show checkout user info if vehicle is checked out
+        if (v.is_currently_checked_out && v.current_checkout_by) {
+          const userLang = currentSession?.user?.lang || 'ar';
+          const checkoutLabel = userLang === 'ar' ? 'مستلم بواسطة' : 'Checked out by';
+          html += `<div class="checkout-user-info">
+            <strong>${checkoutLabel}:</strong> ${v.current_checkout_by}`;
+          if (v.checkout_user_name || v.checkout_user_phone) {
+            html += ` (${v.checkout_user_name || ''}${v.checkout_user_name && v.checkout_user_phone ? ', ' : ''}${v.checkout_user_phone || ''})`;
+          }
+          html += `</div>`;
+        }
+        
         html += `<div class="vehicle-status-badge ${statusBadgeClass}">${statusText}</div>`;
         
         html += '<div class="vehicle-actions">';
         
-        // تحديد الأزرار المتاحة
+        // تحديد الأزرار المتاحة - NO RETURN BUTTONS ON CARDS!
         if (v.can_pickup && !userHasVehicleCheckedOut) {
           html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> استلام</button>`;
         } else if (v.availability_status === 'available' && userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
           html += `<button class="btn btn-disabled" disabled><span>🚫</span> لديك سيارة مستلمة</button>`;
         }
         
-        if (v.can_return) {
-          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> إرجاع</button>`;
-        }
+        // NO RETURN BUTTON - removed per user request
         
         if (v.can_open_form) {
           html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> نموذج حركة</button>`;
@@ -445,11 +462,35 @@
     }
   };
   
-  // Open movement form
+  // Open movement form in sidebar instead of popup
   window.openMovementForm = function(vehicleCode) {
     const url = `/vehicle_management/public/add_vehicle_movements.html?vehicle_code=${encodeURIComponent(vehicleCode)}`;
-    window.open(url, '_blank', 'width=600,height=400');
+    openSidebarWithForm(url);
   };
+  
+  // Sidebar functions
+  function openSidebarWithForm(url) {
+    const overlay = document.getElementById('sidebarOverlay');
+    const panel = document.getElementById('sidebarPanel');
+    const frame = document.getElementById('sidebarFrame');
+    
+    if (overlay) overlay.style.display = 'block';
+    if (panel) panel.classList.add('open');
+    if (frame) frame.src = url;
+  }
+  
+  function closeSidebar() {
+    const overlay = document.getElementById('sidebarOverlay');
+    const panel = document.getElementById('sidebarPanel');
+    const frame = document.getElementById('sidebarFrame');
+    
+    if (overlay) overlay.style.display = 'none';
+    if (panel) panel.classList.remove('open');
+    if (frame) frame.src = 'about:blank';
+    
+    // Reload vehicles to refresh any changes
+    loadVehicles();
+  }
   
   // Initialize
   async function init() {
@@ -459,6 +500,19 @@
     
     await loadReferences();
     await loadVehicles();
+    
+    // Sidebar event listeners
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+    
+    // Admin return button opens sidebar
+    if (adminReturnBtn) {
+      adminReturnBtn.addEventListener('click', () => {
+        openSidebarWithForm('/vehicle_management/public/add_vehicle_movements.html');
+      });
+    }
     
     // Event listeners
     if (searchInput) searchInput.addEventListener('input', debounce(() => loadVehicles(), 500));
