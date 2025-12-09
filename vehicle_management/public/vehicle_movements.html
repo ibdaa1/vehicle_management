@@ -77,64 +77,6 @@
       flex: 1;
       min-width: 150px;
     }
-    
-    /* Sidebar styles */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-    }
-    .sidebar-panel {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      width: 90%;
-      max-width: 800px;
-      background: white;
-      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-      transform: translateX(100%);
-      transition: transform 0.3s ease;
-      z-index: 1001;
-      display: flex;
-      flex-direction: column;
-    }
-    [dir="rtl"] .sidebar-panel { left: 0; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3); }
-    [dir="ltr"] .sidebar-panel { right: 0; transform: translateX(100%); }
-    
-    .sidebar-panel.open {
-      transform: translateX(0);
-    }
-    .sidebar-header {
-      padding: 15px 20px;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8f9fa;
-    }
-    .sidebar-close {
-      background: #dc3545;
-      color: white;
-      border: none;
-      padding: 5px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-    .sidebar-body {
-      flex: 1;
-      overflow: hidden;
-    }
-    .sidebar-body iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
   </style>
 </head>
 <body>
@@ -215,18 +157,6 @@
      
     </section>
   </main>
-  
-  <!-- Sidebar for form -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-  <div class="sidebar-panel" id="sidebarPanel">
-    <div class="sidebar-header">
-      <h3 style="margin: 0;">نموذج حركة المركبات</h3>
-      <button class="sidebar-close" id="sidebarClose">✕</button>
-    </div>
-    <div class="sidebar-body">
-      <iframe id="sidebarFrame" src="about:blank"></iframe>
-    </div>
-  </div>
   
   <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
 </body>

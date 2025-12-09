@@ -77,8 +77,8 @@
     currentSession = r.json;
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
     
-    // Set language and direction dynamically
-    const userLang = r.json.user?.lang || 'ar';
+    // Set language and direction dynamically from preferred_language field
+    const userLang = r.json.user?.preferred_language || 'ar';
     const htmlRoot = document.getElementById('htmlRoot') || document.documentElement;
     htmlRoot.setAttribute('lang', userLang);
     htmlRoot.setAttribute('dir', userLang === 'ar' ? 'rtl' : 'ltr');
@@ -462,35 +462,11 @@
     }
   };
   
-  // Open movement form in sidebar instead of popup
+  // Open movement form in new tab
   window.openMovementForm = function(vehicleCode) {
     const url = `/vehicle_management/public/add_vehicle_movements.html?vehicle_code=${encodeURIComponent(vehicleCode)}`;
-    openSidebarWithForm(url);
+    window.open(url, '_blank');
   };
-  
-  // Sidebar functions
-  function openSidebarWithForm(url) {
-    const overlay = document.getElementById('sidebarOverlay');
-    const panel = document.getElementById('sidebarPanel');
-    const frame = document.getElementById('sidebarFrame');
-    
-    if (overlay) overlay.style.display = 'block';
-    if (panel) panel.classList.add('open');
-    if (frame) frame.src = url;
-  }
-  
-  function closeSidebar() {
-    const overlay = document.getElementById('sidebarOverlay');
-    const panel = document.getElementById('sidebarPanel');
-    const frame = document.getElementById('sidebarFrame');
-    
-    if (overlay) overlay.style.display = 'none';
-    if (panel) panel.classList.remove('open');
-    if (frame) frame.src = 'about:blank';
-    
-    // Reload vehicles to refresh any changes
-    loadVehicles();
-  }
   
   // Initialize
   async function init() {
@@ -501,16 +477,10 @@
     await loadReferences();
     await loadVehicles();
     
-    // Sidebar event listeners
-    const sidebarClose = document.getElementById('sidebarClose');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
-    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
-    
-    // Admin return button opens sidebar
+    // Admin return button opens form in new tab
     if (adminReturnBtn) {
       adminReturnBtn.addEventListener('click', () => {
-        openSidebarWithForm('/vehicle_management/public/add_vehicle_movements.html');
+        window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank');
       });
     }
     
