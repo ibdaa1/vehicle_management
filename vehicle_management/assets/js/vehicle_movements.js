@@ -11,6 +11,7 @@
   const API_RANDOM_ASSIGNMENT = '/vehicle_management/api/vehicle/random_assignment.php';
   
   // DOM elements
+  const htmlRoot = document.documentElement;
   const searchInput = document.getElementById('searchInput');
   const departmentFilter = document.getElementById('departmentFilter');
   const sectionFilter = document.getElementById('sectionFilter');
@@ -28,6 +29,33 @@
   let userHasVehicleCheckedOut = false;
   let userHasPrivateVehicle = false;
   let recentlyAssignedVehicles = [];
+  let userLang = 'ar'; // اللغة الافتراضية
+  let translations = {}; // ملف الترجمة المحمّل
+  
+  // دالة تحميل ملف الترجمة من المسار: /vehicle_management/languages/{lang}_vehicle_movements.json
+  async function loadTranslations(lang) {
+    const path = `/vehicle_management/languages/${lang}_vehicle_movements.json`;
+    try {
+      const response = await fetch(path);
+      if (!response.ok) {
+        console.warn(`Failed to load translations for ${lang}, falling back to empty`);
+        translations = {};
+        return false;
+      }
+      translations = await response.json();
+      console.log(`Loaded translations for ${lang}:`, translations);
+      return true;
+    } catch (e) {
+      console.error(`Error loading translations for ${lang}:`, e);
+      translations = {};
+      return false;
+    }
+  }
+  
+  // دالة الترجمة: تُرجع النص المقابل للمفتاح، أو المفتاح نفسه إذا لم يُوجد
+  function t(key, fallback = null) {
+    return translations[key] || fallback || key;
+  }
   
   // Fetch helper
   async function fetchJson(url, opts = {}) {
@@ -64,22 +92,36 @@
     if (!r.ok || !r.json || !r.json.success) {
       const errorMsg = r.json?.message || r.text || 'Unknown session error';
       console.error('Session check failed:', errorMsg);
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>غير مصرح</h3><p>يرجى <a href="/vehicle_management/public/login.html">تسجيل الدخول</a></p><p>تفاصيل: ${errorMsg}</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('not_authenticated', 'غير مصرح')}</h3><p>${t('please_login', 'يرجى')} <a href="/vehicle_management/public/login.html">${t('login', 'تسجيل الدخول')}</a></p><p>${t('details', 'تفاصيل')}: ${errorMsg}</p></div>`;
       return null;
     }
     currentSession = r.json;
+    
+    // تحديد لغة المستخدم من preferred_language أو من navigator
+    userLang = currentSession.user?.preferred_language || navigator.language?.split('-')[0] || 'ar';
+    if (userLang !== 'ar' && userLang !== 'en') userLang = 'ar';
+    
+    // تحميل ملف الترجمة
+    await loadTranslations(userLang);
+    
+    // تعيين اتجاه الصفحة ولغتها
+    if (htmlRoot) {
+      htmlRoot.setAttribute('lang', userLang);
+      htmlRoot.setAttribute('dir', userLang === 'ar' ? 'rtl' : 'ltr');
+    }
+    
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
     return r.json;
   }
   
-  // Load references
+  // Load references - إضافة معامل lang
   async function loadReferences() {
-    const res = await fetchJson(`${API_REFERENCES}?lang=ar`, { method: 'GET' });
+    const res = await fetchJson(`${API_REFERENCES}?lang=${userLang}`, { method: 'GET' });
     if (res.ok && res.json) {
       references.departments = res.json.departments || [];
       references.sections = res.json.sections || [];
       references.divisions = res.json.divisions || [];
-      populateFilter(departmentFilter, references.departments, 'جميع الإدارات');
+      populateFilter(departmentFilter, references.departments, t('all_departments', 'جميع الإدارات'));
       if (statusFilter) statusFilter.value = '';
     } else {
       console.error('References load failed');
@@ -87,13 +129,14 @@
     return references;
   }
   
-  // Populate filter dropdown
+  // Populate filter dropdown - استخدام الحقول المحلية
   function populateFilter(select, items, placeholder) {
     if (!select) return;
     select.innerHTML = `<option value="">${placeholder}</option>`;
     (items || []).forEach(it => {
       const id = String(it.department_id ?? it.section_id ?? it.division_id ?? it.id ?? '');
-      const label = it.name_ar || it.name || id;
+      // استخدام name المحدد من السيرفر (name_ar أو name_en حسب اللغة) أو name fallback
+      const label = it.name || id;
       const o = document.createElement('option');
       o.value = id;
       o.textContent = label;
@@ -101,7 +144,7 @@
     });
   }
   
-  // Load vehicles
+  // Load vehicles - إضافة معامل lang
   async function loadVehicles() {
     const q = searchInput ? searchInput.value.trim() : '';
     const deptId = departmentFilter?.value || '';
@@ -109,10 +152,14 @@
     const divId = divisionFilter?.value || '';
     const status = statusFilter?.value || '';
     
-    if (loadingMsg) loadingMsg.style.display = 'block';
+    if (loadingMsg) {
+      loadingMsg.style.display = 'block';
+      loadingMsg.textContent = t('loading', 'جاري التحميل...');
+    }
     if (vehiclesContainer) vehiclesContainer.innerHTML = '';
     
     const params = new URLSearchParams();
+    params.append('lang', userLang); // إضافة معامل اللغة
     if (q) params.append('q', q);
     if (deptId) params.append('department_id', deptId);
     if (secId) params.append('section_id', secId);
@@ -126,9 +173,9 @@
     if (loadingMsg) loadingMsg.style.display = 'none';
     
     if (!r.ok || !r.json || !r.json.success) {
-      const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال';
+      const errorMsg = r.json?.message || r.text || t('connection_error', 'خطأ في الاتصال');
       console.error('Load vehicles error:', { status: r.status, text: r.text?.substring(0, 200), json: r.json });
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>فشل التحميل</h3><p>${errorMsg}</p><p>تحقق من Console للتفاصيل.</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('load_failed', 'فشل التحميل')}</h3><p>${errorMsg}</p><p>${t('check_console', 'تحقق من Console للتفاصيل.')}</p></div>`;
       return;
     }
     
@@ -149,7 +196,7 @@
     }
     
     if (vehicles.length === 0) {
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>لا توجد مركبات</h3><p>تحقق من الفلاتر أو الصلاحيات.</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('no_vehicles', 'لا توجد مركبات')}</h3><p>${t('check_filters', 'تحقق من الفلاتر أو الصلاحيات.')}</p></div>`;
       return;
     }
     
@@ -167,7 +214,7 @@
     warningDiv.className = 'warning-message';
     warningDiv.innerHTML = `
       <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 8px; padding: 12px; margin: 15px 0; color: #92400e;">
-        <strong>⚠️ تنبيه:</strong> لديك سيارة مستلمة حالياً. يجب إرجاعها قبل استلام سيارة جديدة.
+        <strong>⚠️ ${t('warning', 'تنبيه')}:</strong> ${t('vehicle_checked_out_warning', 'لديك سيارة مستلمة حالياً. يجب إرجاعها قبل استلام سيارة جديدة.')}
       </div>
     `;
     
@@ -185,7 +232,7 @@
     
     const randomButton = document.createElement('button');
     randomButton.className = 'btn btn-random random-assignment-btn';
-    randomButton.innerHTML = '🎲 سحب عشوائي لسيارة';
+    randomButton.innerHTML = '🎲 ' + t('random_assignment', 'سحب عشوائي لسيارة');
     randomButton.style.backgroundColor = '#8B5CF6';
     randomButton.style.color = 'white';
     randomButton.style.border = 'none';
@@ -196,22 +243,26 @@
     randomButton.style.fontWeight = 'bold';
     
     randomButton.addEventListener('click', async function() {
-      if (!confirm('هل تريد سحب سيارة عشوائية؟ سيتم تعيين سيارة لك بشكل عشوائي.')) return;
+      if (!confirm(t('random_assignment_confirm', 'هل تريد سحب سيارة عشوائية؟ سيتم تعيين سيارة لك بشكل عشوائي.'))) return;
       
-      const r = await fetchJson(API_RANDOM_ASSIGNMENT, { method: 'POST' });
+      // إضافة معامل lang إلى API_RANDOM_ASSIGNMENT
+      const r = await fetchJson(`${API_RANDOM_ASSIGNMENT}?lang=${userLang}`, { method: 'POST' });
       if (r.ok && r.json) {
         if (r.json.success) {
-          alert(r.json.message + '\n\nتفاصيل السيارة:\n' +
-                'رمز المركبة: ' + r.json.vehicle.code + '\n' +
-                'نوع المركبة: ' + r.json.vehicle.type + '\n' +
-                'اسم السائق: ' + r.json.vehicle.driver_name + '\n' +
-                'هاتف السائق: ' + r.json.vehicle.driver_phone);
+          // عرض الرسالة من السيرفر (message_en أو message_ar حسب اللغة، أو message fallback)
+          const msg = r.json.message || t('assignment_success', 'تم التعيين بنجاح');
+          const vehicleInfo = r.json.vehicle || {};
+          alert(msg + '\n\n' + t('vehicle_details', 'تفاصيل السيارة:') + '\n' +
+                t('vehicle_code', 'رمز المركبة') + ': ' + (vehicleInfo.code || '') + '\n' +
+                t('vehicle_type', 'نوع المركبة') + ': ' + (vehicleInfo.type || '') + '\n' +
+                t('driver_name', 'اسم السائق') + ': ' + (vehicleInfo.driver_name || '') + '\n' +
+                t('driver_phone', 'هاتف السائق') + ': ' + (vehicleInfo.driver_phone || ''));
           loadVehicles(); // إعادة تحميل القائمة
         } else {
-          alert('فشل السحب العشوائي: ' + r.json.message);
+          alert(t('assignment_failed', 'فشل السحب العشوائي') + ': ' + (r.json.message || ''));
         }
       } else {
-        alert('خطأ في الاتصال بالخادم');
+        alert(t('connection_error', 'خطأ في الاتصال بالخادم'));
       }
     });
     
@@ -223,35 +274,39 @@
   
   // Translate vehicle status
   function translateVehicleStatus(status) {
-    const map = {
+    // استخدام دالة الترجمة بدلاً من الـ hardcoded map
+    const key = `status_${status}`;
+    const fallbackMap = {
       operational: 'قيد التشغيل',
       maintenance: 'صيانة',
       out_of_service: 'خارج الخدمة'
     };
-    return map[status] || status;
+    return t(key, fallbackMap[status] || status);
   }
   
   // Translate vehicle mode
   function translateVehicleMode(mode) {
-    const map = {
-      private: 'خاصة',
-      shift: 'ورديات'
+    const key = `mode_${mode}`;
+    const fallbackMap = {
+      private: userLang === 'ar' ? 'خاصة' : 'Private',
+      shift: userLang === 'ar' ? 'ورديات' : 'Shift'
     };
-    return map[mode] || mode;
+    return t(key, fallbackMap[mode] || mode);
   }
   
   // Translate availability status
   function translateAvailabilityStatus(status) {
-    const map = {
-      'private_unavailable': 'خاصة - غير متاحة',
-      'available': 'متاحة للاستلام',
-      'checked_out_by_me': 'مستلمة من قبلك',
-      'checked_out_by_other': 'مستلمة من آخر'
+    const key = `availability_${status}`;
+    const fallbackMap = {
+      'private_unavailable': userLang === 'ar' ? 'خاصة - غير متاحة' : 'Private - Unavailable',
+      'available': userLang === 'ar' ? 'متاحة للاستلام' : 'Available',
+      'checked_out_by_me': userLang === 'ar' ? 'مستلمة من قبلك' : 'Checked Out by You',
+      'checked_out_by_other': userLang === 'ar' ? 'مستلمة من آخر' : 'Checked Out by Other'
     };
-    return map[status] || status;
+    return t(key, fallbackMap[status] || status);
   }
   
-  // Render vehicle cards
+  // Render vehicle cards - استخدام الحقول المحلية department_name, section_name, division_name من السيرفر
   function renderVehicleCards(vehicles) {
     let html = '';
     try {
@@ -270,23 +325,24 @@
         
         // إضافة رمز خاص إذا كانت السيارة خاصة
         if (v.vehicle_mode === 'private') {
-          html += `<div style="position: absolute; top: 15px; right: 15px; background: #6D28D9; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">خاصة</div>`;
+          html += `<div style="position: absolute; top: 15px; right: 15px; background: #6D28D9; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">${translateVehicleMode('private')}</div>`;
         } else {
-          html += `<div style="position: absolute; top: 15px; right: 15px; background: #059669; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">ورديات</div>`;
+          html += `<div style="position: absolute; top: 15px; right: 15px; background: #059669; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">${translateVehicleMode('shift')}</div>`;
         }
         
         html += '<div class="vehicle-info">';
         
+        // استخدام أسماء الحقول المترجمة من السيرفر أو fallback
         const fields = [
-          { label: 'النوع', key: 'type' },
-          { label: 'سنة الصنع', key: 'manufacture_year' },
-          { label: 'السائق', key: 'driver_name' },
-          { label: 'الهاتف', key: 'driver_phone' },
-          { label: 'الإدارة', key: 'department_name' },
-          { label: 'القسم', key: 'section_name' },
-          { label: 'الشعبة', key: 'division_name' },
-          { label: 'وضع الاستخدام', key: 'vehicle_mode', translator: translateVehicleMode },
-          { label: 'حالة المركبة', key: 'status', translator: translateVehicleStatus }
+          { label: t('label_type', 'النوع'), key: 'type' },
+          { label: t('label_year', 'سنة الصنع'), key: 'manufacture_year' },
+          { label: t('label_driver', 'السائق'), key: 'driver_name' },
+          { label: t('label_phone', 'الهاتف'), key: 'driver_phone' },
+          { label: t('label_department', 'الإدارة'), key: 'department_name' },
+          { label: t('label_section', 'القسم'), key: 'section_name' },
+          { label: t('label_division', 'الشعبة'), key: 'division_name' },
+          { label: t('label_mode', 'وضع الاستخدام'), key: 'vehicle_mode', translator: translateVehicleMode },
+          { label: t('label_status', 'حالة المركبة'), key: 'status', translator: translateVehicleStatus }
         ];
         
         fields.forEach(field => {
@@ -307,19 +363,19 @@
         
         html += '<div class="vehicle-actions">';
         
-        // تحديد الأزرار المتاحة
+        // تحديد الأزرار المتاحة - استخدام الترجمة
         if (v.can_pickup && !userHasVehicleCheckedOut) {
-          html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> استلام</button>`;
+          html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> ${t('btn_pickup', 'استلام')}</button>`;
         } else if (v.availability_status === 'available' && userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
-          html += `<button class="btn btn-disabled" disabled><span>🚫</span> لديك سيارة مستلمة</button>`;
+          html += `<button class="btn btn-disabled" disabled><span>🚫</span> ${t('btn_already_checked', 'لديك سيارة مستلمة')}</button>`;
         }
         
         if (v.can_return) {
-          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> إرجاع</button>`;
+          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> ${t('btn_return', 'إرجاع')}</button>`;
         }
         
         if (v.can_open_form) {
-          html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> نموذج حركة</button>`;
+          html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> ${t('btn_movement_form', 'نموذج حركة')}</button>`;
         }
         
         html += '</div>';
@@ -329,29 +385,29 @@
       if (vehiclesContainer) vehiclesContainer.innerHTML = html;
     } catch (e) {
       console.error("FATAL RENDERING ERROR:", e);
-      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>خطأ في عرض البيانات</h3><p>حدث خطأ أثناء محاولة بناء البطاقات.</p></div>`;
+      if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>${t('error_render', 'خطأ في عرض البيانات')}</h3><p>${t('error_render_desc', 'حدث خطأ أثناء محاولة بناء البطاقات.')}</p></div>`;
     }
   }
   
-  // Pickup vehicle
+  // Pickup vehicle - إضافة معامل lang
   window.pickupVehicle = async function(vehicleCode) {
-    if (!confirm(`هل تريد استلام المركبة ${vehicleCode}؟`)) return;
+    if (!confirm(t('pickup_confirm', `هل تريد استلام المركبة ${vehicleCode}؟`).replace('${vehicleCode}', vehicleCode))) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
-      alert('خطأ: لا يوجد رمز وظيفي');
+      alert(t('error_no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
       return;
     }
     
     // التحقق مرة أخرى إذا كان لدى المستخدم سيارة مستلمة
     if (!permissions.can_assign_vehicle && userHasVehicleCheckedOut) {
-      alert('لا يمكنك استلام سيارة جديدة لأن لديك سيارة مستلمة حالياً. يرجى إرجاع السيارة أولاً.');
+      alert(t('error_already_checked_out', 'لا يمكنك استلام سيارة جديدة لأن لديك سيارة مستلمة حالياً. يرجى إرجاع السيارة أولاً.'));
       return;
     }
     
     // التحقق من عدم استلام نفس السيارة في آخر 24 ساعة
     if (recentlyAssignedVehicles.includes(vehicleCode) && !permissions.can_assign_vehicle) {
-      alert('لا يمكنك استلام نفس السيارة خلال 24 ساعة من آخر استلام. يرجى اختيار سيارة أخرى.');
+      alert(t('error_recently_assigned', 'لا يمكنك استلام نفس السيارة خلال 24 ساعة من آخر استلام. يرجى اختيار سيارة أخرى.'));
       return;
     }
     
@@ -360,22 +416,23 @@
     fd.append('operation_type', 'pickup');
     fd.append('performed_by', empId);
     
-    const r = await fetchJson(API_ADD_MOVEMENT, { method: 'POST', body: fd });
+    // إضافة معامل lang إلى URL
+    const r = await fetchJson(`${API_ADD_MOVEMENT}?lang=${userLang}`, { method: 'POST', body: fd });
     if (r.ok && r.json && r.json.success) {
-      alert('تم استلام المركبة بنجاح');
+      alert(t('pickup_success', 'تم استلام المركبة بنجاح'));
       loadVehicles();
     } else {
-      alert('فشل استلام المركبة: ' + (r.json?.message || r.text || 'خطأ غير معروف'));
+      alert(t('pickup_failed', 'فشل استلام المركبة') + ': ' + (r.json?.message || r.text || t('unknown_error', 'خطأ غير معروف')));
     }
   };
   
-  // Return vehicle
+  // Return vehicle - إضافة معامل lang
   window.returnVehicle = async function(vehicleCode) {
-    if (!confirm(`هل تريد إرجاع المركبة ${vehicleCode}؟`)) return;
+    if (!confirm(t('return_confirm', `هل تريد إرجاع المركبة ${vehicleCode}؟`).replace('${vehicleCode}', vehicleCode))) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
-      alert('خطأ: لا يوجد رمز وظيفي');
+      alert(t('error_no_emp_id', 'خطأ: لا يوجد رمز وظيفي'));
       return;
     }
     
@@ -384,12 +441,13 @@
     fd.append('operation_type', 'return');
     fd.append('performed_by', empId);
     
-    const r = await fetchJson(API_ADD_MOVEMENT, { method: 'POST', body: fd });
+    // إضافة معامل lang إلى URL
+    const r = await fetchJson(`${API_ADD_MOVEMENT}?lang=${userLang}`, { method: 'POST', body: fd });
     if (r.ok && r.json && r.json.success) {
-      alert('تم إرجاع المركبة بنجاح');
+      alert(t('return_success', 'تم إرجاع المركبة بنجاح'));
       loadVehicles();
     } else {
-      alert('فشل إرجاع المركبة: ' + (r.json?.message || r.text || 'خطأ غير معروف'));
+      alert(t('return_failed', 'فشل إرجاع المركبة') + ': ' + (r.json?.message || r.text || t('unknown_error', 'خطأ غير معروف')));
     }
   };
   
@@ -414,15 +472,15 @@
     if (departmentFilter) departmentFilter.addEventListener('change', () => {
       const deptId = departmentFilter.value;
       const filteredSections = references.sections.filter(s => String(s.department_id ?? '') === String(deptId));
-      populateFilter(sectionFilter, filteredSections, 'جميع الأقسام');
-      if (divisionFilter) divisionFilter.innerHTML = '<option value="">جميع الشعب</option>';
+      populateFilter(sectionFilter, filteredSections, t('all_sections', 'جميع الأقسام'));
+      if (divisionFilter) divisionFilter.innerHTML = '<option value="">' + t('all_divisions', 'جميع الشعب') + '</option>';
       loadVehicles();
     });
     
     if (sectionFilter) sectionFilter.addEventListener('change', () => {
       const secId = sectionFilter.value;
       const filteredDivisions = references.divisions.filter(d => String(d.section_id ?? '') === String(secId));
-      populateFilter(divisionFilter, filteredDivisions, 'جميع الشعب');
+      populateFilter(divisionFilter, filteredDivisions, t('all_divisions', 'جميع الشعب'));
       loadVehicles();
     });
     

@@ -150,6 +150,15 @@ h1 {
   opacity: 0.7;
 }
 
+.vehicle-card.checked-out-by-me {
+  border-left: 4px solid #fbbf24;
+}
+
+.vehicle-card.private-unavailable {
+  border-left: 4px solid #6D28D9;
+  opacity: 0.6;
+}
+
 .vehicle-card.unavailable {
   border-left: 4px solid var(--danger);
   opacity: 0.5;
@@ -218,6 +227,11 @@ h1 {
   color: var(--danger);
 }
 
+.status-private {
+  background: #e9d5ff;
+  color: #6D28D9;
+}
+
 .vehicle-actions {
   margin-top: 16px;
   display: flex;
@@ -259,6 +273,24 @@ h1 {
 
 .btn-return {
   background: var(--warning);
+}
+
+.btn-random, .random-assignment-btn {
+  background: #8B5CF6;
+  color: white;
+}
+
+.btn-form {
+  background: var(--accent);
+}
+
+.btn-disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.warning-message {
+  margin: 15px 0;
 }
 
 .loading {
