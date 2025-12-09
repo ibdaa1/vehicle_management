@@ -364,7 +364,7 @@
         
         // Show checkout user info if vehicle is checked out
         if (v.is_currently_checked_out && v.current_checkout_by) {
-          const userLang = currentSession?.user?.lang || 'ar';
+          const userLang = currentSession?.user?.preferred_language || 'ar';
           const checkoutLabel = userLang === 'ar' ? 'مستلم بواسطة' : 'Checked out by';
           html += `<div class="checkout-user-info">
             <strong>${checkoutLabel}:</strong> ${v.current_checkout_by}`;
