@@ -119,6 +119,10 @@
   
   // دالة لتحديث النصوص في الصفحة بعد تحميل الترجمات
   function updatePageTexts() {
+    // تحديث عنوان المستند
+    const docTitle = document.getElementById('docTitle');
+    if (docTitle) docTitle.textContent = t('page_title_main', userLang === 'ar' ? 'حركة المركبات (استلام وإرجاع)' : 'Vehicle Movements (Pickup & Return)');
+    
     // تحديث العناوين
     const pageTitle = document.getElementById('pageTitle');
     const pageSubtitle = document.getElementById('pageSubtitle');
@@ -419,7 +423,7 @@
   
   // Pickup vehicle - إضافة معامل lang
   window.pickupVehicle = async function(vehicleCode) {
-    const confirmMsg = t('pickup_confirm', 'هل تريد استلام المركبة @@?').replace('@@', vehicleCode).replace('${vehicleCode}', vehicleCode);
+    const confirmMsg = t('pickup_confirm', 'هل تريد استلام المركبة @@؟').replace('@@', vehicleCode);
     if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
@@ -457,7 +461,7 @@
   
   // Return vehicle - إضافة معامل lang
   window.returnVehicle = async function(vehicleCode) {
-    const confirmMsg = t('return_confirm', 'هل تريد إرجاع المركبة @@?').replace('@@', vehicleCode).replace('${vehicleCode}', vehicleCode);
+    const confirmMsg = t('return_confirm', 'هل تريد إرجاع المركبة @@؟').replace('@@', vehicleCode);
     if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
