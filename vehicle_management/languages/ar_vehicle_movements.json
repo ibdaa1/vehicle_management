@@ -1,26 +1,112 @@
 {
-  "page_title": "حركة المركبات",
-  "page_subtitle": "عرض وبحث حركة المركبات",
-  "search_placeholder": "بحث (رقم المركبة، نوع العملية، الموظف...)...",
-  "all_operations": "جميع العمليات",
-  "pickup": "استلام",
-  "return": "إرجاع",
-  "vehicle_code": "رقم المركبة",
-  "operation_type": "نوع العملية",
-  "performed_by": "الموظف",
-  "movement_date": "التاريخ",
-  "location": "الموقع",
-  "photos": "الصور",
-  "actions": "الإجراءات",
-  "view_photos": "عرض",
-  "delete": "حذف",
-  "no_results": "لا توجد نتائج",
-  "loading": "جاري التحميل...",
-  "not_authenticated": "غير مصرح - يرجى تسجيل الدخول",
-  "delete_confirm": "هل أنت متأكد من حذف هذه الحركة؟",
-  "delete_success": "تم الحذف بنجاح",
-  "delete_failed": "فشل الحذف",
-  "load_failed": "فشل تحميل القائمة",
-  "no_photos": "لا توجد صور",
-  "photos_title": "الصور"
+  "page": {
+    "title": "لوحة التحكم السريع للمركبات",
+    "subtitle": "استلام وإرجاع المركبات المتاحة"
+  },
+  "organization": "إدارة الرقابة والسلامة الصحية",
+  "labels": {
+    "vehicle_count": "عدد المركبات: {count}",
+    "vehicle_code": "رمز المركبة",
+    "type": "النوع",
+    "manufacture_year": "سنة الصنع",
+    "driver": "السائق",
+    "phone": "الهاتف",
+    "department": "الإدارة",
+    "section": "القسم",
+    "division": "الشعبة",
+    "mode": "النمط",
+    "status": "الحالة",
+    "checked_out_by": "مستلم بواسطة",
+    "private": "خاصة",
+    "shift": "ورديات",
+    "vehicle_details": "تفاصيل المركبة",
+    "details": "تفاصيل",
+    "availability_status": "حالة التوفر"
+  },
+  "status": {
+    "operational": "قيد التشغيل",
+    "maintenance": "صيانة",
+    "out_of_service": "خارج الخدمة"
+  },
+  "mode": {
+    "shift": "ورديات",
+    "private": "خاصة"
+  },
+  "availability": {
+    "available": "متاحة",
+    "checked_out_by_me": "مستلمة من قبلي",
+    "private_unavailable": "خاصة غير متاحة",
+    "checked_out_by_other": "مستلمة من قبل آخر"
+  },
+  "actions": {
+    "pickup": "استلام",
+    "return": "إرجاع",
+    "open_form": "فتح النموذج",
+    "random_assignment": "سحب عشوائي لسيارة",
+    "admin_return": "↩️ إرجاع مركبة"
+  },
+  "messages": {
+    "you_have_vehicle": "لديك مركبة مستلمة",
+    "pickup_success": "تم استلام المركبة بنجاح",
+    "return_success": "تم إرجاع المركبة بنجاح",
+    "loading_vehicles": "جاري تحميل المركبات..."
+  },
+  "warnings": {
+    "attention": "تنبيه",
+    "has_active_vehicle": "لديك حاليًا مركبة مستلمة. يرجى إرجاعها قبل استلام مركبة أخرى."
+  },
+  "confirm": {
+    "pickup": "هل تريد استلام المركبة {code}؟",
+    "return": "هل تريد إرجاع المركبة {code}؟",
+    "random_assignment": "هل تريد سحب مركبة عشوائيًا؟"
+  },
+  "errors": {
+    "no_emp_id": "رقم الموظف غير موجود",
+    "cannot_pickup_has_active": "لا يمكنك استلام مركبة لأن لديك مركبة نشطة",
+    "cannot_pickup_recent": "لا يمكنك استلام هذه المركبة لأنها تم تخصيصها مؤخرًا",
+    "pickup_failed": "فشل استلام المركبة",
+    "return_failed": "فشل إرجاع المركبة",
+    "random_failed": "فشل السحب العشوائي",
+    "server_unreachable": "الخادم غير متاح",
+    "unknown_session": "خطأ غير معروف في الجلسة",
+    "load_failed": "فشل تحميل المركبات",
+    "render_failed": "خطأ في العرض",
+    "contact_admin": "يرجى الاتصال بالمسؤول"
+  },
+  "empty": {
+    "no_vehicles": "لم يتم العثور على مركبات",
+    "check_filters": "تحقق من عوامل التصفية",
+    "loading_failed": "فشل تحميل المركبات",
+    "check_console": "تحقق من وحدة التحكم للتفاصيل"
+  },
+  "auth": {
+    "unauthorized": "غير مصرح",
+    "login_prompt": "يرجى تسجيل الدخول في",
+    "login": "تسجيل الدخول"
+  },
+  "filter": {
+    "search_placeholder": "بحث (رقم المركبة، السائق، النوع...)",
+    "all_departments": "جميع الإدارات",
+    "all_sections": "جميع الأقسام",
+    "all_divisions": "جميع الشعب",
+    "all_operational_status": "جميع الحالات التشغيلية",
+    "all_checkout_status": "جميع حالات الاستلام",
+    "all_vehicle_types": "جميع أنواع المركبات",
+    "all_movement_types": "جميع أنواع الحركة",
+    "available": "متاحة",
+    "checked_out": "مستلمة",
+    "pickup": "استلام",
+    "return": "إرجاع"
+  },
+  "buttons": {
+    "search": "بحث",
+    "clear": "مسح",
+    "apply": "تطبيق"
+  },
+  "headers": {
+    "vehicle_management": "إدارة المركبات",
+    "quick_actions": "إجراءات سريعة",
+    "filters": "مرشحات البحث",
+    "vehicle_list": "قائمة المركبات"
+  }
 }
