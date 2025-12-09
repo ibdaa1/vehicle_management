@@ -95,7 +95,44 @@ if ($token && isset($conn)) {
 // If token auth failed, fallback to session user
 if (!$user) {
     $sessUser = $_SESSION['user'] ?? null;
-    if ($sessUser && !empty($sessUser['id'])) $user = $sessUser;
+    if ($sessUser && !empty($sessUser['id']) && isset($conn)) {
+        // Query database to get fresh user info including preferred_language
+        try {
+            $stmt = $conn->prepare("
+                SELECT id, emp_id, username, email, phone, role_id,
+                       department_id, section_id, division_id, preferred_language
+                FROM users WHERE id = ? LIMIT 1
+            ");
+            if ($stmt) {
+                $userId = (int)$sessUser['id'];
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+                $row = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+                if ($row) {
+                    $user = [
+                        'id' => (int)$row['id'],
+                        'emp_id' => $row['emp_id'],
+                        'username' => $row['username'],
+                        'email' => $row['email'],
+                        'phone' => $row['phone'],
+                        'role_id' => (int)$row['role_id'],
+                        'department_id' => $row['department_id'] ? (int)$row['department_id'] : null,
+                        'section_id' => $row['section_id'] ? (int)$row['section_id'] : null,
+                        'division_id' => $row['division_id'] ? (int)$row['division_id'] : null,
+                        'preferred_language' => $row['preferred_language'] ?? 'ar'
+                    ];
+                }
+            }
+        } catch (Exception $e) {
+            error_log("session_check DB lookup error: " . $e->getMessage());
+            // Fallback to session data if DB query fails
+            $user = $sessUser;
+        }
+    } elseif ($sessUser && !empty($sessUser['id'])) {
+        // No DB connection, use session data as-is
+        $user = $sessUser;
+    }
 }
 
 // debug output
