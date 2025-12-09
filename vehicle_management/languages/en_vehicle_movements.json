@@ -1,4 +1,9 @@
 {
+  "doc_title": "Vehicle Movements (Pickup & Return)",
+  "page_header": "Quick Vehicle Control Panel",
+  "page_header_subtitle": "Pick up and return available vehicles",
+  "search_input_placeholder": "Search (vehicle code, driver, type...)",
+  "all_statuses": "All Operational Statuses",
   "page_title": "Vehicle Movements",
   "page_subtitle": "View and search vehicle movements",
   "search_placeholder": "Search (vehicle code, operation, employee...)...",

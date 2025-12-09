@@ -121,22 +121,22 @@
   function updatePageTexts() {
     // تحديث عنوان المستند
     const docTitle = document.getElementById('docTitle');
-    if (docTitle) docTitle.textContent = t('page_title_main', userLang === 'ar' ? 'حركة المركبات (استلام وإرجاع)' : 'Vehicle Movements (Pickup & Return)');
+    if (docTitle) docTitle.textContent = t('doc_title', userLang === 'ar' ? 'حركة المركبات (استلام وإرجاع)' : 'Vehicle Movements (Pickup & Return)');
     
     // تحديث العناوين
     const pageTitle = document.getElementById('pageTitle');
     const pageSubtitle = document.getElementById('pageSubtitle');
-    if (pageTitle) pageTitle.textContent = t('page_title_main', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Quick Vehicle Control Panel');
-    if (pageSubtitle) pageSubtitle.textContent = t('page_subtitle_main', userLang === 'ar' ? 'استلام وإرجاع المركبات المتاحة' : 'Pick up and return available vehicles');
+    if (pageTitle) pageTitle.textContent = t('page_header', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Quick Vehicle Control Panel');
+    if (pageSubtitle) pageSubtitle.textContent = t('page_header_subtitle', userLang === 'ar' ? 'استلام وإرجاع المركبات المتاحة' : 'Pick up and return available vehicles');
     
     // تحديث placeholder للبحث
-    if (searchInput) searchInput.placeholder = t('search_placeholder_main', userLang === 'ar' ? 'بحث (رقم المركبة، السائق، النوع...)' : 'Search (vehicle code, driver, type...)');
+    if (searchInput) searchInput.placeholder = t('search_input_placeholder', userLang === 'ar' ? 'بحث (رقم المركبة، السائق، النوع...)' : 'Search (vehicle code, driver, type...)');
     
     // تحديث خيارات الفلاتر الافتراضية
-    const allStatusText = userLang === 'ar' ? 'جميع الحالات التشغيلية' : 'All Operational Statuses';
-    const operationalText = userLang === 'ar' ? 'قيد التشغيل' : 'Operational';
-    const maintenanceText = userLang === 'ar' ? 'صيانة' : 'Maintenance';
-    const outOfServiceText = userLang === 'ar' ? 'خارج الخدمة' : 'Out of Service';
+    const allStatusText = t('all_statuses', userLang === 'ar' ? 'جميع الحالات التشغيلية' : 'All Operational Statuses');
+    const operationalText = t('status_operational', userLang === 'ar' ? 'قيد التشغيل' : 'Operational');
+    const maintenanceText = t('status_maintenance', userLang === 'ar' ? 'صيانة' : 'Maintenance');
+    const outOfServiceText = t('status_out_of_service', userLang === 'ar' ? 'خارج الخدمة' : 'Out of Service');
     
     if (statusFilter && statusFilter.options.length > 0) {
       statusFilter.options[0].textContent = allStatusText;
