@@ -16,10 +16,16 @@
   const sectionFilter = document.getElementById('sectionFilter');
   const divisionFilter = document.getElementById('divisionFilter');
   const statusFilter = document.getElementById('statusFilter');
+  const checkoutStatusFilter = document.getElementById('checkoutStatusFilter');
+  const vehicleTypeFilter = document.getElementById('vehicleTypeFilter');
+  const movementTypeFilter = document.getElementById('movementTypeFilter');
   const vehiclesContainer = document.getElementById('vehiclesContainer');
   const loadingMsg = document.getElementById('loadingMsg');
   const loggedUserEl = document.getElementById('loggedUser');
   const orgNameEl = document.getElementById('orgName');
+  const randomAssignmentBtn = document.getElementById('randomAssignmentBtn');
+  const adminReturnBtn = document.getElementById('adminReturnBtn');
+  const vehicleCountEl = document.getElementById('vehicleCount');
   
   // State
   let currentSession = null;
@@ -28,6 +34,7 @@
   let userHasVehicleCheckedOut = false;
   let userHasPrivateVehicle = false;
   let recentlyAssignedVehicles = [];
+  let allVehicles = [];
   
   // Fetch helper
   async function fetchJson(url, opts = {}) {
@@ -69,6 +76,13 @@
     }
     currentSession = r.json;
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
+    
+    // Set language and direction dynamically from preferred_language field
+    const userLang = r.json.user?.preferred_language || 'ar';
+    const htmlRoot = document.getElementById('htmlRoot') || document.documentElement;
+    htmlRoot.setAttribute('lang', userLang);
+    htmlRoot.setAttribute('dir', userLang === 'ar' ? 'rtl' : 'ltr');
+    
     return r.json;
   }
   
@@ -133,27 +147,36 @@
     }
     
     const vehicles = r.json.vehicles || [];
+    allVehicles = vehicles; // Store all vehicles
     permissions = r.json.permissions || {};
     userHasVehicleCheckedOut = r.json.user_has_vehicle_checked_out || false;
     userHasPrivateVehicle = r.json.user_has_private_vehicle || false;
     recentlyAssignedVehicles = r.json.recently_assigned_vehicles || [];
     
-    // عرض تحذير إذا كان لدى المستخدم سيارة مستلمة
-    if (userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
-      showWarningMessage();
+    // Show/hide random assignment button
+    if (randomAssignmentBtn) {
+      const shouldShowRandom = !userHasVehicleCheckedOut && (permissions.can_assign_vehicle || permissions.can_override_department);
+      randomAssignmentBtn.style.display = shouldShowRandom ? 'inline-block' : 'none';
     }
     
-    // عرض زر القرعة إذا كان المستخدم مؤهلاً
-    if (!userHasVehicleCheckedOut && !userHasPrivateVehicle && permissions.can_self_assign_vehicle) {
-      showRandomAssignmentButton();
+    // Show/hide admin return button
+    if (adminReturnBtn) {
+      const isAdmin = permissions.is_admin || permissions.can_self_assign_vehicle;
+      adminReturnBtn.style.display = isAdmin ? 'inline-block' : 'none';
+    }
+    
+    // عرض تحذير إذا كان لدى المستخدم سيارة مستلمة
+    if (userHasVehicleCheckedOut && !permissions.can_self_assign_vehicle) {
+      showWarningMessage();
     }
     
     if (vehicles.length === 0) {
       if (vehiclesContainer) vehiclesContainer.innerHTML = `<div class="empty-state"><h3>لا توجد مركبات</h3><p>تحقق من الفلاتر أو الصلاحيات.</p></div>`;
+      if (vehicleCountEl) vehicleCountEl.textContent = 'عدد المركبات: 0';
       return;
     }
     
-    renderVehicleCards(vehicles);
+    applyClientSideFilters();
     console.log('Loaded', vehicles.length, 'vehicles');
   }
   
@@ -178,6 +201,40 @@
   }
   
   // عرض زر القرعة العشوائية
+  function applyClientSideFilters() {
+    let filtered = allVehicles.slice();
+    
+    // Filter by checkout status
+    const checkoutStatus = checkoutStatusFilter ? checkoutStatusFilter.value : '';
+    if (checkoutStatus === 'available') {
+      filtered = filtered.filter(v => v.availability_status === 'available');
+    } else if (checkoutStatus === 'checked_out') {
+      filtered = filtered.filter(v => v.availability_status !== 'available');
+    }
+    
+    // Filter by vehicle type
+    const vehicleType = vehicleTypeFilter ? vehicleTypeFilter.value : '';
+    if (vehicleType) {
+      filtered = filtered.filter(v => v.vehicle_mode === vehicleType);
+    }
+    
+    // Filter by movement type (availability for pickup/return)
+    const movementType = movementTypeFilter ? movementTypeFilter.value : '';
+    if (movementType === 'pickup') {
+      filtered = filtered.filter(v => v.can_pickup);
+    } else if (movementType === 'return') {
+      filtered = filtered.filter(v => v.can_return);
+    }
+    
+    // Update vehicle count
+    if (vehicleCountEl) {
+      vehicleCountEl.textContent = `عدد المركبات: ${filtered.length}`;
+    }
+    
+    renderVehicleCards(filtered);
+  }
+  
+  // عرض زر القرعة العشوائية (legacy - now handled in loadVehicles)
   function showRandomAssignmentButton() {
     // إزالة أي زر سابق
     const existingButton = document.querySelector('.random-assignment-btn');
@@ -208,10 +265,12 @@
                 'هاتف السائق: ' + r.json.vehicle.driver_phone);
           loadVehicles(); // إعادة تحميل القائمة
         } else {
-          alert('فشل السحب العشوائي: ' + r.json.message);
+          // Display error message from JSON response
+          alert('فشل السحب العشوائي: ' + (r.json.message || 'خطأ غير معروف'));
         }
       } else {
-        alert('خطأ في الاتصال بالخادم');
+        const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال بالخادم';
+        alert(errorMsg.includes('خطأ') ? errorMsg : 'خطأ في الاتصال بالخادم: ' + errorMsg);
       }
     });
     
@@ -303,20 +362,30 @@
         });
         html += '</div>';
         
+        // Show checkout user info if vehicle is checked out
+        if (v.is_currently_checked_out && v.current_checkout_by) {
+          const userLang = currentSession?.user?.preferred_language || 'ar';
+          const checkoutLabel = userLang === 'ar' ? 'مستلم بواسطة' : 'Checked out by';
+          html += `<div class="checkout-user-info">
+            <strong>${checkoutLabel}:</strong> ${v.current_checkout_by}`;
+          if (v.checkout_user_name || v.checkout_user_phone) {
+            html += ` (${v.checkout_user_name || ''}${v.checkout_user_name && v.checkout_user_phone ? ', ' : ''}${v.checkout_user_phone || ''})`;
+          }
+          html += `</div>`;
+        }
+        
         html += `<div class="vehicle-status-badge ${statusBadgeClass}">${statusText}</div>`;
         
         html += '<div class="vehicle-actions">';
         
-        // تحديد الأزرار المتاحة
+        // تحديد الأزرار المتاحة - NO RETURN BUTTONS ON CARDS!
         if (v.can_pickup && !userHasVehicleCheckedOut) {
           html += `<button class="btn btn-pickup" onclick="window.pickupVehicle('${v.vehicle_code}')"><span>🚗</span> استلام</button>`;
         } else if (v.availability_status === 'available' && userHasVehicleCheckedOut && !permissions.can_assign_vehicle) {
           html += `<button class="btn btn-disabled" disabled><span>🚫</span> لديك سيارة مستلمة</button>`;
         }
         
-        if (v.can_return) {
-          html += `<button class="btn btn-return" onclick="window.returnVehicle('${v.vehicle_code}')"><span>↩️</span> إرجاع</button>`;
-        }
+        // NO RETURN BUTTON - removed per user request
         
         if (v.can_open_form) {
           html += `<button class="btn btn-form" onclick="window.openMovementForm('${v.vehicle_code}')"><span>📝</span> نموذج حركة</button>`;
@@ -393,10 +462,10 @@
     }
   };
   
-  // Open movement form
+  // Open movement form in new tab
   window.openMovementForm = function(vehicleCode) {
     const url = `/vehicle_management/public/add_vehicle_movements.html?vehicle_code=${encodeURIComponent(vehicleCode)}`;
-    window.open(url, '_blank', 'width=600,height=400');
+    window.open(url, '_blank');
   };
   
   // Initialize
@@ -407,6 +476,13 @@
     
     await loadReferences();
     await loadVehicles();
+    
+    // Admin return button opens form in new tab
+    if (adminReturnBtn) {
+      adminReturnBtn.addEventListener('click', () => {
+        window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank');
+      });
+    }
     
     // Event listeners
     if (searchInput) searchInput.addEventListener('input', debounce(() => loadVehicles(), 500));
@@ -428,6 +504,42 @@
     
     if (divisionFilter) divisionFilter.addEventListener('change', () => loadVehicles());
     if (statusFilter) statusFilter.addEventListener('change', () => loadVehicles());
+    
+    // Client-side filter event listeners
+    if (checkoutStatusFilter) checkoutStatusFilter.addEventListener('change', () => applyClientSideFilters());
+    if (vehicleTypeFilter) vehicleTypeFilter.addEventListener('change', () => applyClientSideFilters());
+    if (movementTypeFilter) movementTypeFilter.addEventListener('change', () => applyClientSideFilters());
+    
+    // Random assignment button click
+    if (randomAssignmentBtn) {
+      randomAssignmentBtn.addEventListener('click', async () => {
+        if (!confirm('هل تريد سحب سيارة عشوائية؟ سيتم تعيين سيارة لك بشكل عشوائي.')) return;
+        
+        const r = await fetchJson(API_RANDOM_ASSIGNMENT, { method: 'POST' });
+        if (r.ok && r.json) {
+          if (r.json.success) {
+            alert(r.json.message + '\n\nتفاصيل السيارة:\n' +
+                  'رمز المركبة: ' + r.json.vehicle.code + '\n' +
+                  'نوع المركبة: ' + r.json.vehicle.type + '\n' +
+                  'اسم السائق: ' + r.json.vehicle.driver_name + '\n' +
+                  'هاتف السائق: ' + r.json.vehicle.driver_phone);
+            loadVehicles(); // إعادة تحميل القائمة
+          } else {
+            alert('فشل السحب العشوائي: ' + (r.json.message || 'خطأ غير معروف'));
+          }
+        } else {
+          const errorMsg = r.json?.message || r.text || 'خطأ في الاتصال بالخادم';
+          alert(errorMsg.includes('خطأ') ? errorMsg : 'خطأ في الاتصال بالخادم: ' + errorMsg);
+        }
+      });
+    }
+    
+    // Admin return button click
+    if (adminReturnBtn) {
+      adminReturnBtn.addEventListener('click', () => {
+        window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank', 'width=800,height=600');
+      });
+    }
   }
   
   // Debounce helper

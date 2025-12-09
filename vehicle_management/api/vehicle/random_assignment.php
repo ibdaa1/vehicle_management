@@ -45,40 +45,46 @@ if (!$currentUser || empty($currentUser['id'])) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-// ------------------ Load role permissions & override sections ------------------
+// ------------------ Load role and build permissions (NEW role-based system) ------------------
 $roleId = intval($currentUser['role_id'] ?? 0);
-$permissions = [
-    'can_view_all_vehicles' => false, // غير مفعل افتراضياً كما طلبت، لكن يُحدث من DB إذا وُجد
-    'can_view_department_vehicles' => false,
-    'can_assign_vehicle' => false,
-    'can_self_assign_vehicle' => false,
-    'can_override_department' => false,
-    'allow_registration' => false
-];
+$roleName = '';
+$roleDescription = '';
 $overrideSections = [];
+
 if ($roleId > 0) {
-    $stmt = $conn->prepare("SELECT * FROM roles WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT name_en, description FROM roles WHERE id = ? LIMIT 1");
     if ($stmt) {
         $stmt->bind_param('i', $roleId);
         $stmt->execute();
         $r = $stmt->get_result()->fetch_assoc();
         if ($r) {
-            $permissions['can_view_all_vehicles'] = (bool)($r['can_view_all_vehicles'] ?? 0); // إضافة تحميل هذه الصلاحية
-            $permissions['can_view_department_vehicles'] = (bool)($r['can_view_department_vehicles'] ?? 0);
-            $permissions['can_assign_vehicle'] = (bool)($r['can_assign_vehicle'] ?? 0);
-            $permissions['can_self_assign_vehicle'] = (bool)($r['can_self_assign_vehicle'] ?? 0);
-            $permissions['can_override_department'] = (bool)($r['can_override_department'] ?? 0);
-            $permissions['allow_registration'] = (bool)($r['allow_registration'] ?? 0);
-            if ($permissions['can_override_department'] && !empty($r['description'])) {
-                // description format: "1+2+5"
-                $overrideSections = array_map('intval', array_filter(explode('+', $r['description'])));
+            $roleName = strtolower(trim($r['name_en'] ?? ''));
+            $roleDescription = trim($r['description'] ?? '');
+            
+            // Parse override sections for custom_user from description (format: "1+2+5")
+            if ($roleName === 'custom_user' && !empty($roleDescription)) {
+                $parts = explode('+', $roleDescription);
+                $overrideSections = array_values(array_filter(array_map('intval', $parts), function($v) { return $v > 0; }));
             }
         }
         $stmt->close();
     }
 }
+
+// Determine role type
+$adminRoles = ['super_admin', 'admin', 'shift_supervisor', 'maintenance_supervisor'];
+$isAdminRole = in_array($roleName, $adminRoles);
+$isCustomUser = ($roleName === 'custom_user');
+// Treat any unrecognized role as regular_user (fallback)
+$isRegularUser = ($roleName === 'regular_user') || (!$isAdminRole && !$isCustomUser && !empty($roleName));
+
 $empId = $currentUser['emp_id'] ?? '';
-error_log("Debug: User ID={$currentUser['id']} | section_id=" . ($currentUser['section_id'] ?? 'NULL') . " | department_id=" . ($currentUser['department_id'] ?? 'NULL') . " | overrideSections=" . implode(',', $overrideSections) . " | can_view_all_vehicles=" . ($permissions['can_view_all_vehicles'] ? 'true' : 'false'));
+
+// Only log debug info when debug=1 parameter is present
+if (isset($_GET['debug']) && $_GET['debug'] === '1') {
+    error_log("Debug: User ID={$currentUser['id']} | Role={$roleName} | section_id=" . ($currentUser['section_id'] ?? 'NULL') . " | department_id=" . ($currentUser['department_id'] ?? 'NULL') . " | overrideSections=" . implode(',', $overrideSections) . " | isAdmin=" . ($isAdminRole ? 'true' : 'false'));
+}
+
 // ------------------ Prevent user who already has picked vehicle ------------------
 $activeCheckStmt = $conn->prepare("
     SELECT vm.vehicle_code
@@ -96,7 +102,10 @@ $activeCheckStmt->bind_param('s', $empId);
 $activeCheckStmt->execute();
 $activeResult = $activeCheckStmt->get_result()->fetch_assoc();
 $activeCheckStmt->close();
-if ($activeResult) {
+
+// Only prevent if user is not admin
+// Admin can assign multiple vehicles, regular/custom users cannot
+if ($activeResult && !$isAdminRole) {
     echo json_encode(['success' => false, 'message' => 'لديك سيارة مستلمة (' . $activeResult['vehicle_code'] . '). أرجعها أولاً.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
@@ -110,6 +119,23 @@ if ($privateResult['cnt'] > 0) {
     echo json_encode(['success' => false, 'message' => 'لديك سيارة خاصة. لا يمكن القرعة.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+// ------------------ Get recently assigned vehicles (within 24 hours) ------------------
+$recentlyAssignedVehicles = [];
+$recentStmt = $conn->prepare("
+    SELECT DISTINCT vehicle_code
+    FROM vehicle_movements
+    WHERE performed_by = ?
+    AND operation_type = 'pickup'
+    AND movement_datetime >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+");
+$recentStmt->bind_param('s', $empId);
+$recentStmt->execute();
+$recentResult = $recentStmt->get_result();
+while ($row = $recentResult->fetch_assoc()) {
+    $recentlyAssignedVehicles[] = $row['vehicle_code'];
+}
+$recentStmt->close();
 // ------------------ Build WHERE filters for visible vehicles ------------------
 $where = [];
 $params = [];
@@ -135,31 +161,23 @@ $where[] = "NOT EXISTS (
             AND vm2.movement_datetime > vm.movement_datetime
       )
 )";
-// Visibility clause group
+// Visibility clause group (NEW role-based logic)
 $visibilityClauses = [];
-if ($permissions['can_view_all_vehicles']) {
-    // إذا كانت الصلاحية مفعلة (رغم أنها غير مفعلة افتراضياً)، أضف شرطاً يسمح برؤية كل السيارات
+if ($isAdminRole) {
+    // Admin: See all shift vehicles
     $visibilityClauses[] = "1=1";
 } else {
-    // الشروط العادية
-    // 1) Vehicles in same section are visible to everyone (default)
-    if (!empty($currentUser['section_id'])) {
-        $visibilityClauses[] = "v.section_id = ?";
-        $params[] = intval($currentUser['section_id']);
-        $types .= 'i';
-    }
-    // 2) If role grants department view, include department vehicles
-    if ($permissions['can_view_department_vehicles'] && !empty($currentUser['department_id'])) {
-        $visibilityClauses[] = "v.department_id = ?";
-        $params[] = intval($currentUser['department_id']);
-        $types .= 'i';
-    }
-    // 3) If role has override sections, include them
-    if (!empty($overrideSections)) {
-        // build placeholders
+    // Non-admin: regular_user or custom_user
+    if ($isCustomUser && !empty($overrideSections)) {
+        // custom_user: See shift vehicles in specified sections from description
         $ph = implode(',', array_fill(0, count($overrideSections), '?'));
         $visibilityClauses[] = "v.section_id IN ($ph)";
         foreach ($overrideSections as $sec) { $params[] = intval($sec); $types .= 'i'; }
+    } elseif ($isRegularUser && !empty($currentUser['section_id'])) {
+        // regular_user: See shift vehicles in their section only
+        $visibilityClauses[] = "v.section_id = ?";
+        $params[] = intval($currentUser['section_id']);
+        $types .= 'i';
     }
 }
 // If no visibility clause ended up, deny
@@ -210,21 +228,16 @@ if (!$availableVehicle) {
     echo json_encode(['success' => false, 'message' => 'لا سيارات متاحة في قسمك للقرعة.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
-// ------------------ Assignment authorization checks ------------------
-// Rule implemented as per your specs:
-// - If role has can_self_assign_vehicle => can pick any available vehicle (no section restriction).
-// - Else if role has can_assign_vehicle => can pick only if vehicle.section_id == user.section_id (same section only).
-// - Else => cannot assign (even if visible).
+// ------------------ Assignment authorization checks (NEW role-based) ------------------
+// Rule: 
+// - Admin roles: Can assign any available vehicle
+// - regular_user/custom_user: Can assign (they use random assignment)
 $canAssignThis = false;
-if ($permissions['can_self_assign_vehicle']) {
-    $canAssignThis = true; // يسمح للجميع (تسليم واستلام بدون قيود)
-} elseif ($permissions['can_assign_vehicle']) {
-    // can assign, but only from same section
-    if (intval($availableVehicle['section_id']) === intval($currentUser['section_id'])) {
-        $canAssignThis = true;
-    } else {
-        $canAssignThis = false;
-    }
+if ($isAdminRole) {
+    $canAssignThis = true; // Admin can assign any vehicle
+} elseif ($isRegularUser || $isCustomUser) {
+    // Regular and custom users can assign via random (already filtered by visibility)
+    $canAssignThis = true;
 } else {
     $canAssignThis = false;
 }
@@ -232,6 +245,14 @@ if (!$canAssignThis) {
     echo json_encode(['success' => false, 'message' => 'لا توجد صلاحية لاستلام هذه السيارة.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+// ------------------ Check if vehicle was recently assigned (24 hours) ------------------
+$vehicleCode = $availableVehicle['vehicle_code'];
+if (in_array($vehicleCode, $recentlyAssignedVehicles) && !$isAdminRole) {
+    echo json_encode(['success' => false, 'message' => 'لا يمكن استلام نفس السيارة خلال 24 ساعة. السيارة: ' . $vehicleCode], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 // ------------------ Insert movement (pickup) ------------------
 $createdBy = $currentUser['emp_id'] ?? $empId;
 $notes = 'قرعة عشوائية - المستخدم: ' . $createdBy;
@@ -240,7 +261,6 @@ if ($insertStmt === false) {
     echo json_encode(['success' => false, 'message' => 'خطأ في تحضير تسجيل الحركة: ' . $conn->error], JSON_UNESCAPED_UNICODE);
     exit;
 }
-$vehicleCode = $availableVehicle['vehicle_code'];
 $insertStmt->bind_param('sssss', $vehicleCode, $empId, $notes, $createdBy, $createdBy);
 if ($insertStmt->execute()) {
     echo json_encode([
