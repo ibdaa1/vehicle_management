@@ -110,8 +110,36 @@
       htmlRoot.setAttribute('dir', userLang === 'ar' ? 'rtl' : 'ltr');
     }
     
+    // تحديث النصوص في الصفحة بعد تحميل الترجمات
+    updatePageTexts();
+    
     if (loggedUserEl) loggedUserEl.textContent = `${r.json.user.username || ''} (${r.json.user.emp_id || ''})`;
     return r.json;
+  }
+  
+  // دالة لتحديث النصوص في الصفحة بعد تحميل الترجمات
+  function updatePageTexts() {
+    // تحديث العناوين
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    if (pageTitle) pageTitle.textContent = t('page_title_main', userLang === 'ar' ? 'لوحة التحكم السريع للمركبات' : 'Quick Vehicle Control Panel');
+    if (pageSubtitle) pageSubtitle.textContent = t('page_subtitle_main', userLang === 'ar' ? 'استلام وإرجاع المركبات المتاحة' : 'Pick up and return available vehicles');
+    
+    // تحديث placeholder للبحث
+    if (searchInput) searchInput.placeholder = t('search_placeholder_main', userLang === 'ar' ? 'بحث (رقم المركبة، السائق، النوع...)' : 'Search (vehicle code, driver, type...)');
+    
+    // تحديث خيارات الفلاتر الافتراضية
+    const allStatusText = userLang === 'ar' ? 'جميع الحالات التشغيلية' : 'All Operational Statuses';
+    const operationalText = userLang === 'ar' ? 'قيد التشغيل' : 'Operational';
+    const maintenanceText = userLang === 'ar' ? 'صيانة' : 'Maintenance';
+    const outOfServiceText = userLang === 'ar' ? 'خارج الخدمة' : 'Out of Service';
+    
+    if (statusFilter && statusFilter.options.length > 0) {
+      statusFilter.options[0].textContent = allStatusText;
+      if (statusFilter.options.length > 1) statusFilter.options[1].textContent = operationalText;
+      if (statusFilter.options.length > 2) statusFilter.options[2].textContent = maintenanceText;
+      if (statusFilter.options.length > 3) statusFilter.options[3].textContent = outOfServiceText;
+    }
   }
   
   // Load references - إضافة معامل lang
@@ -391,7 +419,8 @@
   
   // Pickup vehicle - إضافة معامل lang
   window.pickupVehicle = async function(vehicleCode) {
-    if (!confirm(t('pickup_confirm', `هل تريد استلام المركبة ${vehicleCode}؟`).replace('${vehicleCode}', vehicleCode))) return;
+    const confirmMsg = t('pickup_confirm', 'هل تريد استلام المركبة @@?').replace('@@', vehicleCode).replace('${vehicleCode}', vehicleCode);
+    if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
@@ -428,7 +457,8 @@
   
   // Return vehicle - إضافة معامل lang
   window.returnVehicle = async function(vehicleCode) {
-    if (!confirm(t('return_confirm', `هل تريد إرجاع المركبة ${vehicleCode}؟`).replace('${vehicleCode}', vehicleCode))) return;
+    const confirmMsg = t('return_confirm', 'هل تريد إرجاع المركبة @@?').replace('@@', vehicleCode).replace('${vehicleCode}', vehicleCode);
+    if (!confirm(confirmMsg)) return;
     
     const empId = currentSession?.user?.emp_id;
     if (!empId) {
