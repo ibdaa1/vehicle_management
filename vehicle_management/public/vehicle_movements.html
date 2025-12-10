@@ -1,115 +1,164 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>حركة المركبات (استلام وإرجاع)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>حركة المركبات - استلام وإرجاع</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_movements.css">
-  <style>
-    /* إضافة بعض الأنماط الأساسية للبطاقات */
-    .vehicle-cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
-      padding: 20px 0;
-    }
-    .vehicle-card {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      position: relative;
-      background: #fff;
-    }
-    .vehicle-card.available { border-left: 5px solid #28a745; }
-    .vehicle-card.checked-out { border-left: 5px solid #ffc107; }
-    .vehicle-card .vehicle-code {
-      font-size: 1.25rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .vehicle-card .vehicle-actions {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    .vehicle-card .vehicle-status-badge {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
-    .status-available { background-color: #28a745; color: white; }
-    .status-checked-out-by-me { background-color: #ffc107; color: #333; }
-    .vehicle-info-row {
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px dashed #eee;
-      padding: 4px 0;
-      font-size: 0.9rem;
-    }
-    .info-label { color: #666; }
-    .filter-controls {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .filter-controls .form-control {
-      flex: 1;
-      min-width: 150px;
-    }
-  </style>
 </head>
 <body>
-  <main class="container">
-    <section class="card" id="movementsCard">
-      <div class="header">
-        <div class="brand">
-          <div class="logo" aria-hidden="true">HCS</div>
-          <div>
-            <h1 id="pageTitle">لوحة التحكم السريع للمركبات</h1>
-            <div class="subtitle" id="pageSubtitle">استلام وإرجاع المركبات المتاحة</div>
+  <div class="app-container">
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <div class="logo-icon">HCS</div>
+        </div>
+        <div class="brand-info">
+          <h1 class="page-title">لوحة تحكم حركة المركبات</h1>
+          <p class="page-subtitle">إدارة عمليات الاستلام والإرجاع</p>
+        </div>
+      </div>
+      
+      <div class="header-user">
+        <div class="org-name" id="orgName">وزارة الصحة - إدارة المركبات</div>
+        <div class="user-profile">
+          <div class="user-avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" fill="#4A5568"/>
+              <path d="M12 14C7.58 14 4 15.79 4 18V20H20V18C20 15.79 16.42 14 12 14Z" fill="#4A5568"/>
+            </svg>
+          </div>
+          <div class="user-details">
+            <span class="user-name" id="loggedUser">---</span>
+            <span class="user-role">مستخدم النظام</span>
           </div>
         </div>
-        <div style="text-align:left">
-          <div class="meta" id="orgName">HCS Department</div>
-          <div class="userInfo" id="loggedUser">---</div>
+      </div>
+    </header>
+
+    <!-- Quick Actions Bar -->
+    <div class="quick-actions-bar">
+      <div class="actions-left">
+        <button id="randomAssignmentBtn" class="action-btn primary-btn">
+          <span class="btn-icon">🎲</span>
+          <span class="btn-text">سحب عشوائي</span>
+        </button>
+        <button id="adminReturnBtn" class="action-btn secondary-btn">
+          <span class="btn-icon">↩️</span>
+          <span class="btn-text">إرجاع مركبة</span>
+        </button>
+      </div>
+      
+      <div class="actions-right">
+        <div class="vehicle-counter" id="vehicleCountContainer">
+          <span class="counter-icon">🚗</span>
+          <span class="counter-text">عدد المركبات:</span>
+          <span class="counter-value" id="vehicleCount">0</span>
         </div>
       </div>
-     
-      <div class="filter-controls">
-        <input type="text" id="searchInput" class="form-control" placeholder="بحث (رقم المركبة، السائق، النوع...)" />
-       
-        <select id="departmentFilter" class="form-control">
-          <option value="">جميع الإدارات</option>
-        </select>
-       
-        <select id="sectionFilter" class="form-control">
-          <option value="">جميع الأقسام</option>
-        </select>
-       
-        <select id="divisionFilter" class="form-control">
-          <option value="">جميع الشعب</option>
-        </select>
-        <select id="statusFilter" class="form-control">
-            <option value="">جميع الحالات التشغيلية</option>
-            <option value="operational">قيد التشغيل</option>
-            <option value="maintenance">صيانة</option>
-            <option value="out_of_service">خارج الخدمة</option>
-        </select>
-      </div>
-      <div id="loadingMsg" style="text-align: center; padding: 20px; display: none;">
-        جاري تحميل المركبات...
-      </div>
-      <div id="vehiclesContainer" class="vehicles-grid">
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Filters Section -->
+      <section class="filters-section">
+        <div class="search-box">
+          <div class="search-icon">🔍</div>
+          <input type="text" id="searchInput" class="search-input" placeholder="ابحث برقم المركبة، السائق، النوع...">
+          <button class="search-clear" onclick="document.getElementById('searchInput').value = ''; loadVehicles();">✕</button>
         </div>
-     
-    </section>
-  </main>
+        
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label class="filter-label">الإدارة</label>
+            <select id="departmentFilter" class="filter-select">
+              <option value="">جميع الإدارات</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">القسم</label>
+            <select id="sectionFilter" class="filter-select">
+              <option value="">جميع الأقسام</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">الشعبة</label>
+            <select id="divisionFilter" class="filter-select">
+              <option value="">جميع الشعب</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">الحالة التشغيلية</label>
+            <select id="statusFilter" class="filter-select">
+              <option value="">الكل</option>
+              <option value="operational">قيد التشغيل</option>
+              <option value="maintenance">صيانة</option>
+              <option value="out_of_service">خارج الخدمة</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">حالة الاستلام</label>
+            <select id="checkoutStatusFilter" class="filter-select">
+              <option value="">الكل</option>
+              <option value="available">متاحة</option>
+              <option value="checked_out">مستلمة</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">نوع المركبة</label>
+            <select id="vehicleTypeFilter" class="filter-select">
+              <option value="">الكل</option>
+              <option value="shift">ورديات</option>
+              <option value="private">خاصة</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">نوع الحركة</label>
+            <select id="movementTypeFilter" class="filter-select">
+              <option value="">الكل</option>
+              <option value="pickup">استلام</option>
+              <option value="return">إرجاع</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label class="filter-label">&nbsp;</label>
+            <button class="filter-reset-btn" onclick="resetFilters()">
+              <span class="reset-icon">🔄</span>
+              <span>إعادة تعيين</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Loading State -->
+      <div id="loadingMsg" class="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">جاري تحميل المركبات...</div>
+      </div>
+
+      <!-- Vehicles Grid -->
+      <section class="vehicles-grid-section">
+        <div id="vehiclesContainer" class="vehicles-grid">
+          <!-- Cards will be inserted here by JavaScript -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Warning Messages Area -->
+    <div id="warningArea" class="warning-area"></div>
+  </div>
+
   <script src="/vehicle_management/assets/js/vehicle_movements.js"></script>
 </body>
 </html>
