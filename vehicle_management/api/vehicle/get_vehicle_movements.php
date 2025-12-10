@@ -299,6 +299,9 @@ SELECT
     last_mov.performed_by AS last_performed_by,
     last_mov.movement_datetime AS last_movement_date,
     last_mov.notes AS last_notes,
+    last_mov.latitude AS last_latitude,
+    last_mov.longitude AS last_longitude,
+    last_mov.id AS last_movement_id,
     (
         SELECT COUNT(*) FROM vehicle_movements vm
         WHERE vm.vehicle_code = v.vehicle_code
@@ -452,6 +455,9 @@ while ($row = $result->fetch_assoc()) {
         'last_performed_by' => $row['last_performed_by'] ?? null,
         'last_movement_date' => $row['last_movement_date'] ?? null,
         'last_notes' => $row['last_notes'] ?? null,
+        'last_movement_id' => isset($row['last_movement_id']) ? (int)$row['last_movement_id'] : null,
+        'latitude' => $row['last_latitude'] ?? null,
+        'longitude' => $row['last_longitude'] ?? null,
         'is_currently_checked_out' => $isCurrentlyCheckedOut,
         'current_checkout_by' => $currentCheckoutBy,
         'availability_status' => $availabilityStatus,

@@ -1315,9 +1315,6 @@
     
     // Reset form
     document.getElementById('modalVehicleCode').textContent = vehicleCode || '-';
-    document.getElementById('modalOperationType').textContent = '-';
-    document.getElementById('modalPerformedBy').textContent = '-';
-    document.getElementById('modalDateTime').textContent = '-';
     document.getElementById('modalLatitude').value = '';
     document.getElementById('modalLongitude').value = '';
     document.getElementById('modalNotes').value = '';
@@ -1331,9 +1328,9 @@
       movement_id: movementId
     };
     
-    // If we have movement ID, fetch details
-    if (movementId) {
-      await loadMovementDetails(movementId);
+    // Load movement details including coordinates
+    if (movementId || vehicleCode) {
+      await loadMovementDetails(movementId, vehicleCode);
     }
     
     // Show/hide buttons based on permissions
@@ -1351,18 +1348,54 @@
     selectedPhotos = [];
   };
   
-  // Load movement details
-  async function loadMovementDetails(movementId) {
+  // Load movement details including coordinates
+  async function loadMovementDetails(movementId, vehicleCode) {
     try {
-      console.log('Loading movement details for ID:', movementId);
+      console.log('Loading movement details for:', movementId, vehicleCode);
       
-      // Note: For now, this is a placeholder. Movement details are managed through
-      // the vehicle data already loaded. If a dedicated endpoint is needed in the future,
-      // it would be: /vehicle_management/api/vehicle/get_movement_detail.php?id=${movementId}
-      // The current implementation works by:
-      // 1. Opening modal with vehicle_code
-      // 2. Fetching/displaying photos from database by vehicle_code
-      // 3. Loading coordinates from the movement if movement_id is provided
+      // Try to find the movement in allVehicles array to get coordinates
+      if (vehicleCode && allVehicles && allVehicles.length > 0) {
+        const vehicle = allVehicles.find(v => v.vehicle_code === vehicleCode);
+        if (vehicle) {
+          console.log('Found vehicle data:', vehicle);
+          
+          // If vehicle has movement data with coordinates from a recent query
+          // We need to fetch fresh data from the movements table
+          // For now, we'll try to get it from the API
+        }
+      }
+      
+      // Fetch movement coordinates from API if we have vehicle_code
+      if (vehicleCode) {
+        try {
+          const response = await fetchData(
+            `/vehicle_management/api/vehicle/get_vehicle_movements.php?vehicle_code=${vehicleCode}&lang=${userLang}`
+          );
+          
+          if (response.success && response.data && response.data.vehicles && response.data.vehicles.length > 0) {
+            const vehicleData = response.data.vehicles[0];
+            console.log('Loaded vehicle data with coordinates:', vehicleData);
+            
+            // Load coordinates if available
+            if (vehicleData.latitude && vehicleData.longitude) {
+              document.getElementById('modalLatitude').value = vehicleData.latitude;
+              document.getElementById('modalLongitude').value = vehicleData.longitude;
+            }
+            
+            // Load notes if available
+            if (vehicleData.notes) {
+              document.getElementById('modalNotes').value = vehicleData.notes;
+            }
+            
+            // Update movement_id if not already set
+            if (vehicleData.last_movement_id && !currentMovementData.movement_id) {
+              currentMovementData.movement_id = vehicleData.last_movement_id;
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching movement coordinates:', error);
+        }
+      }
       
     } catch (error) {
       console.error('Error loading movement details:', error);
@@ -1512,7 +1545,7 @@
     }
   };
   
-  // Handle photo selection
+  // Handle photo selection with 6 photo limit
   window.handlePhotoSelection = function() {
     const input = document.getElementById('photoUploadInput');
     const preview = document.getElementById('selectedPhotosPreview');
@@ -1525,7 +1558,16 @@
       return;
     }
     
-    selectedPhotos = Array.from(input.files);
+    // Limit to 6 photos
+    const maxPhotos = 6;
+    const files = Array.from(input.files);
+    
+    if (files.length > maxPhotos) {
+      alert(`يمكنك رفع ${maxPhotos} صور كحد أقصى. تم اختيار أول ${maxPhotos} صور.`);
+      selectedPhotos = files.slice(0, maxPhotos);
+    } else {
+      selectedPhotos = files;
+    }
     
     // Show upload button
     if (uploadBtn) uploadBtn.style.display = 'inline-flex';
@@ -1606,7 +1648,8 @@
       });
       
       if (result.success && result.data && result.data.success) {
-        alert(t('messages.photos_uploaded') + ': ' + result.data.total_uploaded);
+        const totalUploaded = result.data.total_uploaded || result.data.uploaded?.length || 0;
+        alert(t('messages.photos_uploaded') + ': ' + totalUploaded);
         
         // Clear selection
         selectedPhotos = [];
