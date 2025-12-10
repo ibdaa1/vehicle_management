@@ -1333,6 +1333,12 @@
     document.getElementById('selectedPhotosPreview').innerHTML = '';
     selectedPhotos = [];
     
+    // Hide return button initially - shows after photo upload
+    const returnBtn = document.getElementById('returnVehicleBtn');
+    if (returnBtn) {
+      returnBtn.style.display = 'none';
+    }
+    
     // Store current data
     currentMovementData = {
       vehicle_code: vehicleCode,
@@ -1653,7 +1659,7 @@
       });
       
       if (result.success && result.data && result.data.success) {
-        const totalUploaded = result.data.total_uploaded || result.data.uploaded?.length || 0;
+        const totalUploaded = result.data.uploaded_files?.length || 0;
         alert(t('messages.photos_uploaded') + ': ' + totalUploaded);
         
         // Clear selection
@@ -1661,6 +1667,12 @@
         document.getElementById('photoUploadInput').value = '';
         document.getElementById('selectedPhotosPreview').innerHTML = '';
         if (uploadBtn) uploadBtn.style.display = 'none';
+        
+        // Show return button after successful upload
+        const returnBtn = document.getElementById('returnVehicleBtn');
+        if (returnBtn) {
+          returnBtn.style.display = 'inline-flex';
+        }
         
         // Reload existing photos if we have movement ID
         if (currentMovementData.movement_id) {
@@ -1683,6 +1695,45 @@
         uploadBtn.disabled = false;
         uploadBtn.innerHTML = '<span class="btn-icon">☁️</span><span>' + t('actions.upload_photos') + '</span>';
       }
+    }
+  };
+  
+  // Return vehicle from modal - shown after photo upload
+  window.returnVehicleFromModal = async function() {
+    if (!currentMovementData || !currentMovementData.vehicle_code) {
+      alert('No vehicle code available');
+      return;
+    }
+    
+    const confirmMsg = userLang === 'ar' ? 
+      `هل تريد إرجاع المركبة ${currentMovementData.vehicle_code}؟` : 
+      `Return vehicle ${currentMovementData.vehicle_code}?`;
+    
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('vehicle_code', currentMovementData.vehicle_code);
+      formData.append('operation_type', 'return');
+      formData.append('performed_by', currentSession?.user?.emp_id || '');
+      
+      const result = await fetchData(API_ADD_MOVEMENT, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (result.success && result.data && result.data.success) {
+        alert(t('messages.return_success'));
+        closeMovementModal();
+        loadVehicles();
+      } else {
+        alert(result.data?.message || t('errors.return_failed'));
+      }
+    } catch (error) {
+      console.error('Error returning vehicle:', error);
+      alert(t('errors.return_failed') + ': ' + error.message);
     }
   };
   
