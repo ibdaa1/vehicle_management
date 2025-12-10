@@ -21,7 +21,13 @@
     "shift": "ورديات",
     "vehicle_details": "تفاصيل المركبة",
     "details": "تفاصيل",
-    "availability_status": "حالة التوفر"
+    "availability_status": "حالة التوفر",
+    "latitude": "خط العرض",
+    "longitude": "خط الطول",
+    "coordinates": "الإحداثيات",
+    "notes": "الملاحظات",
+    "photos": "الصور",
+    "employee_id": "الرقم الإداري"
   },
   "status": {
     "operational": "قيد التشغيل",
@@ -43,13 +49,22 @@
     "return": "إرجاع",
     "open_form": "فتح النموذج",
     "random_assignment": "سحب عشوائي لسيارة",
-    "admin_return": "↩️ إرجاع مركبة"
+    "admin_return": "↩️ إرجاع مركبة",
+    "pull_coordinates": "سحب الإحداثيات",
+    "save_coordinates": "حفظ الإحداثيات",
+    "upload_photo": "رفع صورة",
+    "upload_photos": "رفع صور",
+    "view_photos": "عرض الصور"
   },
   "messages": {
     "you_have_vehicle": "لديك مركبة مستلمة",
     "pickup_success": "تم استلام المركبة بنجاح",
     "return_success": "تم إرجاع المركبة بنجاح",
-    "loading_vehicles": "جاري تحميل المركبات..."
+    "loading_vehicles": "جاري تحميل المركبات...",
+    "coordinates_saved": "تم حفظ الإحداثيات بنجاح",
+    "photos_uploaded": "تم رفع الصور بنجاح",
+    "getting_location": "جاري الحصول على الموقع...",
+    "location_obtained": "تم الحصول على الموقع بنجاح"
   },
   "warnings": {
     "attention": "تنبيه",
@@ -71,7 +86,13 @@
     "unknown_session": "خطأ غير معروف في الجلسة",
     "load_failed": "فشل تحميل المركبات",
     "render_failed": "خطأ في العرض",
-    "contact_admin": "يرجى الاتصال بالمسؤول"
+    "contact_admin": "يرجى الاتصال بالمسؤول",
+    "geolocation_not_supported": "المتصفح لا يدعم خدمة تحديد الموقع",
+    "geolocation_failed": "فشل الحصول على الموقع",
+    "coordinates_save_failed": "فشل حفظ الإحداثيات",
+    "photo_upload_failed": "فشل رفع الصورة",
+    "no_photos_selected": "لم يتم اختيار صور",
+    "invalid_coordinates": "إحداثيات غير صالحة"
   },
   "empty": {
     "no_vehicles": "لم يتم العثور على مركبات",
