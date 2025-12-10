@@ -934,8 +934,7 @@
     
     if (canViewDetails) {
       const vehicleCode = vehicle.vehicle_code || vehicle.id || '';
-      // Note: movement_id would need to come from the API. For now, pass null
-      // The modal can fetch details using vehicle_code if needed
+      // Pass vehicle_code; movement_id can be null as API will look it up automatically
       const movementId = vehicle.movement_id || null;
       actions += `
         <button class="action-button btn-details" onclick="window.openMovementModal('${vehicleCode}', ${movementId})">
@@ -1460,8 +1459,8 @@
   window.saveCoordinates = async function() {
     console.log('Saving coordinates...');
     
-    if (!currentMovementData || !currentMovementData.movement_id) {
-      alert('No movement ID available');
+    if (!currentMovementData || !currentMovementData.vehicle_code) {
+      alert('No vehicle code available');
       return;
     }
     
@@ -1484,8 +1483,11 @@
     
     try {
       const formData = new FormData();
-      formData.append('movement_id', currentMovementData.movement_id);
+      // Always send vehicle_code - API will find the movement_id if not provided
       formData.append('vehicle_code', currentMovementData.vehicle_code);
+      if (currentMovementData.movement_id) {
+        formData.append('movement_id', currentMovementData.movement_id);
+      }
       formData.append('latitude', latitude);
       formData.append('longitude', longitude);
       

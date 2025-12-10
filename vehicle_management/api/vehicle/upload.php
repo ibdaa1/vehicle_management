@@ -258,8 +258,15 @@ for ($i = 0; $i < $fileCount; $i++) {
         continue;
     }
     
-    // Generate unique filename
-    $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+    // Generate unique filename with validated extension based on MIME type
+    $extensionMap = [
+        'image/jpeg' => 'jpg',
+        'image/jpg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif'
+    ];
+    
+    $extension = $extensionMap[$detectedType] ?? 'jpg'; // Default to jpg if unknown
     $uniqueName = uniqid('vm_' . $vehicleCode . '_', true) . '.' . $extension;
     $uploadPath = $uploadDir . $uniqueName;
     $relativeUrl = '/vehicle_management/uploads/vehicle_movements/' . $uniqueName;
@@ -273,8 +280,25 @@ for ($i = 0; $i < $fileCount; $i++) {
         continue;
     }
     
-    // Set file permissions
-    chmod($uploadPath, 0644);
+    // Set restrictive file permissions (read-only for owner, not readable by others)
+    if (!chmod($uploadPath, 0640)) {
+        @unlink($uploadPath);
+        $errors[] = [
+            'file' => $fileName,
+            'error' => 'Failed to set file permissions'
+        ];
+        continue;
+    }
+    
+    // Verify file exists and is readable
+    if (!is_file($uploadPath) || !is_readable($uploadPath)) {
+        @unlink($uploadPath);
+        $errors[] = [
+            'file' => $fileName,
+            'error' => 'File verification failed after upload'
+        ];
+        continue;
+    }
     
     // Insert into database
     $insertStmt = $conn->prepare("

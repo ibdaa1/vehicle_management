@@ -145,12 +145,48 @@ if ($jsonData && json_last_error() === JSON_ERROR_NONE) {
     $longitude = isset($_POST['longitude']) ? floatval($_POST['longitude']) : null;
 }
 
-// Validate input
+// If no movement_id provided, try to get the latest active movement for this vehicle
+if (empty($movementId) && !empty($vehicleCode)) {
+    $stmt = $conn->prepare("
+        SELECT id FROM vehicle_movements
+        WHERE vehicle_code = ?
+          AND operation_type = 'pickup'
+          AND NOT EXISTS (
+              SELECT 1 FROM vehicle_movements vm2
+              WHERE vm2.vehicle_code = vehicle_movements.vehicle_code
+                AND vm2.operation_type = 'return'
+                AND vm2.movement_datetime > vehicle_movements.movement_datetime
+          )
+        ORDER BY movement_datetime DESC
+        LIMIT 1
+    ");
+    if ($stmt) {
+        $stmt->bind_param('s', $vehicleCode);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if ($result) {
+            $movementId = intval($result['id']);
+        }
+    }
+}
+
+// Validate input - vehicle_code is now required since we can lookup movement_id
+if (empty($vehicleCode)) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Vehicle code is required'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// After trying to get movement_id, validate it exists
 if (empty($movementId)) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Movement ID is required'
+        'message' => 'No active movement found for this vehicle. Movement ID is required.'
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }

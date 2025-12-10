@@ -17,23 +17,54 @@
 -- 1. Add GPS Coordinate Columns to vehicle_movements
 -- =====================================================
 
--- Note: These ALTER statements may fail if columns already exist.
--- This is expected and safe - just ignore the errors.
+-- Use a transaction for atomicity
+START TRANSACTION;
 
--- Add latitude column
-ALTER TABLE vehicle_movements 
-ADD COLUMN latitude DECIMAL(10, 8) NULL 
-COMMENT 'GPS latitude coordinate (-90 to 90)';
+-- Check and add latitude column
+SET @dbname = DATABASE();
+SET @tablename = 'vehicle_movements';
+SET @columnname = 'latitude';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE 
+      (TABLE_SCHEMA = @dbname)
+      AND (TABLE_NAME = @tablename)
+      AND (COLUMN_NAME = @columnname)
+  ) > 0,
+  "SELECT 'Column latitude already exists' AS message;",
+  "ALTER TABLE vehicle_movements ADD COLUMN latitude DECIMAL(10, 8) NULL COMMENT 'GPS latitude coordinate (-90 to 90)';"
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
--- Add longitude column
-ALTER TABLE vehicle_movements 
-ADD COLUMN longitude DECIMAL(11, 8) NULL 
-COMMENT 'GPS longitude coordinate (-180 to 180)';
+-- Check and add longitude column
+SET @columnname = 'longitude';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE 
+      (TABLE_SCHEMA = @dbname)
+      AND (TABLE_NAME = @tablename)
+      AND (COLUMN_NAME = @columnname)
+  ) > 0,
+  "SELECT 'Column longitude already exists' AS message;",
+  "ALTER TABLE vehicle_movements ADD COLUMN longitude DECIMAL(11, 8) NULL COMMENT 'GPS longitude coordinate (-180 to 180)';"
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+COMMIT;
+
+SELECT 'Step 1 completed: Coordinate columns added or already exist' AS status;
 
 -- =====================================================
 -- 2. Create vehicle_movement_photos Table
 -- =====================================================
 
+-- This uses IF NOT EXISTS so it's safe to run multiple times
 CREATE TABLE IF NOT EXISTS vehicle_movement_photos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     
@@ -71,6 +102,8 @@ CREATE TABLE IF NOT EXISTS vehicle_movement_photos (
   DEFAULT CHARSET=utf8mb4 
   COLLATE=utf8mb4_unicode_ci
   COMMENT='Stores photos uploaded for vehicle movements';
+
+SELECT 'Step 2 completed: vehicle_movement_photos table created or already exists' AS status;
 
 -- =====================================================
 -- 3. Verification Queries
