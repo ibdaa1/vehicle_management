@@ -1,26 +1,102 @@
 {
-  "page_title": "Vehicle Movements",
-  "page_subtitle": "View and search vehicle movements",
-  "search_placeholder": "Search (vehicle code, operation, employee...)...",
-  "all_operations": "All Operations",
-  "pickup": "Pickup",
-  "return": "Return",
-  "vehicle_code": "Vehicle Code",
-  "operation_type": "Operation Type",
-  "performed_by": "Employee",
-  "movement_date": "Date",
-  "location": "Location",
-  "photos": "Photos",
-  "actions": "Actions",
-  "view_photos": "View",
-  "delete": "Delete",
-  "no_results": "No results",
-  "loading": "Loading...",
-  "not_authenticated": "Not authenticated - please login",
-  "delete_confirm": "Are you sure you want to delete this movement?",
-  "delete_success": "Deleted successfully",
-  "delete_failed": "Delete failed",
-  "load_failed": "Failed to load list",
-  "no_photos": "No photos",
-  "photos_title": "Photos"
+  "page": {
+    "title": "Vehicle Movements Dashboard",
+    "subtitle": "Manage vehicle pickup and return operations"
+  },
+  "organization": "Ministry of Health - Vehicle Management",
+  "search": {
+    "placeholder": "Search by vehicle code, driver, type..."
+  },
+  "filters": {
+    "all_departments": "All Departments",
+    "all_sections": "All Sections",
+    "all_divisions": "All Divisions",
+    "all_statuses": "All Operational Statuses",
+    "all_checkout_statuses": "All Checkout Statuses",
+    "all_vehicle_types": "All Vehicle Types",
+    "all_movement_types": "All Movement Types"
+  },
+  "buttons": {
+    "random_assignment": "Random Draw",
+    "return_vehicle": "Return Vehicle",
+    "reset": "Reset"
+  },
+  "label": {
+    "private": "Private",
+    "shift": "Shift",
+    "vehicle_count": "Vehicles",
+    "type": "Type",
+    "manufacture_year": "Manufacture Year",
+    "driver": "Driver",
+    "phone": "Phone",
+    "department": "Department",
+    "section": "Section",
+    "division": "Division",
+    "mode": "Mode",
+    "status": "Status",
+    "checked_out_by": "Checked Out By",
+    "vehicle_details": "Vehicle Details",
+    "vehicle_code": "Vehicle Code"
+  },
+  "status": {
+    "operational": "Operational",
+    "maintenance": "Maintenance",
+    "out_of_service": "Out of Service"
+  },
+  "mode": {
+    "shift": "Shift",
+    "private": "Private"
+  },
+  "availability": {
+    "available": "Available",
+    "checked_out": "Checked Out",
+    "checked_out_by_me": "Checked Out (You)",
+    "private_unavailable": "Private - Unavailable"
+  },
+  "actions": {
+    "pickup": "Pickup",
+    "return": "Return",
+    "open_form": "Open Form"
+  },
+  "messages": {
+    "you_have_vehicle": "You have a vehicle",
+    "pickup_success": "Vehicle picked up successfully!",
+    "return_success": "Vehicle returned successfully!"
+  },
+  "confirm": {
+    "pickup": "Pickup vehicle {{code}}?",
+    "return": "Return vehicle {{code}}?",
+    "random_assignment": "Assign random vehicle?"
+  },
+  "warnings": {
+    "attention": "Attention!",
+    "has_active_vehicle": "You have an active vehicle."
+  },
+  "errors": {
+    "unknown_session": "Session error",
+    "load_failed": "Load failed",
+    "loading_failed": "Loading Failed",
+    "check_console": "Check console",
+    "render_failed": "Render Failed",
+    "contact_admin": "Contact admin",
+    "no_emp_id": "No employee ID",
+    "cannot_pickup_has_active": "Already have a vehicle",
+    "cannot_pickup_recent": "Recently assigned",
+    "pickup_failed": "Pickup failed",
+    "return_failed": "Return failed",
+    "random_failed": "Random failed",
+    "server_unreachable": "Server error"
+  },
+  "empty": {
+    "no_vehicles": "No Vehicles Found",
+    "check_filters": "Try adjusting your filters"
+  },
+  "loading": {
+    "vehicles": "Loading vehicles..."
+  },
+  "auth": {
+    "unauthorized": "Unauthorized",
+    "login_prompt": "Please login.",
+    "login": "Login"
+  }
 }
