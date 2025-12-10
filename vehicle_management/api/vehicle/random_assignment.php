@@ -176,9 +176,16 @@ if ($filterSection !== '') {
     $params[] = intval($filterSection);
     $types .= 'i';
 }
+// Read language parameter for localized names
+$lang = (isset($_GET['lang']) && $_GET['lang'] === 'en') ? 'en' : 'ar';
 $whereSql = 'WHERE ' . implode(' AND ', $where);
 // ------------------ Random selection SQL ------------------
-$sql = "SELECT v.*, d.name_ar AS department_name, s.name_ar AS section_name, dv.name_ar AS division_name
+// Use language-specific name fields based on $lang parameter
+$deptNameField = ($lang === 'en') ? "COALESCE(d.name_en, d.name_ar)" : "COALESCE(d.name_ar, d.name_en)";
+$sectNameField = ($lang === 'en') ? "COALESCE(s.name_en, s.name_ar)" : "COALESCE(s.name_ar, s.name_en)";
+$divNameField = ($lang === 'en') ? "COALESCE(dv.name_en, dv.name_ar)" : "COALESCE(dv.name_ar, dv.name_en)";
+
+$sql = "SELECT v.*, $deptNameField AS department_name, $sectNameField AS section_name, $divNameField AS division_name
         FROM vehicles v
         LEFT JOIN Departments d ON d.department_id = v.department_id
         LEFT JOIN Sections s ON s.section_id = v.section_id

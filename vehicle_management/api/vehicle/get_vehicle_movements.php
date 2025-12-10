@@ -193,6 +193,8 @@ $filterSection = $_GET['section_id'] ?? '';
 $filterDivision = $_GET['division_id'] ?? '';
 $filterStatus = $_GET['status'] ?? '';
 $q = $_GET['q'] ?? '';
+// Read language parameter for localized names
+$lang = (isset($_GET['lang']) && $_GET['lang'] === 'en') ? 'en' : 'ar';
 // Build WHERE clause for vehicles
 $where = [];
 $params = [];
@@ -247,11 +249,16 @@ if (!empty($where)) {
     $whereSql = 'WHERE ' . implode(' AND ', $where);
 }
 // استعلام محسن لجلب المركبات مع حالتها الحالية
+// Use language-specific name fields based on $lang parameter
+$deptNameField = ($lang === 'en') ? "COALESCE(d.name_en, d.name_ar)" : "COALESCE(d.name_ar, d.name_en)";
+$sectNameField = ($lang === 'en') ? "COALESCE(s.name_en, s.name_ar)" : "COALESCE(s.name_ar, s.name_en)";
+$divNameField = ($lang === 'en') ? "COALESCE(dv.name_en, dv.name_ar)" : "COALESCE(dv.name_ar, dv.name_en)";
+
 $sql = "SELECT
         v.*,
-        d.name_ar AS department_name,
-        s.name_ar AS section_name,
-        dv.name_ar AS division_name,
+        $deptNameField AS department_name,
+        $sectNameField AS section_name,
+        $divNameField AS division_name,
         last_mov.operation_type AS last_operation,
         last_mov.performed_by AS last_performed_by,
         last_mov.movement_datetime AS last_movement_date,
