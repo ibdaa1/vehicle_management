@@ -1315,6 +1315,9 @@
     
     // Reset form
     document.getElementById('modalVehicleCode').textContent = vehicleCode || '-';
+    document.getElementById('modalOperationType').textContent = '-';
+    document.getElementById('modalPerformedBy').textContent = '-';
+    document.getElementById('modalDateTime').textContent = '-';
     document.getElementById('modalLatitude').value = '';
     document.getElementById('modalLongitude').value = '';
     document.getElementById('modalNotes').value = '';
@@ -1333,7 +1336,7 @@
       await loadMovementDetails(movementId, vehicleCode);
     }
     
-    // Show/hide buttons based on permissions
+    // Show/hide buttons based on permissions (no return button)
     updateModalButtons();
   };
   
@@ -1353,47 +1356,44 @@
     try {
       console.log('Loading movement details for:', movementId, vehicleCode);
       
-      // Try to find the movement in allVehicles array to get coordinates
+      // Try to find the movement in allVehicles array to get basic info
       if (vehicleCode && allVehicles && allVehicles.length > 0) {
         const vehicle = allVehicles.find(v => v.vehicle_code === vehicleCode);
         if (vehicle) {
           console.log('Found vehicle data:', vehicle);
           
-          // If vehicle has movement data with coordinates from a recent query
-          // We need to fetch fresh data from the movements table
-          // For now, we'll try to get it from the API
-        }
-      }
-      
-      // Fetch movement coordinates from API if we have vehicle_code
-      if (vehicleCode) {
-        try {
-          const response = await fetchData(
-            `/vehicle_management/api/vehicle/get_vehicle_movements.php?vehicle_code=${vehicleCode}&lang=${userLang}`
-          );
-          
-          if (response.success && response.data && response.data.vehicles && response.data.vehicles.length > 0) {
-            const vehicleData = response.data.vehicles[0];
-            console.log('Loaded vehicle data with coordinates:', vehicleData);
-            
-            // Load coordinates if available
-            if (vehicleData.latitude && vehicleData.longitude) {
-              document.getElementById('modalLatitude').value = vehicleData.latitude;
-              document.getElementById('modalLongitude').value = vehicleData.longitude;
-            }
-            
-            // Load notes if available
-            if (vehicleData.notes) {
-              document.getElementById('modalNotes').value = vehicleData.notes;
-            }
-            
-            // Update movement_id if not already set
-            if (vehicleData.last_movement_id && !currentMovementData.movement_id) {
-              currentMovementData.movement_id = vehicleData.last_movement_id;
-            }
+          // Populate movement info from vehicle data
+          if (vehicle.last_operation) {
+            const operationType = vehicle.last_operation === 'pickup' ? 'استلام' : 'إرجاع';
+            document.getElementById('modalOperationType').textContent = operationType;
           }
-        } catch (error) {
-          console.error('Error fetching movement coordinates:', error);
+          
+          if (vehicle.last_performed_by) {
+            document.getElementById('modalPerformedBy').textContent = vehicle.last_performed_by;
+          }
+          
+          if (vehicle.last_movement_date) {
+            // Format the date nicely
+            const date = new Date(vehicle.last_movement_date);
+            const formattedDate = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
+            document.getElementById('modalDateTime').textContent = formattedDate;
+          }
+          
+          // Load coordinates if available
+          if (vehicle.latitude && vehicle.longitude) {
+            document.getElementById('modalLatitude').value = vehicle.latitude;
+            document.getElementById('modalLongitude').value = vehicle.longitude;
+          }
+          
+          // Load notes if available
+          if (vehicle.last_notes) {
+            document.getElementById('modalNotes').value = vehicle.last_notes;
+          }
+          
+          // Update movement_id if not already set
+          if (vehicle.last_movement_id && !currentMovementData.movement_id) {
+            currentMovementData.movement_id = vehicle.last_movement_id;
+          }
         }
       }
       
@@ -1404,24 +1404,21 @@
   
   // Update modal buttons based on permissions
   function updateModalButtons() {
-    const returnBtn = document.getElementById('returnVehicleBtn');
     const pullCoordsBtn = document.getElementById('pullCoordinatesBtn');
     const saveCoordsBtn = document.getElementById('saveCoordinatesBtn');
     
-    // Return button - only for admin/super admin
-    if (returnBtn) {
-      if (userPermissions.can_view_all_vehicles) {
-        returnBtn.style.display = 'inline-flex';
-      } else {
-        returnBtn.style.display = 'none';
-      }
-    }
-    
     // Coordinates buttons - available for movement owner and admin
-    // For now, show them to everyone who has the modal open
     if (pullCoordsBtn) pullCoordsBtn.style.display = 'inline-flex';
     if (saveCoordsBtn) saveCoordsBtn.style.display = 'inline-flex';
   }
+  
+  // Open camera for photo capture
+  window.openCamera = function() {
+    const input = document.getElementById('photoUploadInput');
+    if (input) {
+      input.click();
+    }
+  };
   
   // Pull GPS coordinates using geolocation API
   window.pullCoordinates = function() {
@@ -1678,41 +1675,6 @@
         uploadBtn.disabled = false;
         uploadBtn.innerHTML = '<span class="btn-icon">☁️</span><span>' + t('actions.upload_photos') + '</span>';
       }
-    }
-  };
-  
-  // Return vehicle from modal
-  window.returnVehicleFromModal = async function() {
-    if (!currentMovementData || !currentMovementData.vehicle_code) {
-      alert('No vehicle code available');
-      return;
-    }
-    
-    if (!confirm(t('confirm.return', { code: currentMovementData.vehicle_code }))) {
-      return;
-    }
-    
-    try {
-      const formData = new FormData();
-      formData.append('vehicle_code', currentMovementData.vehicle_code);
-      formData.append('operation_type', 'return');
-      formData.append('performed_by', currentSession?.user?.emp_id || '');
-      
-      const result = await fetchData(API_ADD_MOVEMENT, {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (result.success && result.data && result.data.success) {
-        alert(t('messages.return_success'));
-        closeMovementModal();
-        loadVehicles();
-      } else {
-        alert(result.data?.message || t('errors.return_failed'));
-      }
-    } catch (error) {
-      console.error('Error returning vehicle:', error);
-      alert(t('errors.return_failed') + ': ' + error.message);
     }
   };
   

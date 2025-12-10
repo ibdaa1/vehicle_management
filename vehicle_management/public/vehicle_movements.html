@@ -167,10 +167,22 @@
         </div>
         
         <div class="modal-body">
-          <!-- Vehicle Info - Simplified -->
+          <!-- Vehicle and Movement Info - Complete -->
           <div class="info-row">
-            <span class="info-label">المركبة:</span>
+            <span class="info-label">رمز المركبة:</span>
             <span class="info-value" id="modalVehicleCode">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">نوع الحركة:</span>
+            <span class="info-value" id="modalOperationType">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">بواسطة:</span>
+            <span class="info-value" id="modalPerformedBy">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">التاريخ:</span>
+            <span class="info-value" id="modalDateTime">-</span>
           </div>
           
           <!-- Coordinates Section - Compact -->
@@ -194,10 +206,10 @@
           
           <!-- Photos Section - Compact with Camera -->
           <div class="photos-section-compact">
-            <input type="file" id="photoUploadInput" multiple accept="image/*" capture="environment" style="display: none;" onchange="handlePhotoSelection()" />
+            <input type="file" id="photoUploadInput" multiple accept="image/*" capture="camera" style="display: none;" onchange="handlePhotoSelection()" />
             <div class="photo-actions">
-              <button class="btn-compact btn-secondary" onclick="document.getElementById('photoUploadInput').click()">
-                📷 تصوير/رفع (حد أقصى 6)
+              <button class="btn-compact btn-secondary" onclick="openCamera()">
+                📷 تصوير (حد أقصى 6)
               </button>
               <button id="uploadPhotosBtn" class="btn-compact btn-primary" onclick="uploadPhotos()" style="display: none;">
                 ☁️ رفع الصور
@@ -209,9 +221,6 @@
         </div>
         
         <div class="modal-footer">
-          <button id="returnVehicleBtn" class="btn-compact btn-danger" onclick="returnVehicleFromModal()" style="display: none;">
-            ↩️ إرجاع
-          </button>
           <button class="btn-compact btn-secondary" onclick="closeMovementModal()">إغلاق</button>
         </div>
       </div>
