@@ -23,7 +23,7 @@
   const loggedUserEl = document.getElementById('loggedUser');
   const orgNameEl = document.getElementById('orgName');
   const randomAssignmentBtn = document.getElementById('randomAssignmentBtn');
-  const adminReturnBtn = document.getElementById('adminReturnBtn');
+  // adminReturnBtn removed - not needed
   const vehicleCountEl = document.getElementById('vehicleCount');
   const vehicleCountContainer = document.getElementById('vehicleCountContainer');
   const warningArea = document.getElementById('warningArea');
@@ -152,13 +152,21 @@
     try {
       console.log('Fetching data from:', url);
       
+      // Prepare headers - don't set Content-Type for FormData (browser sets it with boundary)
+      const headers = {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        ...options.headers
+      };
+      
+      // Remove Content-Type if body is FormData (let browser set it)
+      if (options.body instanceof FormData) {
+        delete headers['Content-Type'];
+      }
+      
       const response = await fetch(url, {
         credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          ...options.headers
-        },
+        headers: headers,
         ...options
       });
       
@@ -413,11 +421,11 @@
       if (btnText) btnText.textContent = t('buttons.random_assignment');
     }
     
-    // Admin return button
-    if (adminReturnBtn) {
-      const btnText = adminReturnBtn.querySelector('.btn-text');
-      if (btnText) btnText.textContent = t('buttons.return_vehicle');
-    }
+    // Admin return button - REMOVED (not needed)
+    // if (adminReturnBtn) {
+    //   const btnText = adminReturnBtn.querySelector('.btn-text');
+    //   if (btnText) btnText.textContent = t('buttons.return_vehicle');
+    // }
     
     // Reset filter button
     if (resetFilterBtn) {
@@ -743,12 +751,12 @@
       console.log('Random assignment button: VISIBLE (available to all users)');
     }
     
-    // Admin return button - متاح للجميع دائماً
-    if (adminReturnBtn) {
-      adminReturnBtn.style.display = 'flex';
-      adminReturnBtn.classList.remove('hidden');
-      console.log('Admin return button: VISIBLE (available to all users)');
-    }
+    // Admin return button - REMOVED (not needed)
+    // if (adminReturnBtn) {
+    //   adminReturnBtn.style.display = 'flex';
+    //   adminReturnBtn.classList.remove('hidden');
+    //   console.log('Admin return button: VISIBLE (available to all users)');
+    // }
   }
 
   // Apply client-side filters
@@ -1196,12 +1204,12 @@
       });
     }
     
-    // Admin return button - متاح للجميع
-    if (adminReturnBtn) {
-      adminReturnBtn.addEventListener('click', () => {
-        window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank');
-      });
-    }
+    // Admin return button - REMOVED (not needed)
+    // if (adminReturnBtn) {
+    //   adminReturnBtn.addEventListener('click', () => {
+    //     window.open('/vehicle_management/public/add_vehicle_movements.html', '_blank');
+    //   });
+    // }
     
     // Reset filter button
     const resetFilterBtn = document.querySelector('.filter-reset-btn');
@@ -1240,7 +1248,7 @@
       divisionFilter: !!divisionFilter,
       vehiclesContainer: !!vehiclesContainer,
       randomAssignmentBtn: !!randomAssignmentBtn,
-      adminReturnBtn: !!adminReturnBtn,
+      // adminReturnBtn removed
       vehicleCountEl: !!vehicleCountEl
     });
     console.groupEnd();
