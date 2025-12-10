@@ -164,21 +164,27 @@ if ($latitude === null || $longitude === null) {
     exit;
 }
 
+// Geographic coordinate validation constants
+define('MIN_LATITUDE', -90);
+define('MAX_LATITUDE', 90);
+define('MIN_LONGITUDE', -180);
+define('MAX_LONGITUDE', 180);
+
 // Validate coordinate ranges
-if ($latitude < -90 || $latitude > 90) {
+if ($latitude < MIN_LATITUDE || $latitude > MAX_LATITUDE) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid latitude. Must be between -90 and 90'
+        'message' => 'Invalid latitude. Must be between ' . MIN_LATITUDE . ' and ' . MAX_LATITUDE
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if ($longitude < -180 || $longitude > 180) {
+if ($longitude < MIN_LONGITUDE || $longitude > MAX_LONGITUDE) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid longitude. Must be between -180 and 180'
+        'message' => 'Invalid longitude. Must be between ' . MIN_LONGITUDE . ' and ' . MAX_LONGITUDE
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }

@@ -934,7 +934,9 @@
     
     if (canViewDetails) {
       const vehicleCode = vehicle.vehicle_code || vehicle.id || '';
-      const movementId = vehicle.last_movement_id || null; // Assuming this field exists
+      // Note: movement_id would need to come from the API. For now, pass null
+      // The modal can fetch details using vehicle_code if needed
+      const movementId = vehicle.movement_id || null;
       actions += `
         <button class="action-button btn-details" onclick="window.openMovementModal('${vehicleCode}', ${movementId})">
           <span class="action-icon">📋</span>
@@ -1353,12 +1355,15 @@
   // Load movement details
   async function loadMovementDetails(movementId) {
     try {
-      // This would need an API endpoint to get movement details
-      // For now, we'll use placeholder data
       console.log('Loading movement details for ID:', movementId);
       
-      // TODO: Implement API call to get movement details
-      // const response = await fetchData(`/vehicle_management/api/vehicle/get_movement_detail.php?id=${movementId}`);
+      // Note: For now, this is a placeholder. Movement details are managed through
+      // the vehicle data already loaded. If a dedicated endpoint is needed in the future,
+      // it would be: /vehicle_management/api/vehicle/get_movement_detail.php?id=${movementId}
+      // The current implementation works by:
+      // 1. Opening modal with vehicle_code
+      // 2. Fetching/displaying photos from database by vehicle_code
+      // 3. Loading coordinates from the movement if movement_id is provided
       
     } catch (error) {
       console.error('Error loading movement details:', error);
@@ -1432,13 +1437,13 @@
         let errorMsg = t('errors.geolocation_failed');
         switch(error.code) {
           case error.PERMISSION_DENIED:
-            errorMsg = 'User denied the request for Geolocation.';
+            errorMsg = t('errors.geolocation_permission_denied') || 'Permission denied for location access.';
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMsg = 'Location information is unavailable.';
+            errorMsg = t('errors.geolocation_unavailable') || 'Location information unavailable.';
             break;
           case error.TIMEOUT:
-            errorMsg = 'The request to get user location timed out.';
+            errorMsg = t('errors.geolocation_timeout') || 'Request timed out.';
             break;
         }
         alert(errorMsg);
@@ -1474,7 +1479,7 @@
     const saveBtn = document.getElementById('saveCoordinatesBtn');
     if (saveBtn) {
       saveBtn.disabled = true;
-      saveBtn.innerHTML = '<span class="btn-icon">⏳</span><span>جاري الحفظ...</span>';
+      saveBtn.innerHTML = '<span class="btn-icon">⏳</span><span>' + t('messages.saving') + '</span>';
     }
     
     try {
@@ -1573,7 +1578,7 @@
     const uploadBtn = document.getElementById('uploadPhotosBtn');
     if (uploadBtn) {
       uploadBtn.disabled = true;
-      uploadBtn.innerHTML = '<span class="btn-icon">⏳</span><span>جاري الرفع...</span>';
+      uploadBtn.innerHTML = '<span class="btn-icon">⏳</span><span>' + t('messages.uploading') + '</span>';
     }
     
     try {

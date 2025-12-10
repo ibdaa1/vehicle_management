@@ -76,7 +76,9 @@
     "coordinates_saved": "Coordinates saved successfully",
     "photos_uploaded": "Photos uploaded successfully",
     "getting_location": "Getting location...",
-    "location_obtained": "Location obtained successfully"
+    "location_obtained": "Location obtained successfully",
+    "saving": "Saving...",
+    "uploading": "Uploading..."
   },
   "confirm": {
     "pickup": "Pickup vehicle {{code}}?",
@@ -103,6 +105,9 @@
     "server_unreachable": "Server error",
     "geolocation_not_supported": "Geolocation not supported",
     "geolocation_failed": "Failed to get location",
+    "geolocation_permission_denied": "Location permission denied",
+    "geolocation_unavailable": "Location information unavailable",
+    "geolocation_timeout": "Location request timed out",
     "coordinates_save_failed": "Failed to save coordinates",
     "photo_upload_failed": "Failed to upload photo",
     "no_photos_selected": "No photos selected",

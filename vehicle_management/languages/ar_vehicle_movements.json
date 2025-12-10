@@ -64,7 +64,9 @@
     "coordinates_saved": "تم حفظ الإحداثيات بنجاح",
     "photos_uploaded": "تم رفع الصور بنجاح",
     "getting_location": "جاري الحصول على الموقع...",
-    "location_obtained": "تم الحصول على الموقع بنجاح"
+    "location_obtained": "تم الحصول على الموقع بنجاح",
+    "saving": "جاري الحفظ...",
+    "uploading": "جاري الرفع..."
   },
   "warnings": {
     "attention": "تنبيه",
@@ -89,6 +91,9 @@
     "contact_admin": "يرجى الاتصال بالمسؤول",
     "geolocation_not_supported": "المتصفح لا يدعم خدمة تحديد الموقع",
     "geolocation_failed": "فشل الحصول على الموقع",
+    "geolocation_permission_denied": "تم رفض إذن الوصول إلى الموقع",
+    "geolocation_unavailable": "معلومات الموقع غير متاحة",
+    "geolocation_timeout": "انتهت مهلة طلب الموقع",
     "coordinates_save_failed": "فشل حفظ الإحداثيات",
     "photo_upload_failed": "فشل رفع الصورة",
     "no_photos_selected": "لم يتم اختيار صور",

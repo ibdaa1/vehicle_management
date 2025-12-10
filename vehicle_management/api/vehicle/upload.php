@@ -207,7 +207,9 @@ if (!is_dir($uploadDir)) {
 
 // Allowed file types
 $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-$maxFileSize = 5 * 1024 * 1024; // 5MB
+// Maximum file size in bytes (5MB)
+define('MAX_FILE_SIZE', 5 * 1024 * 1024);
+$maxFileSize = MAX_FILE_SIZE;
 
 // Process uploaded files
 $uploadedFiles = [];
@@ -238,7 +240,7 @@ for ($i = 0; $i < $fileCount; $i++) {
     if ($fileSize > $maxFileSize) {
         $errors[] = [
             'file' => $fileName,
-            'error' => 'File size exceeds 5MB limit'
+            'error' => 'File size exceeds ' . (MAX_FILE_SIZE / 1024 / 1024) . 'MB limit'
         ];
         continue;
     }

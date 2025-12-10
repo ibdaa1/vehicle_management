@@ -18,10 +18,30 @@ CREATE TABLE IF NOT EXISTS vehicle_movement_photos (
     INDEX idx_movement_id (movement_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Also add coordinate fields to vehicle_movements table if not present:
+-- Add coordinate columns to vehicle_movements table (if not already present)
+-- Use IF NOT EXISTS to prevent errors on repeated deployments
+-- Note: MySQL 5.7+ doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN
+-- For safety, you may need to check if columns exist first or ignore errors
+
 ALTER TABLE vehicle_movements 
-ADD COLUMN latitude DECIMAL(10, 8) NULL COMMENT 'GPS latitude coordinate',
+ADD COLUMN latitude DECIMAL(10, 8) NULL COMMENT 'GPS latitude coordinate';
+
+ALTER TABLE vehicle_movements 
 ADD COLUMN longitude DECIMAL(11, 8) NULL COMMENT 'GPS longitude coordinate';
+
+-- If columns already exist, the above will error. That's expected and safe.
+-- You can also use this alternative approach:
+
+-- Check and add latitude if not exists (for MySQL 8.0+)
+-- SET @s = (SELECT IF(
+--     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+--      WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='vehicle_movements' AND COLUMN_NAME='latitude') > 0,
+--     "SELECT 'latitude exists'",
+--     "ALTER TABLE vehicle_movements ADD COLUMN latitude DECIMAL(10, 8) NULL COMMENT 'GPS latitude coordinate'"
+-- ));
+-- PREPARE stmt FROM @s;
+-- EXECUTE stmt;
+-- DEALLOCATE PREPARE stmt;
 ```
 
 ## Permissions
