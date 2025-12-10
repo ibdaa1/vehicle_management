@@ -927,6 +927,22 @@
       `;
     }
     
+    // زر عرض التفاصيل - يظهر للحركات النشطة (مستلمة) للمستخدم نفسه أو للمدير
+    const isCheckedOut = vehicle.is_currently_checked_out;
+    const isOwner = vehicle.availability_status === 'checked_out_by_me';
+    const canViewDetails = isCheckedOut && (isOwner || userPermissions.can_view_all_vehicles);
+    
+    if (canViewDetails) {
+      const vehicleCode = vehicle.vehicle_code || vehicle.id || '';
+      const movementId = vehicle.last_movement_id || null; // Assuming this field exists
+      actions += `
+        <button class="action-button btn-details" onclick="window.openMovementModal('${vehicleCode}', ${movementId})">
+          <span class="action-icon">📋</span>
+          <span>${t('label.details')}</span>
+        </button>
+      `;
+    }
+    
     // زر فتح النموذج - يظهر فقط إذا كان المستخدم لديه can_view_all_vehicles
     if (userPermissions.can_view_all_vehicles) {
       const vehicleCode = vehicle.vehicle_code || vehicle.id || '';
@@ -1275,6 +1291,388 @@
       }
     }
   }
+
+  // ========== MODAL FUNCTIONS ==========
+  
+  // Global state for modal
+  let currentMovementData = null;
+  let selectedPhotos = [];
+  
+  // Open movement detail modal
+  window.openMovementModal = async function(vehicleCode, movementId) {
+    console.log('Opening movement modal for:', vehicleCode, movementId);
+    
+    const modal = document.getElementById('movementDetailModal');
+    if (!modal) {
+      console.error('Modal element not found');
+      return;
+    }
+    
+    // Show modal
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    
+    // Reset form
+    document.getElementById('modalVehicleCode').textContent = vehicleCode || '-';
+    document.getElementById('modalOperationType').textContent = '-';
+    document.getElementById('modalPerformedBy').textContent = '-';
+    document.getElementById('modalDateTime').textContent = '-';
+    document.getElementById('modalLatitude').value = '';
+    document.getElementById('modalLongitude').value = '';
+    document.getElementById('modalNotes').value = '';
+    document.getElementById('existingPhotos').innerHTML = '';
+    document.getElementById('selectedPhotosPreview').innerHTML = '';
+    selectedPhotos = [];
+    
+    // Store current data
+    currentMovementData = {
+      vehicle_code: vehicleCode,
+      movement_id: movementId
+    };
+    
+    // If we have movement ID, fetch details
+    if (movementId) {
+      await loadMovementDetails(movementId);
+    }
+    
+    // Show/hide buttons based on permissions
+    updateModalButtons();
+  };
+  
+  // Close modal
+  window.closeMovementModal = function() {
+    const modal = document.getElementById('movementDetailModal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+    currentMovementData = null;
+    selectedPhotos = [];
+  };
+  
+  // Load movement details
+  async function loadMovementDetails(movementId) {
+    try {
+      // This would need an API endpoint to get movement details
+      // For now, we'll use placeholder data
+      console.log('Loading movement details for ID:', movementId);
+      
+      // TODO: Implement API call to get movement details
+      // const response = await fetchData(`/vehicle_management/api/vehicle/get_movement_detail.php?id=${movementId}`);
+      
+    } catch (error) {
+      console.error('Error loading movement details:', error);
+    }
+  }
+  
+  // Update modal buttons based on permissions
+  function updateModalButtons() {
+    const returnBtn = document.getElementById('returnVehicleBtn');
+    const pullCoordsBtn = document.getElementById('pullCoordinatesBtn');
+    const saveCoordsBtn = document.getElementById('saveCoordinatesBtn');
+    
+    // Return button - only for admin/super admin
+    if (returnBtn) {
+      if (userPermissions.can_view_all_vehicles) {
+        returnBtn.style.display = 'inline-flex';
+      } else {
+        returnBtn.style.display = 'none';
+      }
+    }
+    
+    // Coordinates buttons - available for movement owner and admin
+    // For now, show them to everyone who has the modal open
+    if (pullCoordsBtn) pullCoordsBtn.style.display = 'inline-flex';
+    if (saveCoordsBtn) saveCoordsBtn.style.display = 'inline-flex';
+  }
+  
+  // Pull GPS coordinates using geolocation API
+  window.pullCoordinates = function() {
+    console.log('Pulling GPS coordinates...');
+    
+    if (!navigator.geolocation) {
+      alert(t('errors.geolocation_not_supported'));
+      return;
+    }
+    
+    const latInput = document.getElementById('modalLatitude');
+    const lngInput = document.getElementById('modalLongitude');
+    const pullBtn = document.getElementById('pullCoordinatesBtn');
+    
+    // Disable button and show loading state
+    if (pullBtn) {
+      pullBtn.disabled = true;
+      pullBtn.innerHTML = '<span class="btn-icon">⏳</span><span>' + t('messages.getting_location') + '</span>';
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        // Success - update inputs
+        if (latInput) latInput.value = position.coords.latitude.toFixed(8);
+        if (lngInput) lngInput.value = position.coords.longitude.toFixed(8);
+        
+        // Reset button
+        if (pullBtn) {
+          pullBtn.disabled = false;
+          pullBtn.innerHTML = '<span class="btn-icon">📍</span><span>' + t('actions.pull_coordinates') + '</span>';
+        }
+        
+        alert(t('messages.location_obtained'));
+      },
+      function(error) {
+        // Error
+        console.error('Geolocation error:', error);
+        
+        // Reset button
+        if (pullBtn) {
+          pullBtn.disabled = false;
+          pullBtn.innerHTML = '<span class="btn-icon">📍</span><span>' + t('actions.pull_coordinates') + '</span>';
+        }
+        
+        let errorMsg = t('errors.geolocation_failed');
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMsg = 'User denied the request for Geolocation.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMsg = 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMsg = 'The request to get user location timed out.';
+            break;
+        }
+        alert(errorMsg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+  
+  // Save coordinates to server
+  window.saveCoordinates = async function() {
+    console.log('Saving coordinates...');
+    
+    if (!currentMovementData || !currentMovementData.movement_id) {
+      alert('No movement ID available');
+      return;
+    }
+    
+    const latInput = document.getElementById('modalLatitude');
+    const lngInput = document.getElementById('modalLongitude');
+    
+    const latitude = parseFloat(latInput.value);
+    const longitude = parseFloat(lngInput.value);
+    
+    if (isNaN(latitude) || isNaN(longitude)) {
+      alert(t('errors.invalid_coordinates'));
+      return;
+    }
+    
+    const saveBtn = document.getElementById('saveCoordinatesBtn');
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="btn-icon">⏳</span><span>جاري الحفظ...</span>';
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('movement_id', currentMovementData.movement_id);
+      formData.append('vehicle_code', currentMovementData.vehicle_code);
+      formData.append('latitude', latitude);
+      formData.append('longitude', longitude);
+      
+      const result = await fetchData('/vehicle_management/api/vehicle/update_movement_coords.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (result.success && result.data && result.data.success) {
+        alert(t('messages.coordinates_saved'));
+      } else {
+        alert(result.data?.message || t('errors.coordinates_save_failed'));
+      }
+    } catch (error) {
+      console.error('Error saving coordinates:', error);
+      alert(t('errors.coordinates_save_failed') + ': ' + error.message);
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<span class="btn-icon">💾</span><span>' + t('actions.save_coordinates') + '</span>';
+      }
+    }
+  };
+  
+  // Handle photo selection
+  window.handlePhotoSelection = function() {
+    const input = document.getElementById('photoUploadInput');
+    const preview = document.getElementById('selectedPhotosPreview');
+    const uploadBtn = document.getElementById('uploadPhotosBtn');
+    
+    if (!input || !input.files || input.files.length === 0) {
+      if (uploadBtn) uploadBtn.style.display = 'none';
+      if (preview) preview.innerHTML = '';
+      selectedPhotos = [];
+      return;
+    }
+    
+    selectedPhotos = Array.from(input.files);
+    
+    // Show upload button
+    if (uploadBtn) uploadBtn.style.display = 'inline-flex';
+    
+    // Show preview
+    if (preview) {
+      preview.innerHTML = '';
+      selectedPhotos.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const div = document.createElement('div');
+          div.className = 'photo-preview-item';
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="Preview ${index + 1}" />
+            <button class="photo-preview-remove" onclick="removeSelectedPhoto(${index})" type="button">×</button>
+          `;
+          preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+  
+  // Remove selected photo
+  window.removeSelectedPhoto = function(index) {
+    selectedPhotos.splice(index, 1);
+    
+    // Update file input (create new FileList)
+    const input = document.getElementById('photoUploadInput');
+    const dt = new DataTransfer();
+    selectedPhotos.forEach(file => dt.items.add(file));
+    input.files = dt.files;
+    
+    // Refresh preview
+    handlePhotoSelection();
+  };
+  
+  // Upload photos to server
+  window.uploadPhotos = async function() {
+    console.log('Uploading photos...');
+    
+    if (!currentMovementData || !currentMovementData.vehicle_code) {
+      alert('No vehicle code available');
+      return;
+    }
+    
+    if (selectedPhotos.length === 0) {
+      alert(t('errors.no_photos_selected'));
+      return;
+    }
+    
+    const uploadBtn = document.getElementById('uploadPhotosBtn');
+    if (uploadBtn) {
+      uploadBtn.disabled = true;
+      uploadBtn.innerHTML = '<span class="btn-icon">⏳</span><span>جاري الرفع...</span>';
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('vehicle_code', currentMovementData.vehicle_code);
+      if (currentMovementData.movement_id) {
+        formData.append('movement_id', currentMovementData.movement_id);
+      }
+      
+      const notes = document.getElementById('modalNotes').value;
+      if (notes) {
+        formData.append('notes', notes);
+      }
+      
+      // Append all photos
+      selectedPhotos.forEach((file, index) => {
+        formData.append('photos[]', file);
+      });
+      
+      const result = await fetchData('/vehicle_management/api/vehicle/upload.php', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (result.success && result.data && result.data.success) {
+        alert(t('messages.photos_uploaded') + ': ' + result.data.total_uploaded);
+        
+        // Clear selection
+        selectedPhotos = [];
+        document.getElementById('photoUploadInput').value = '';
+        document.getElementById('selectedPhotosPreview').innerHTML = '';
+        if (uploadBtn) uploadBtn.style.display = 'none';
+        
+        // Reload existing photos if we have movement ID
+        if (currentMovementData.movement_id) {
+          await loadMovementDetails(currentMovementData.movement_id);
+        }
+      } else {
+        const errorMsg = result.data?.message || t('errors.photo_upload_failed');
+        const errors = result.data?.errors || [];
+        let fullMsg = errorMsg;
+        if (errors.length > 0) {
+          fullMsg += '\n\nErrors:\n' + errors.map(e => e.error).join('\n');
+        }
+        alert(fullMsg);
+      }
+    } catch (error) {
+      console.error('Error uploading photos:', error);
+      alert(t('errors.photo_upload_failed') + ': ' + error.message);
+    } finally {
+      if (uploadBtn) {
+        uploadBtn.disabled = false;
+        uploadBtn.innerHTML = '<span class="btn-icon">☁️</span><span>' + t('actions.upload_photos') + '</span>';
+      }
+    }
+  };
+  
+  // Return vehicle from modal
+  window.returnVehicleFromModal = async function() {
+    if (!currentMovementData || !currentMovementData.vehicle_code) {
+      alert('No vehicle code available');
+      return;
+    }
+    
+    if (!confirm(t('confirm.return', { code: currentMovementData.vehicle_code }))) {
+      return;
+    }
+    
+    try {
+      const formData = new FormData();
+      formData.append('vehicle_code', currentMovementData.vehicle_code);
+      formData.append('operation_type', 'return');
+      formData.append('performed_by', currentSession?.user?.emp_id || '');
+      
+      const result = await fetchData(API_ADD_MOVEMENT, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (result.success && result.data && result.data.success) {
+        alert(t('messages.return_success'));
+        closeMovementModal();
+        loadVehicles();
+      } else {
+        alert(result.data?.message || t('errors.return_failed'));
+      }
+    } catch (error) {
+      console.error('Error returning vehicle:', error);
+      alert(t('errors.return_failed') + ': ' + error.message);
+    }
+  };
+  
+  // Close modal when clicking outside
+  window.addEventListener('click', function(event) {
+    const modal = document.getElementById('movementDetailModal');
+    if (event.target === modal) {
+      closeMovementModal();
+    }
+  });
 
   // Start when DOM is ready
   if (document.readyState === 'loading') {
