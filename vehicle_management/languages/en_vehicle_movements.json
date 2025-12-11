@@ -21,6 +21,22 @@
     "return_vehicle": "Return Vehicle",
     "reset": "Reset"
   },
+  "modal": {
+    "title": "Movement Details",
+    "vehicle_code": "Vehicle Code:",
+    "movement_type": "Movement Type:",
+    "performed_by": "Performed By:",
+    "date_time": "Date & Time:",
+    "latitude_placeholder": "Latitude",
+    "longitude_placeholder": "Longitude",
+    "pull_coordinates": "📍 Pull Coordinates",
+    "save_coordinates": "💾 Save Coordinates",
+    "notes_placeholder": "Add notes here...",
+    "take_photo": "📷 Take Photo (Max 6)",
+    "upload_photos": "☁️ Upload Photos",
+    "return_vehicle": "↩️ Return Vehicle",
+    "close": "Close"
+  },
   "label": {
     "private": "Private",
     "shift": "Shift",

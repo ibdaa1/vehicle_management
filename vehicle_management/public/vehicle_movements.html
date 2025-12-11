@@ -158,57 +158,57 @@
     <div id="movementDetailModal" class="modal" style="display: none;">
       <div class="modal-content modal-compact">
         <div class="modal-header">
-          <h2 id="modalTitle">تفاصيل الحركة</h2>
+          <h2 id="modalTitle" data-i18n="modal.title">تفاصيل الحركة</h2>
           <button class="modal-close" onclick="closeMovementModal()">&times;</button>
         </div>
         
         <div class="modal-body">
           <!-- Vehicle and Movement Info - Complete -->
           <div class="info-row">
-            <span class="info-label">رمز المركبة:</span>
+            <span class="info-label" data-i18n="modal.vehicle_code">رمز المركبة:</span>
             <span class="info-value" id="modalVehicleCode">-</span>
           </div>
           <div class="info-row">
-            <span class="info-label">نوع الحركة:</span>
+            <span class="info-label" data-i18n="modal.movement_type">نوع الحركة:</span>
             <span class="info-value" id="modalOperationType">-</span>
           </div>
           <div class="info-row">
-            <span class="info-label">بواسطة:</span>
+            <span class="info-label" data-i18n="modal.performed_by">بواسطة:</span>
             <span class="info-value" id="modalPerformedBy">-</span>
           </div>
           <div class="info-row">
-            <span class="info-label">التاريخ:</span>
+            <span class="info-label" data-i18n="modal.date_time">التاريخ:</span>
             <span class="info-value" id="modalDateTime">-</span>
           </div>
           
           <!-- Coordinates Section - Compact -->
           <div class="form-section">
             <div class="form-row-compact">
-              <input type="number" id="modalLatitude" class="input-compact" step="0.00000001" placeholder="خط العرض" />
-              <input type="number" id="modalLongitude" class="input-compact" step="0.00000001" placeholder="خط الطول" />
+              <input type="number" id="modalLatitude" class="input-compact" step="0.00000001" data-i18n-placeholder="modal.latitude_placeholder" placeholder="خط العرض" />
+              <input type="number" id="modalLongitude" class="input-compact" step="0.00000001" data-i18n-placeholder="modal.longitude_placeholder" placeholder="خط الطول" />
             </div>
             <div class="form-actions-compact">
               <button id="pullCoordinatesBtn" class="btn-compact btn-secondary" onclick="pullCoordinates()">
-                📍 سحب
+                <span data-i18n="modal.pull_coordinates">📍 سحب</span>
               </button>
               <button id="saveCoordinatesBtn" class="btn-compact btn-primary" onclick="saveCoordinates()">
-                💾 حفظ
+                <span data-i18n="modal.save_coordinates">💾 حفظ</span>
               </button>
             </div>
           </div>
           
           <!-- Notes Section - Compact -->
-          <textarea id="modalNotes" class="notes-compact" rows="2" placeholder="ملاحظات..."></textarea>
+          <textarea id="modalNotes" class="notes-compact" rows="2" data-i18n-placeholder="modal.notes_placeholder" placeholder="ملاحظات..."></textarea>
           
           <!-- Photos Section - Compact with Camera -->
           <div class="photos-section-compact">
             <input type="file" id="photoUploadInput" multiple accept="image/*" capture="camera" style="display: none;" onchange="handlePhotoSelection()" />
             <div class="photo-actions">
               <button class="btn-compact btn-secondary" onclick="openCamera()">
-                📷 تصوير (حد أقصى 6)
+                <span data-i18n="modal.take_photo">📷 تصوير (حد أقصى 6)</span>
               </button>
               <button id="uploadPhotosBtn" class="btn-compact btn-primary" onclick="uploadPhotos()" style="display: none;">
-                ☁️ رفع الصور
+                <span data-i18n="modal.upload_photos">☁️ رفع الصور</span>
               </button>
             </div>
             <div id="selectedPhotosPreview" class="photos-preview-compact"></div>
@@ -218,9 +218,11 @@
         
         <div class="modal-footer">
           <button id="returnVehicleBtn" class="btn-compact btn-danger" onclick="returnVehicleFromModal()" style="display: none;">
-            ↩️ إرجاع المركبة
+            <span data-i18n="modal.return_vehicle">↩️ إرجاع المركبة</span>
           </button>
-          <button class="btn-compact btn-secondary" onclick="closeMovementModal()">إغلاق</button>
+          <button class="btn-compact btn-secondary" onclick="closeMovementModal()">
+            <span data-i18n="modal.close">إغلاق</span>
+          </button>
         </div>
       </div>
     </div>

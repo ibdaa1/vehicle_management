@@ -298,6 +298,9 @@
     // Update ALL button texts
     updateAllButtonTexts();
     
+    // Update modal translations
+    updateModalTranslations();
+    
     // Update vehicle counter
     updateVehicleCount(0);
     
@@ -451,6 +454,31 @@
         counterValue.textContent = count;
       }
     }
+  }
+  
+  // Update modal translations
+  function updateModalTranslations() {
+    // Modal title
+    const modalTitle = document.getElementById('modalTitle');
+    if (modalTitle) modalTitle.textContent = t('modal.title');
+    
+    // Update all elements with data-i18n attribute
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      const translated = t(key);
+      if (translated && translated !== key) {
+        el.textContent = translated;
+      }
+    });
+    
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      const translated = t(key);
+      if (translated && translated !== key) {
+        el.placeholder = translated;
+      }
+    });
   }
 
   // Session check
