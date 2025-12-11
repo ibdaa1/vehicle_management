@@ -21,6 +21,22 @@
     "return_vehicle": "Return Vehicle",
     "reset": "Reset"
   },
+  "modal": {
+    "title": "Movement Details",
+    "vehicle_code": "Vehicle Code:",
+    "movement_type": "Movement Type:",
+    "performed_by": "Performed By:",
+    "date_time": "Date & Time:",
+    "latitude_placeholder": "Latitude",
+    "longitude_placeholder": "Longitude",
+    "pull_coordinates": "📍 Pull Coordinates",
+    "save_coordinates": "💾 Save Coordinates",
+    "notes_placeholder": "Add notes here...",
+    "take_photo": "📷 Take Photo (Max 6)",
+    "upload_photos": "☁️ Upload Photos",
+    "return_vehicle": "↩️ Return Vehicle",
+    "close": "Close"
+  },
   "label": {
     "private": "Private",
     "shift": "Shift",
@@ -36,7 +52,13 @@
     "status": "Status",
     "checked_out_by": "Checked Out By",
     "vehicle_details": "Vehicle Details",
-    "vehicle_code": "Vehicle Code"
+    "vehicle_code": "Vehicle Code",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "coordinates": "Coordinates",
+    "notes": "Notes",
+    "photos": "Photos",
+    "employee_id": "Employee ID"
   },
   "status": {
     "operational": "Operational",
@@ -56,12 +78,23 @@
   "actions": {
     "pickup": "Pickup",
     "return": "Return",
-    "open_form": "Open Form"
+    "open_form": "Open Form",
+    "pull_coordinates": "Pull Coordinates",
+    "save_coordinates": "Save Coordinates",
+    "upload_photo": "Upload Photo",
+    "upload_photos": "Upload Photos",
+    "view_photos": "View Photos"
   },
   "messages": {
     "you_have_vehicle": "You have a vehicle",
     "pickup_success": "Vehicle picked up successfully!",
-    "return_success": "Vehicle returned successfully!"
+    "return_success": "Vehicle returned successfully!",
+    "coordinates_saved": "Coordinates saved successfully",
+    "photos_uploaded": "Photos uploaded successfully",
+    "getting_location": "Getting location...",
+    "location_obtained": "Location obtained successfully",
+    "saving": "Saving...",
+    "uploading": "Uploading..."
   },
   "confirm": {
     "pickup": "Pickup vehicle {{code}}?",
@@ -85,7 +118,16 @@
     "pickup_failed": "Pickup failed",
     "return_failed": "Return failed",
     "random_failed": "Random failed",
-    "server_unreachable": "Server error"
+    "server_unreachable": "Server error",
+    "geolocation_not_supported": "Geolocation not supported",
+    "geolocation_failed": "Failed to get location",
+    "geolocation_permission_denied": "Location permission denied",
+    "geolocation_unavailable": "Location information unavailable",
+    "geolocation_timeout": "Location request timed out",
+    "coordinates_save_failed": "Failed to save coordinates",
+    "photo_upload_failed": "Failed to upload photo",
+    "no_photos_selected": "No photos selected",
+    "invalid_coordinates": "Invalid coordinates"
   },
   "empty": {
     "no_vehicles": "No Vehicles Found",
