@@ -33,12 +33,17 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roles = $this->roleModel->allWithPermissionCount();
 
         Response::json([
             'success' => true,
             'data'    => $roles,
         ]);
+        return;
     }
 
     /**
@@ -50,20 +55,27 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)($params['id'] ?? 0);
         if ($roleId <= 0) {
             Response::error('Invalid role ID', 400);
+            return;
         }
 
         $role = $this->roleModel->getWithPermissions($roleId);
         if (!$role) {
             Response::error('Role not found', 404);
+            return;
         }
 
         Response::json([
             'success' => true,
             'data'    => $role,
         ]);
+        return;
     }
 
     /**
@@ -75,21 +87,28 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $data = $request->only(['key_name', 'display_name']);
         $missing = $this->validateRequired($data, ['key_name', 'display_name']);
         if (!empty($missing)) {
             Response::error('Missing required fields: ' . implode(', ', $missing), 400);
+            return;
         }
 
         // Check for duplicate key_name
         $existing = $this->roleModel->findByKey($data['key_name']);
         if ($existing) {
             Response::error('Role key_name already exists', 409);
+            return;
         }
 
         $roleId = $this->roleModel->create($data);
         if ($roleId === false) {
             Response::error('Failed to create role', 500);
+            return;
         }
 
         $role = $this->roleModel->find($roleId);
@@ -98,6 +117,7 @@ class RoleController extends BaseController
             'message' => 'Role created successfully',
             'data'    => $role,
         ], 201);
+        return;
     }
 
     /**
@@ -109,14 +129,20 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)($params['id'] ?? 0);
         if ($roleId <= 0) {
             Response::error('Invalid role ID', 400);
+            return;
         }
 
         $role = $this->roleModel->find($roleId);
         if (!$role) {
             Response::error('Role not found', 404);
+            return;
         }
 
         $data = $request->only(['key_name', 'display_name']);
@@ -125,11 +151,13 @@ class RoleController extends BaseController
 
         if (empty($data)) {
             Response::error('No fields to update', 400);
+            return;
         }
 
         $success = $this->roleModel->update($roleId, $data);
         if (!$success) {
             Response::error('Failed to update role', 500);
+            return;
         }
 
         $role = $this->roleModel->find($roleId);
@@ -138,6 +166,7 @@ class RoleController extends BaseController
             'message' => 'Role updated successfully',
             'data'    => $role,
         ]);
+        return;
     }
 
     /**
@@ -149,27 +178,36 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)($params['id'] ?? 0);
         if ($roleId <= 0) {
             Response::error('Invalid role ID', 400);
+            return;
         }
 
         // Prevent deleting built-in roles
         if (in_array($roleId, [1, 2], true)) {
             Response::error('Cannot delete built-in roles', 403);
+            return;
         }
 
         $role = $this->roleModel->find($roleId);
         if (!$role) {
             Response::error('Role not found', 404);
+            return;
         }
 
         $success = $this->roleModel->delete($roleId);
         if (!$success) {
             Response::error('Failed to delete role', 500);
+            return;
         }
 
         Response::success(null, 'Role deleted successfully');
+        return;
     }
 
     /**
@@ -182,24 +220,32 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)($params['id'] ?? 0);
         if ($roleId <= 0) {
             Response::error('Invalid role ID', 400);
+            return;
         }
 
         $role = $this->roleModel->find($roleId);
         if (!$role) {
             Response::error('Role not found', 404);
+            return;
         }
 
         $permissionIds = $request->input('permission_ids', []);
         if (!is_array($permissionIds)) {
             Response::error('permission_ids must be an array', 400);
+            return;
         }
 
         $success = $this->roleModel->syncPermissions($roleId, $permissionIds);
         if (!$success) {
             Response::error('Failed to sync permissions', 500);
+            return;
         }
 
         $updated = $this->roleModel->getWithPermissions($roleId);
@@ -208,6 +254,7 @@ class RoleController extends BaseController
             'message' => 'Permissions synced successfully',
             'data'    => $updated,
         ]);
+        return;
     }
 
     /**
@@ -226,9 +273,14 @@ class RoleController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)($params['id'] ?? 0);
         if ($roleId <= 0) {
             Response::error('Invalid role ID', 400);
+            return;
         }
 
         $permissionId = (int)$request->input('permission_id', 0);
@@ -236,6 +288,7 @@ class RoleController extends BaseController
 
         if ($permissionId <= 0 || $resourceType === '') {
             Response::error('permission_id and resource_type are required', 400);
+            return;
         }
 
         $flags = $request->only([
@@ -247,9 +300,11 @@ class RoleController extends BaseController
         $success = $this->roleModel->setResourcePermission($roleId, $permissionId, $resourceType, $flags);
         if (!$success) {
             Response::error('Failed to set resource permissions', 500);
+            return;
         }
 
         Response::success(null, 'Resource permissions updated successfully');
+        return;
     }
 
     /**
@@ -274,5 +329,6 @@ class RoleController extends BaseController
             'success' => true,
             'data'    => array_values($publicRoles),
         ]);
+        return;
     }
 }

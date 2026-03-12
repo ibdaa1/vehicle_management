@@ -32,6 +32,10 @@ class PermissionController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $grouped = $request->query('grouped') === '1';
 
         if ($grouped) {
@@ -44,6 +48,7 @@ class PermissionController extends BaseController
             'success' => true,
             'data'    => $data,
         ]);
+        return;
     }
 
     /**
@@ -55,12 +60,17 @@ class PermissionController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $modules = $this->permissionModel->getModules();
 
         Response::json([
             'success' => true,
             'data'    => $modules,
         ]);
+        return;
     }
 
     /**
@@ -72,10 +82,16 @@ class PermissionController extends BaseController
     public function check(Request $request, array $params = []): void
     {
         $user = $this->requireAuth($request);
+
+        if (Response::isSent()) {
+            return;
+        }
+
         $permKey = $request->query('permission', '');
 
         if ($permKey === '') {
             Response::error('permission query parameter required', 400);
+            return;
         }
 
         $hasPermission = PermissionMiddleware::hasPermission(
@@ -88,6 +104,7 @@ class PermissionController extends BaseController
             'permission'     => $permKey,
             'has_permission' => $hasPermission,
         ]);
+        return;
     }
 
     /**
@@ -99,6 +116,11 @@ class PermissionController extends BaseController
     public function myPermissions(Request $request, array $params = []): void
     {
         $user = $this->requireAuth($request);
+
+        if (Response::isSent()) {
+            return;
+        }
+
         $roleId = (int)$user['role_id'];
 
         $permissions = PermissionMiddleware::getRolePermissions($roleId);
@@ -108,6 +130,7 @@ class PermissionController extends BaseController
             'role_id' => $roleId,
             'data'    => $permissions,
         ]);
+        return;
     }
 
     /**
@@ -119,16 +142,22 @@ class PermissionController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $data = $request->only(['key_name', 'display_name', 'description', 'module']);
         $missing = $this->validateRequired($data, ['key_name', 'display_name']);
         if (!empty($missing)) {
             Response::error('Missing required fields: ' . implode(', ', $missing), 400);
+            return;
         }
 
         // Check for duplicate key_name
         $existing = $this->permissionModel->findByKey($data['key_name']);
         if ($existing) {
             Response::error('Permission key_name already exists', 409);
+            return;
         }
 
         // Default is_active to 1
@@ -137,6 +166,7 @@ class PermissionController extends BaseController
         $id = $this->permissionModel->create($data);
         if ($id === false) {
             Response::error('Failed to create permission', 500);
+            return;
         }
 
         $permission = $this->permissionModel->find($id);
@@ -145,6 +175,7 @@ class PermissionController extends BaseController
             'message' => 'Permission created successfully',
             'data'    => $permission,
         ], 201);
+        return;
     }
 
     /**
@@ -156,14 +187,20 @@ class PermissionController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $id = (int)($params['id'] ?? 0);
         if ($id <= 0) {
             Response::error('Invalid permission ID', 400);
+            return;
         }
 
         $permission = $this->permissionModel->find($id);
         if (!$permission) {
             Response::error('Permission not found', 404);
+            return;
         }
 
         $data = $request->only(['key_name', 'display_name', 'description', 'module', 'is_active']);
@@ -171,6 +208,7 @@ class PermissionController extends BaseController
 
         if (empty($data)) {
             Response::error('No fields to update', 400);
+            return;
         }
 
         if (isset($data['is_active'])) {
@@ -180,6 +218,7 @@ class PermissionController extends BaseController
         $success = $this->permissionModel->update($id, $data);
         if (!$success) {
             Response::error('Failed to update permission', 500);
+            return;
         }
 
         $updated = $this->permissionModel->find($id);
@@ -188,6 +227,7 @@ class PermissionController extends BaseController
             'message' => 'Permission updated successfully',
             'data'    => $updated,
         ]);
+        return;
     }
 
     /**
@@ -199,21 +239,29 @@ class PermissionController extends BaseController
     {
         $this->requireAdmin($request);
 
+        if (Response::isSent()) {
+            return;
+        }
+
         $id = (int)($params['id'] ?? 0);
         if ($id <= 0) {
             Response::error('Invalid permission ID', 400);
+            return;
         }
 
         $permission = $this->permissionModel->find($id);
         if (!$permission) {
             Response::error('Permission not found', 404);
+            return;
         }
 
         $success = $this->permissionModel->delete($id);
         if (!$success) {
             Response::error('Failed to delete permission', 500);
+            return;
         }
 
         Response::success(null, 'Permission deleted successfully');
+        return;
     }
 }
