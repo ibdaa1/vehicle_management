@@ -1,13 +1,11 @@
 class VehicleMovementForm {
     constructor() {
-        this.API_SESSION = '/vehicle_management/api/users/session_check.php';
-        this.API_TIME = '/vehicle_management/api/helper/get_time_uae.php';
-        this.API_UPLOAD = '/vehicle_management/api/vehicle/upload.php';
-        this.API_SUBMIT = '/vehicle_management/api/vehicle/add_vehicle_movements.php';
-        this.API_EMPLOYEES = '/vehicle_management/api/users/search_employees.php';
-        this.API_MOVEMENT = '/vehicle_management/api/vehicle/get_movement.php';
-        this.API_VEHICLE_MOVEMENTS = '/vehicle_management/api/vehicle/get_vehicle_movements_by_vehicle.php';
-        this.API_MOVEMENT_PHOTOS = '/vehicle_management/api/vehicle/get_movement_photos.php';
+        // Use MVC API endpoints
+        this.API_BASE = '/api/v1';
+        this.API_SESSION = this.API_BASE + '/auth/check';
+        this.API_SUBMIT = this.API_BASE + '/movements';
+        this.API_MOVEMENT = this.API_BASE + '/movements';
+        this.API_VEHICLE_MOVEMENTS = this.API_BASE + '/movements';
       
         this.init();
     }
@@ -194,9 +192,11 @@ class VehicleMovementForm {
 }
     async loadInitialData() {
         try {
-            // Load session data
+            // Load session data via MVC auth check
+            const token = localStorage.getItem('auth_token') || '';
             const sessionResponse = await fetch(this.API_SESSION, {
-                credentials: 'include'
+                credentials: 'include',
+                headers: token ? { 'Authorization': 'Bearer ' + token } : {}
             });
           
             if (!sessionResponse.ok) {
@@ -204,12 +204,13 @@ class VehicleMovementForm {
             }
           
             const session = await sessionResponse.json();
+            const user = session.user || session.data;
           
-            if (!session.success || !session.user?.emp_id) {
+            if (!user || !user.emp_id) {
                 throw new Error(session.message || this.getTranslation('errors.not_logged_in'));
             }
-            const user = session.user;
-            this.userLanguage = user.preferred_language || 'ar';
+            this.authToken = token;
+            this.userLanguage = localStorage.getItem('lang') || 'en';
           
             // Set page direction and language
             this.setPageDirection();
@@ -231,14 +232,8 @@ class VehicleMovementForm {
             // Show/hide admin features based on role_id
             this.toggleAdminFeatures();
           
-            // Load current time
-            const timeResponse = await fetch(this.API_TIME);
-            if (!timeResponse.ok) throw new Error('Failed to get time');
-          
-            const time = await timeResponse.json();
-            if (time.success && time.datetime) {
-                document.getElementById('movement_datetime').value = time.datetime;
-            }
+            // Set current time
+            document.getElementById('movement_datetime').value = new Date().toISOString().slice(0, 19).replace('T', ' ');
           
         } catch (error) {
             console.error('Load error:', error);
@@ -339,12 +334,18 @@ class VehicleMovementForm {
     }
     async loadMovementData(id) {
         try {
-            const response = await fetch(`${this.API_MOVEMENT}?id=${id}&lang=${this.userLanguage}`);
+            const headers = {};
+            if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+            const response = await fetch(`${this.API_MOVEMENT}/${id}`, { headers });
             const data = await response.json();
           
-            if (data.success && data.movement) {
-                this.populateForm(data.movement);
-                await this.loadMovementPhotos(id);
+            if (data.success && data.data) {
+                this.populateForm(data.data);
+                if (data.data.photos && data.data.photos.length > 0) {
+                    this.storedPhotos = data.data.photos;
+                    this.displayStoredPhotos();
+                    this.updatePhotoCountInList();
+                }
                 this.showNotification('success', this.getTranslation('errors.movement_loaded'));
             }
         } catch (error) {
@@ -354,11 +355,13 @@ class VehicleMovementForm {
     }
     async loadMovementPhotos(movementId) {
         try {
-            const response = await fetch(`${this.API_MOVEMENT_PHOTOS}?movement_id=${movementId}`);
+            const headers = {};
+            if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+            const response = await fetch(`${this.API_MOVEMENT}/${movementId}/photos`, { headers });
             const data = await response.json();
           
-            if (data.success && data.photos && data.photos.length > 0) {
-                this.storedPhotos = data.photos;
+            if (data.success && data.data && data.data.length > 0) {
+                this.storedPhotos = data.data;
                 this.displayStoredPhotos();
                 this.updatePhotoCountInList();
             }
@@ -557,12 +560,14 @@ class VehicleMovementForm {
     async loadVehicleMovements(vehicleCode) {
         try {
             this.showLoading();
-          
-            const response = await fetch(`${this.API_VEHICLE_MOVEMENTS}?vehicle_code=${vehicleCode}&lang=${this.userLanguage}`);
+            
+            const headers = {};
+            if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+            const response = await fetch(`${this.API_VEHICLE_MOVEMENTS}?vehicle_code=${encodeURIComponent(vehicleCode)}`, { headers });
             const data = await response.json();
           
-            if (data.success && data.movements && data.movements.length > 0) {
-                this.vehicleMovements = data.movements;
+            if (data.success && data.data && data.data.length > 0) {
+                this.vehicleMovements = data.data;
                 this.currentMovementIndex = this.vehicleMovements.length - 1;
               
                 await this.loadMovementFromList(this.currentMovementIndex);
@@ -1041,10 +1046,12 @@ class VehicleMovementForm {
         }
       
         try {
-            const response = await fetch(`${this.API_EMPLOYEES}?q=${encodeURIComponent(query)}&lang=${this.userLanguage}`);
+            const headers = {};
+            if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+            const response = await fetch(`${this.API_BASE}/users?search=${encodeURIComponent(query)}`, { headers });
             const data = await response.json();
           
-            this.displayEmployeeResults(data.employees || []);
+            this.displayEmployeeResults(data.data || []);
           
         } catch (error) {
             console.error('Search error:', error);
@@ -1132,40 +1139,49 @@ class VehicleMovementForm {
         }
       
         const originalContent = this.submitBtn.innerHTML;
-        const loadingText = this.userLanguage === 'ar' ? 'جاري الحفظ...' : 'Saving...';
-        this.submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${loadingText}`;
+        this.submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
         this.submitBtn.disabled = true;
       
         try {
-            const formData = new FormData(this.form);
+            // Build JSON payload for MVC API
+            const payload = {
+                vehicle_code: document.getElementById('vehicle_code').value.trim(),
+                operation_type: document.getElementById('operation_type').value,
+                performed_by: this.performedByInput.value.trim(),
+                notes: document.getElementById('notes').value.trim(),
+                vehicle_condition: document.getElementById('vehicle_condition') ? document.getElementById('vehicle_condition').value : '',
+                fuel_level: document.getElementById('fuel_level') ? document.getElementById('fuel_level').value : '',
+                latitude: this.latitudeInput.value || '',
+                longitude: this.longitudeInput.value || '',
+                movement_datetime: document.getElementById('movement_datetime').value || new Date().toISOString().slice(0, 19).replace('T', ' ')
+            };
           
-            if (this.isAdmin && this.adminPerformedByInput && this.adminPerformedByInput.value) {
-                formData.set('performed_by', this.adminPerformedByInput.value);
-            } else {
-                const currentEmpId = this.performedByInput.value;
-                formData.set('performed_by', currentEmpId);
-            }
+            const headers = { 'Content-Type': 'application/json' };
+            if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
           
-            if (this.storedPhotos.length > 0) {
-                const storedPhotoIds = this.storedPhotos.map(p => p.id).join(',');
-                formData.set('stored_photo_ids', storedPhotoIds);
-            }
+            const response = await fetch(this.API_SUBMIT, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(payload)
+            });
           
-            const photoFiles = this.photosInput.files;
-            if (photoFiles.length > 0) {
-                await this.uploadPhotos(formData, photoFiles);
-            }
+            const result = await response.json();
           
-            const response = await this.submitForm(formData);
-          
-            if (response.success) {
-                this.showSuccessNotification(response);
+            if (result.success) {
+                const movementId = result.data ? result.data.id : null;
+              
+                // Upload photos if any
+                const photoFiles = this.photosInput ? this.photosInput.files : [];
+                if (movementId && photoFiles.length > 0) {
+                    await this.uploadPhotos(movementId, photoFiles);
+                }
+              
+                this.showNotification('success', result.message || 'Movement recorded successfully');
                 setTimeout(() => {
                     this.resetForm();
-                    this.loadCurrentTime();
                 }, 2000);
             } else {
-                throw new Error(response.message);
+                throw new Error(result.message || 'Failed to save movement');
             }
           
         } catch (error) {
@@ -1176,32 +1192,42 @@ class VehicleMovementForm {
             this.submitBtn.disabled = false;
         }
     }
-async uploadPhotos(formData, photoFiles) {
-    const photoData = new FormData();
-    Array.from(photoFiles).forEach(file => photoData.append('photos[]', file));
-    
-    const uploadRes = await fetch(this.API_UPLOAD, {
-        method: 'POST',
-        body: photoData
-    });
-    
-    if (!uploadRes.ok) throw new Error(this.getTranslation('errors.upload_failed'));
-    const upload = await uploadRes.json();
-    
-    if (!upload.success) throw new Error(upload.message);
-    
-    // إصلاح: إرسال urlObj.url بدلاً من الكائن كاملاً
-upload.uploaded_files.forEach((urlObj, idx) => {
-    formData.append(`photo_url_${idx}`, urlObj.url);  // يجب أن يكون urlObj.url وليس urlObj
-});
-}
-    async submitForm(formData) {
-        const submitRes = await fetch(this.API_SUBMIT, {
+    async uploadPhotos(movementId, photoFiles) {
+        // Convert files to base64 and upload via MVC API
+        const photos = [];
+        for (const file of Array.from(photoFiles).slice(0, 6)) {
+            // Validate file type - only jpg, jpeg, png
+            if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) continue;
+            const base64 = await this.fileToBase64(file);
+            photos.push(base64);
+        }
+        if (photos.length === 0) return;
+      
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+      
+        const uploadRes = await fetch(`${this.API_MOVEMENT}/${movementId}/photos`, {
             method: 'POST',
-            body: formData
+            headers: headers,
+            body: JSON.stringify({ photos: photos })
         });
       
-        return await submitRes.json();
+        const result = await uploadRes.json();
+        if (!result.success) {
+            console.warn('Photo upload warning:', result.message);
+        }
+    }
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+    async submitForm(formData) {
+        // Legacy compatibility - redirect to JSON-based submit
+        return { success: false, message: 'Use handleSubmit instead' };
     }
     validateForm() {
         const vehicleCode = document.getElementById('vehicle_code')?.value.trim();

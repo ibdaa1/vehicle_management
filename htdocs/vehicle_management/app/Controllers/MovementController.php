@@ -117,7 +117,7 @@ class MovementController extends BaseController
                 return;
             }
 
-            $this->logActivity($user, 'movement_create', 'vehicle_movements', $recordId,
+            $this->logActivity($user, 'vehicle_movement', 'vehicle_movements', $recordId,
                 "Created {$data['operation_type']} movement for vehicle {$data['vehicle_code']}");
 
             $record = $this->movementModel->find($recordId);
@@ -181,7 +181,7 @@ class MovementController extends BaseController
                 return;
             }
 
-            $this->logActivity($user, 'movement_update', 'vehicle_movements', $id,
+            $this->logActivity($user, 'vehicle_movement', 'vehicle_movements', $id,
                 "Updated movement #{$id}");
 
             $record = $this->movementModel->find($id);
@@ -219,7 +219,7 @@ class MovementController extends BaseController
                 return;
             }
 
-            $this->logActivity($user, 'movement_delete', 'vehicle_movements', $id,
+            $this->logActivity($user, 'vehicle_movement', 'vehicle_movements', $id,
                 "Deleted movement #{$id} for vehicle {$existing['vehicle_code']}");
 
             Response::json(['success' => true, 'message' => 'Movement deleted']);
@@ -287,7 +287,7 @@ class MovementController extends BaseController
         }
 
         $photos = array_slice($photos, 0, 6);
-        $uploadDir = dirname(__DIR__, 2) . '/public/uploads/movements/' . $id;
+        $uploadDir = dirname(__DIR__, 2) . '/public/uploads/vehicle_movements/' . $id;
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
@@ -301,19 +301,26 @@ class MovementController extends BaseController
             }
 
             $parts = explode('base64,', $photoData, 2);
+
+            // Validate mime type - only jpg, jpeg, png allowed
+            $mimeHeader = strtolower($parts[0]);
+            if (strpos($mimeHeader, 'image/jpeg') === false && strpos($mimeHeader, 'image/jpg') === false && strpos($mimeHeader, 'image/png') === false) {
+                continue;
+            }
+
             $decoded = base64_decode($parts[1] ?? '', true);
-            if ($decoded === false) {
+            if ($decoded === false || strlen($decoded) < 100) {
                 continue;
             }
 
             $ext = 'jpg';
-            if (strpos($parts[0], 'png') !== false) $ext = 'png';
+            if (strpos($mimeHeader, 'png') !== false) $ext = 'png';
 
             $filename = 'photo_' . time() . '_' . $i . '.' . $ext;
             $filepath = $uploadDir . '/' . $filename;
             file_put_contents($filepath, $decoded);
 
-            $photoUrl = '/public/uploads/movements/' . $id . '/' . $filename;
+            $photoUrl = '/public/uploads/vehicle_movements/' . $id . '/' . $filename;
             $photoId = $this->photoModel->create([
                 'movement_id' => $id,
                 'photo_url'   => $photoUrl,
@@ -325,7 +332,7 @@ class MovementController extends BaseController
             }
         }
 
-        $this->logActivity($user, 'photo_upload', 'vehicle_movement_photos', $id,
+        $this->logActivity($user, 'vehicle_movement', 'vehicle_movement_photos', $id,
             "Uploaded " . count($saved) . " photos for movement #{$id}");
 
         Response::json(['success' => true, 'message' => count($saved) . ' photos uploaded', 'data' => $saved], 201);

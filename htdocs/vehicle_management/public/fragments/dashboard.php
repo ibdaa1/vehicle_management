@@ -32,11 +32,6 @@
 .action-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12);border-color:var(--primary-light)}
 .action-card .action-icon{font-size:2rem;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:rgba(58,81,58,.06)}
 .action-card .action-label{font-size:.9rem;font-weight:600;text-align:center}
-.handovers-table{width:100%;border-collapse:collapse}
-.handovers-table th,.handovers-table td{padding:12px 16px;text-align:start;vertical-align:middle;font-size:.875rem}
-.handovers-table thead{background:var(--bg-main);font-weight:600;border-bottom:1px solid var(--border-default)}
-.handovers-table tbody tr{border-bottom:1px solid var(--border-default);transition:background .3s}
-.handovers-table tbody tr:hover{background:rgba(58,81,58,.04)}
 .loading-placeholder{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--text-secondary)}
 .empty-state{text-align:center;padding:40px 24px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.5}
@@ -101,19 +96,6 @@
     </div>
     <div id="recentVehicles">
         <div class="loading-placeholder"><div class="spinner spinner-sm"></div><span>جارٍ التحميل...</span></div>
-    </div>
-</div>
-
-<!-- Recent Handovers -->
-<div class="section-card" id="handoversSection" style="display:none">
-    <div class="section-header"><h3>آخر عمليات التسليم</h3></div>
-    <div class="table-wrapper">
-        <table class="handovers-table">
-            <thead><tr>
-                <th>رمز المركبة</th><th>من موظف</th><th>إلى موظف</th><th>التاريخ</th><th>النوع</th>
-            </tr></thead>
-            <tbody id="handoversBody"></tbody>
-        </table>
     </div>
 </div>
 

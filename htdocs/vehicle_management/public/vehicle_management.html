@@ -28,10 +28,6 @@
     .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
     @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
     .form-grid .full-width{grid-column:1/-1}
-    .handover-list{list-style:none;padding:0}
-    .handover-list li{padding:12px 0;border-bottom:1px dashed var(--border-default);font-size:.875rem}
-    .handover-list li:last-child{border-bottom:none}
-    .handover-list .ho-label{color:var(--text-secondary);margin-inline-end:6px}
     .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
     .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
     @media(max-width:768px){
@@ -258,63 +254,6 @@
         </div>
     </div>
 
-    <!-- ========== HANDOVER MODAL ========== -->
-    <div class="modal" id="handoverModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="handoverModalTitle" data-lang-key="handover">تسليم مركبة</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="hoVehicleId">
-                <input type="hidden" id="hoType" value="handover">
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="employee_id">رقم الموظف</label>
-                    <input type="text" class="form-control" id="hoEmpId">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="employee_name">اسم الموظف</label>
-                    <input type="text" class="form-control" id="hoEmpName">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="handover_date">تاريخ التسليم</label>
-                    <input type="date" class="form-control" id="hoDate">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="odometer_reading">قراءة العداد</label>
-                    <input type="number" class="form-control" id="hoOdometer">
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="fuel_level">مستوى الوقود</label>
-                    <select class="form-select" id="hoFuel">
-                        <option value="full">ممتلئ</option>
-                        <option value="three_quarter">3/4</option>
-                        <option value="half">نصف</option>
-                        <option value="quarter">ربع</option>
-                        <option value="empty">فارغ</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="vehicle_condition">حالة المركبة</label>
-                    <select class="form-select" id="hoCondition">
-                        <option value="excellent">ممتازة</option>
-                        <option value="good">جيدة</option>
-                        <option value="fair">مقبولة</option>
-                        <option value="poor">سيئة</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" data-lang-key="notes">ملاحظات</label>
-                    <textarea class="form-control" id="hoNotes" rows="2"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="saveHandover()" data-lang-key="save">حفظ</button>
-                <button class="btn btn-ghost" data-action="close-modal" data-lang-key="cancel">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ========== DELETE CONFIRMATION MODAL ========== -->
     <div class="modal" id="deleteModal">
         <div class="modal-content" style="max-width:400px">
@@ -505,8 +444,6 @@
                 '<div class="vehicle-card-footer">' +
                     '<button class="btn btn-ghost btn-icon btn-sm" onclick="openDetailsModal(' + v.id + ')" title="' + (i18n.t('view') || '\u0639\u0631\u0636') + '">\uD83D\uDC41\uFE0F</button>' +
                     '<button class="btn btn-ghost btn-icon btn-sm" onclick="openEditModal(' + v.id + ')" title="' + (i18n.t('edit') || '\u062A\u0639\u062F\u064A\u0644') + '">\u270F\uFE0F</button>' +
-                    '<button class="btn btn-ghost btn-icon btn-sm" onclick="openHandoverModal(' + v.id + ',\'handover\')" title="' + (i18n.t('handover') || '\u062A\u0633\u0644\u064A\u0645') + '">\uD83D\uDD11</button>' +
-                    '<button class="btn btn-ghost btn-icon btn-sm" onclick="openHandoverModal(' + v.id + ',\'receive\')" title="' + (i18n.t('receive') || '\u0627\u0633\u062A\u0644\u0627\u0645') + '">\uD83D\uDCE5</button>' +
                     '<button class="btn btn-ghost btn-icon btn-sm" onclick="deleteVehicle(' + v.id + ')" title="' + (i18n.t('delete') || '\u062D\u0630\u0641') + '" style="color:var(--status-danger)">\uD83D\uDDD1\uFE0F</button>' +
                 '</div>' +
             '</div>';
@@ -533,7 +470,6 @@
                     '<div class="table-actions">' +
                         '<button class="btn btn-ghost btn-icon btn-sm" onclick="openDetailsModal(' + v.id + ')" title="' + (i18n.t('view') || '\u0639\u0631\u0636') + '">\uD83D\uDC41\uFE0F</button>' +
                         '<button class="btn btn-ghost btn-icon btn-sm" onclick="openEditModal(' + v.id + ')" title="' + (i18n.t('edit') || '\u062A\u0639\u062F\u064A\u0644') + '">\u270F\uFE0F</button>' +
-                        '<button class="btn btn-ghost btn-icon btn-sm" onclick="openHandoverModal(' + v.id + ',\'handover\')" title="' + (i18n.t('handover') || '\u062A\u0633\u0644\u064A\u0645') + '">\uD83D\uDD11</button>' +
                         '<button class="btn btn-ghost btn-icon btn-sm" onclick="deleteVehicle(' + v.id + ')" title="' + (i18n.t('delete') || '\u062D\u0630\u0641') + '" style="color:var(--status-danger)">\uD83D\uDDD1\uFE0F</button>' +
                     '</div>' +
                 '</td>' +
@@ -743,91 +679,12 @@
                 html += '<div class="full-width" style="padding:8px 0"><span class="text-muted">' + (i18n.t('notes') || '\u0645\u0644\u0627\u062D\u0638\u0627\u062A') + ':</span><p style="margin-top:4px">' + UI._escapeHtml(v.notes) + '</p></div>';
             }
             html += '</div>';
-            html += '<h4 style="margin-top:24px;margin-bottom:12px">' + (i18n.t('handover_history') || '\u0633\u062C\u0644 \u0627\u0644\u062A\u0633\u0644\u064A\u0645') + '</h4>';
-            html += '<div id="handoverHistoryContainer"><div class="text-center"><div class="spinner spinner-sm"></div></div></div>';
             body.innerHTML = html;
-            loadHandovers(id);
         } catch (e) {
             body.innerHTML = '<p class="text-danger">' + (i18n.t('error_loading') || '\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644') + '</p>';
         }
     }
 
-    /* ---------- Handover Modal ---------- */
-    function openHandoverModal(vehicleId, type) {
-        document.getElementById('hoVehicleId').value = vehicleId;
-        document.getElementById('hoType').value = type;
-        document.getElementById('handoverModalTitle').textContent = type === 'receive'
-            ? (i18n.t('receive') || '\u0627\u0633\u062A\u0644\u0627\u0645 \u0645\u0631\u0643\u0628\u0629')
-            : (i18n.t('handover') || '\u062A\u0633\u0644\u064A\u0645 \u0645\u0631\u0643\u0628\u0629');
-        ['hoEmpId','hoEmpName','hoOdometer','hoNotes'].forEach(function(id) { document.getElementById(id).value = ''; });
-        document.getElementById('hoDate').value = new Date().toISOString().split('T')[0];
-        document.getElementById('hoFuel').value = 'full';
-        document.getElementById('hoCondition').value = 'good';
-        UI.showModal('handoverModal');
-    }
-
-    /* ---------- Save Handover ---------- */
-    async function saveHandover() {
-        var vehicleId = document.getElementById('hoVehicleId').value;
-        var type = document.getElementById('hoType').value;
-        var payload = {
-            to_emp_id: document.getElementById('hoEmpId').value.trim(),
-            to_emp_name: document.getElementById('hoEmpName').value.trim(),
-            handover_date: document.getElementById('hoDate').value,
-            odometer_reading: document.getElementById('hoOdometer').value || null,
-            fuel_level: document.getElementById('hoFuel').value,
-            vehicle_condition: document.getElementById('hoCondition').value,
-            notes: document.getElementById('hoNotes').value.trim()
-        };
-
-        if (!payload.to_emp_name) {
-            UI.showToast(i18n.t('employee_name_required') || '\u0627\u0633\u0645 \u0627\u0644\u0645\u0648\u0638\u0641 \u0645\u0637\u0644\u0648\u0628', 'warning');
-            return;
-        }
-
-        var endpoint = type === 'receive'
-            ? '/vehicles/' + vehicleId + '/receive'
-            : '/vehicles/' + vehicleId + '/handover';
-        try {
-            await API.post(endpoint, payload);
-            UI.showToast(i18n.t('handover_saved') || '\u062A\u0645 \u0627\u0644\u062D\u0641\u0638 \u0628\u0646\u062C\u0627\u062D', 'success');
-            UI.hideModal('handoverModal');
-        } catch (e) {
-            UI.showToast(e.message || i18n.t('error_saving') || '\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0641\u0638', 'error');
-        }
-    }
-
-    /* ---------- Load Handover History ---------- */
-    async function loadHandovers(vehicleId) {
-        var container = document.getElementById('handoverHistoryContainer');
-        if (!container) return;
-        try {
-            var res = await API.get('/vehicles/' + vehicleId + '/handovers');
-            var list = (res.data || res) || [];
-            var items = Array.isArray(list) ? list : (list.data || []);
-            if (!items.length) {
-                container.innerHTML = '<p class="text-muted" style="font-size:.875rem">' + (i18n.t('no_handovers') || '\u0644\u0627 \u064A\u0648\u062C\u062F \u0633\u062C\u0644 \u062A\u0633\u0644\u064A\u0645') + '</p>';
-                return;
-            }
-            container.innerHTML = '<ul class="handover-list">' + items.map(function(h) {
-                var line = '<li>';
-                line += '<div class="d-flex align-center gap-1" style="justify-content:space-between;flex-wrap:wrap">';
-                line += '<strong>' + UI._escapeHtml(h.to_emp_name || '\u2014') + '</strong>';
-                line += '<span class="badge ' + (h.type === 'receive' ? 'badge-info' : 'badge-success') + '">' + (h.type === 'receive' ? (i18n.t('receive') || '\u0627\u0633\u062A\u0644\u0627\u0645') : (i18n.t('handover') || '\u062A\u0633\u0644\u064A\u0645')) + '</span>';
-                line += '</div>';
-                line += '<div style="margin-top:4px;font-size:.8rem;color:var(--text-secondary)">';
-                line += '<span class="ho-label">' + (i18n.t('date') || '\u0627\u0644\u062A\u0627\u0631\u064A\u062E') + ':</span>' + UI.formatDate(h.handover_date);
-                if (h.odometer_reading) line += ' \u00B7 <span class="ho-label">' + (i18n.t('odometer') || '\u0627\u0644\u0639\u062F\u0627\u062F') + ':</span>' + UI.formatNumber(h.odometer_reading);
-                if (h.fuel_level) line += ' \u00B7 <span class="ho-label">' + (i18n.t('fuel') || '\u0627\u0644\u0648\u0642\u0648\u062F') + ':</span>' + UI._escapeHtml(h.fuel_level);
-                line += '</div>';
-                if (h.notes) line += '<div style="margin-top:2px;font-size:.8rem;font-style:italic;color:var(--text-secondary)">' + UI._escapeHtml(h.notes) + '</div>';
-                line += '</li>';
-                return line;
-            }).join('') + '</ul>';
-        } catch (e) {
-            container.innerHTML = '<p class="text-muted" style="font-size:.875rem">' + (i18n.t('no_handovers') || '\u0644\u0627 \u064A\u0648\u062C\u062F \u0633\u062C\u0644 \u062A\u0633\u0644\u064A\u0645') + '</p>';
-        }
-    }
     </script>
 </body>
 </html>

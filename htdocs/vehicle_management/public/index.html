@@ -56,14 +56,6 @@
     .action-card .action-icon{font-size:2rem;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:rgba(58,81,58,.06)}
     .action-card .action-label{font-size:.9rem;font-weight:600;text-align:center}
 
-    /* Handovers table */
-    .handovers-table{width:100%;border-collapse:collapse}
-    .handovers-table th,.handovers-table td{padding:12px 16px;text-align:start;vertical-align:middle;font-size:.875rem}
-    .handovers-table thead{background:var(--bg-main);font-weight:600;border-bottom:1px solid var(--border-default)}
-    .handovers-table tbody tr{border-bottom:1px solid var(--border-default);transition:background .3s}
-    .handovers-table tbody tr:hover{background:rgba(58,81,58,.04)}
-    .handovers-table tbody tr:last-child{border-bottom:none}
-
     /* Loading / empty */
     .loading-placeholder{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--text-secondary)}
     .loading-placeholder .spinner{margin-inline-end:12px}
@@ -168,10 +160,6 @@
                 <div class="action-icon">&#128663;</div>
                 <div class="action-label" data-lang-key="add_vehicle">إضافة مركبة</div>
             </a>
-            <a class="action-card" href="vehicle_management.html">
-                <div class="action-icon">&#128260;</div>
-                <div class="action-label" data-lang-key="vehicle_handover">تسليم / استلام</div>
-            </a>
             <a class="action-card" href="report_add_Vehicles.html">
                 <div class="action-icon">&#128202;</div>
                 <div class="action-label" data-lang-key="view_reports">عرض التقارير</div>
@@ -193,26 +181,6 @@
             </div>
         </div>
 
-        <!-- ===== RECENT HANDOVERS ===== -->
-        <div class="section-card" id="handoversSection" style="display:none">
-            <div class="section-header">
-                <h3 data-lang-key="recent_handovers">آخر عمليات التسليم</h3>
-            </div>
-            <div class="table-wrapper">
-                <table class="handovers-table">
-                    <thead>
-                        <tr>
-                            <th data-lang-key="vehicle_code">رمز المركبة</th>
-                            <th data-lang-key="from_employee">من موظف</th>
-                            <th data-lang-key="to_employee">إلى موظف</th>
-                            <th data-lang-key="date">التاريخ</th>
-                            <th data-lang-key="type">النوع</th>
-                        </tr>
-                    </thead>
-                    <tbody id="handoversBody"></tbody>
-                </table>
-            </div>
-        </div>
     </main>
 
     <!-- ========== FOOTER ========== -->
@@ -302,35 +270,6 @@
             }
         }
 
-        /* ---------- Load recent handovers ---------- */
-        async function loadHandovers() {
-            try {
-                const res = await API.get('/handovers?limit=5&sort=-created_at');
-                const rows = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
-                if (!rows.length) return;
-
-                $('handoversSection').style.display = '';
-                const tbody = $('handoversBody');
-                let html = '';
-                rows.slice(0, 5).forEach(h => {
-                    const typeLabel = h.type === 'deliver'
-                        ? (i18n.lang === 'ar' ? 'تسليم' : 'Deliver')
-                        : (i18n.lang === 'ar' ? 'استلام' : 'Receive');
-                    const badgeClass = h.type === 'deliver' ? 'badge-warning' : 'badge-success';
-                    html += '<tr>' +
-                        '<td>' + UI._escapeHtml(h.vehicle_code || '—') + '</td>' +
-                        '<td>' + UI._escapeHtml(h.from_employee || h.from_emp || '—') + '</td>' +
-                        '<td>' + UI._escapeHtml(h.to_employee || h.to_emp || '—') + '</td>' +
-                        '<td>' + UI.formatDate(h.date || h.created_at) + '</td>' +
-                        '<td><span class="badge ' + badgeClass + '">' + typeLabel + '</span></td>' +
-                        '</tr>';
-                });
-                tbody.innerHTML = html;
-            } catch {
-                /* Handovers section stays hidden on error */
-            }
-        }
-
         /* ---------- Mark dashboard active in sidebar ---------- */
         function activateSidebarItem() {
             document.querySelectorAll('.app-sidebar .menu-item').forEach(el => {
@@ -353,7 +292,6 @@
             /* Load all sections in parallel */
             loadStats();
             loadRecentVehicles();
-            loadHandovers();
 
             /* Auto-refresh stats every 60 s */
             setInterval(loadStats, 60000);

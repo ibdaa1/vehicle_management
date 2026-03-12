@@ -42,10 +42,6 @@
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
 .form-grid .full-width{grid-column:1/-1}
-.handover-list{list-style:none;padding:0}
-.handover-list li{padding:12px 0;border-bottom:1px dashed var(--border-default);font-size:.875rem}
-.handover-list li:last-child{border-bottom:none}
-.handover-list .ho-label{color:var(--text-secondary);margin-inline-end:6px}
 .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
 @media(max-width:768px){.toolbar{flex-direction:column;align-items:stretch}.toolbar-end{margin-inline-start:0;justify-content:space-between}.toolbar .search-box{max-width:100%}.v-cards{grid-template-columns:1fr}}
@@ -212,54 +208,6 @@
     </div>
 </div>
 
-<!-- ===== HANDOVER MODAL ===== -->
-<div class="modal" id="handoverModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="handoverTitle">تسليم مركبة</h3>
-            <button class="modal-close" data-action="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="handoverForm">
-                <input type="hidden" id="hoVehicleId">
-                <input type="hidden" id="hoType" value="deliver">
-                <div class="form-group">
-                    <label class="form-label">رقم الموظف (المستلم) *</label>
-                    <input type="text" class="form-control" id="hoToEmpId" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">اسم المستلم</label>
-                    <input type="text" class="form-control" id="hoToEmpName">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">تاريخ التسليم *</label>
-                    <input type="datetime-local" class="form-control" id="hoDate" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">قراءة العداد</label>
-                    <input type="number" class="form-control" id="hoOdometer">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">مستوى الوقود</label>
-                    <input type="text" class="form-control" id="hoFuel" placeholder="مثال: 75%">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">حالة المركبة</label>
-                    <textarea class="form-control" id="hoCondition" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">ملاحظات</label>
-                    <textarea class="form-control" id="hoNotes" rows="2"></textarea>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-ghost" data-action="close-modal">إلغاء</button>
-            <button class="btn btn-primary" id="btnSaveHandover">تسليم</button>
-        </div>
-    </div>
-</div>
-
 <!-- ===== DELETE CONFIRMATION ===== -->
 <div class="modal" id="deleteModal">
     <div class="modal-content" style="max-width:400px">
@@ -376,8 +324,6 @@ $pageScripts = <<<'SCRIPT'
             h+='<div class="v-card-actions">';
             h+='<button class="btn btn-outline btn-sm" onclick="VPage.view('+v.id+')">👁️ عرض</button>';
             h+='<button class="btn btn-outline btn-sm" onclick="VPage.edit('+v.id+')">✏️ تعديل</button>';
-            h+='<button class="btn btn-outline btn-sm" onclick="VPage.handover('+v.id+',\'deliver\')">📤 تسليم</button>';
-            h+='<button class="btn btn-outline btn-sm" onclick="VPage.handover('+v.id+',\'receive\')">📥 تسلم</button>';
             h+='<button class="btn btn-danger btn-sm" onclick="VPage.del('+v.id+')">🗑️</button>';
             h+='</div></div>';
         });
@@ -406,8 +352,6 @@ $pageScripts = <<<'SCRIPT'
             h+='<td class="table-actions">';
             h+='<button class="btn btn-ghost btn-icon" onclick="VPage.view('+v.id+')" title="عرض">👁️</button>';
             h+='<button class="btn btn-ghost btn-icon" onclick="VPage.edit('+v.id+')" title="تعديل">✏️</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.handover('+v.id+',\'deliver\')" title="تسليم">📤</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.handover('+v.id+',\'receive\')" title="تسلم">📥</button>';
             h+='<button class="btn btn-ghost btn-icon" onclick="VPage.del('+v.id+')" title="حذف" style="color:var(--status-danger)">🗑️</button>';
             h+='</td></tr>';
         });
@@ -528,20 +472,6 @@ $pageScripts = <<<'SCRIPT'
                 h+='<div class="v-row"><span class="v-label">الموظف</span><span class="v-val">'+esc(v.emp_id)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">ملاحظات</span><span class="v-val">'+esc(v.notes)+'</span></div>';
                 h+='</div>';
-                // Load handovers
-                try{
-                    const hres=await API.get('/vehicles/'+id+'/handovers');
-                    const ho=Array.isArray(hres.data)?hres.data:[];
-                    if(ho.length){
-                        h+='<h4 style="margin-top:20px;margin-bottom:12px">سجل التسليم والتسلم</h4>';
-                        h+='<ul class="handover-list">';
-                        ho.forEach(r=>{
-                            const typeLabel=r.handover_type==='deliver'?'تسليم':'تسلم';
-                            h+='<li><span class="ho-label">'+typeLabel+'</span> '+esc(r.to_emp_name||r.from_emp_name)+' — '+UI.formatDate(r.handover_date)+'</li>';
-                        });
-                        h+='</ul>';
-                    }
-                }catch(e){}
                 $('detailsBody').innerHTML=h;
                 UI.showModal('detailsModal');
             }catch(e){UI.showToast('تعذر تحميل البيانات','error');}
@@ -570,45 +500,11 @@ $pageScripts = <<<'SCRIPT'
             }catch(e){UI.showToast('تعذر تحميل البيانات','error');}
         },
 
-        handover(id,type){
-            $('hoVehicleId').value=id;
-            $('hoType').value=type;
-            $('handoverTitle').textContent=type==='deliver'?'تسليم مركبة':'تسلم مركبة';
-            $('btnSaveHandover').textContent=type==='deliver'?'تسليم':'تسلم';
-            $('handoverForm').reset();
-            $('hoDate').value=new Date().toISOString().slice(0,16);
-            UI.showModal('handoverModal');
-        },
-
         del(id){
             $('deleteVehicleId').value=id;
             UI.showModal('deleteModal');
         }
     };
-
-    /* --- Save Handover --- */
-    $('btnSaveHandover').addEventListener('click',async()=>{
-        const vid=$('hoVehicleId').value;
-        const type=$('hoType').value;
-        const endpoint=type==='deliver'?'handover':'receive';
-        const data={
-            to_emp_id:$('hoToEmpId').value.trim(),
-            to_emp_name:$('hoToEmpName').value.trim(),
-            from_emp_id:$('hoToEmpId').value.trim(),
-            from_emp_name:$('hoToEmpName').value.trim(),
-            handover_date:$('hoDate').value,
-            odometer_reading:parseInt($('hoOdometer').value)||null,
-            fuel_level:$('hoFuel').value.trim(),
-            vehicle_condition:$('hoCondition').value.trim(),
-            notes:$('hoNotes').value.trim()
-        };
-        if(!data.handover_date){UI.showToast('يرجى إدخال التاريخ','error');return;}
-        try{
-            await API.post('/vehicles/'+vid+'/'+endpoint,data);
-            UI.showToast('تم التسليم بنجاح','success');
-            UI.hideModal('handoverModal');
-        }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
-    });
 
     /* --- Confirm Delete --- */
     $('btnConfirmDelete').addEventListener('click',async()=>{

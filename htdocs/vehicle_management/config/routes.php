@@ -59,9 +59,6 @@ $router->put('api/v1/settings/{key}', SettingsController::class, 'update');
 
 // === Vehicle Routes ===
 $router->get('api/v1/vehicles/stats', VehicleController::class, 'stats');
-$router->get('api/v1/vehicles/{id}/handovers', VehicleController::class, 'handovers');
-$router->post('api/v1/vehicles/{id}/handover', VehicleController::class, 'handover');
-$router->post('api/v1/vehicles/{id}/receive', VehicleController::class, 'receive');
 $router->get('api/v1/vehicles', VehicleController::class, 'index');
 $router->get('api/v1/vehicles/{id}', VehicleController::class, 'show');
 $router->post('api/v1/vehicles', VehicleController::class, 'store');
