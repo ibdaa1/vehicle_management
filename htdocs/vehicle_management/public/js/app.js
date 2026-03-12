@@ -125,7 +125,7 @@ const Auth = {
 
     logout() {
         this.clear();
-        window.location.href = API.baseUrl + '/login.html';
+        window.location.href = API.baseUrl + '/public/login.html';
     }
 };
 
@@ -414,6 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Check authentication (skip on login page)
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const publicPages = ['login.html', 'activation_success.html'];
+    const isPhpDashboard = currentPage.indexOf('dashboard.php') !== -1;
 
     if (!publicPages.includes(currentPage)) {
         const user = await Auth.check();
@@ -431,11 +432,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 '<span>' + (user.name || user.username) + '</span>';
         }
 
-        // Render sidebar menu
-        const menuContainer = document.querySelector('.app-sidebar .menu-list');
-        if (menuContainer) {
-            Menu.render(menuContainer, user.permissions || []);
-            Menu.setActive(currentPage);
+        // Render sidebar menu (skip for PHP dashboard — menu is server-rendered)
+        if (!isPhpDashboard) {
+            const menuContainer = document.querySelector('.app-sidebar .menu-list');
+            if (menuContainer) {
+                Menu.render(menuContainer, user.permissions || []);
+                Menu.setActive(currentPage);
+            }
+        } else {
+            // For PHP dashboard, filter menu items by permission client-side
+            const perms = user.permissions || [];
+            document.querySelectorAll('.app-sidebar .menu-item[data-perm]').forEach(el => {
+                const perm = el.getAttribute('data-perm');
+                if (perm && !perms.includes(perm) && !perms.includes('*')) {
+                    el.style.display = 'none';
+                }
+            });
         }
     }
 

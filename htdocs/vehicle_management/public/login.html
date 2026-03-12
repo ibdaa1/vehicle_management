@@ -282,7 +282,7 @@
   const token = localStorage.getItem('auth_token');
   if (token) {
     fetch(API.settingsPublic, { headers: { Authorization: 'Bearer '+token } })
-      .then(r => { if (r.ok) location.href = BASE+'/public/index.html'; })
+      .then(r => { if (r.ok) location.href = BASE+'/public/dashboard.php'; })
       .catch(() => {});
   }
 
@@ -502,7 +502,7 @@
         if(j.user) localStorage.setItem('user',JSON.stringify(j.user));
         if(j.data&&j.data.user) localStorage.setItem('user',JSON.stringify(j.data.user));
         showMsg(el.loginMsg, t.loginSuccess+' ✓', 'success');
-        setTimeout(()=>{ location.href=BASE+'/public/index.html'; },600);
+        setTimeout(()=>{ location.href=BASE+'/public/dashboard.php'; },600);
       } else {
         showMsg(el.loginMsg, j.message||t.loginFailed, 'error');
         el.loginBtn.disabled=false; el.loginBtn.classList.remove('loading');
