@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="page_title">إدارة حركات المركبات</title>
+    <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_management.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <style>
+        .report-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .report-option-btn {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .report-option-btn:hover {
+            background: #e9ecef;
+        }
+        .report-option-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header Section -->
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-history"></i>
+                    <span data-lang-key="page_title">إدارة حركات المركبات</span>
+                </h1>
+                <p class="page-subtitle" data-lang-key="page_subtitle">عرض وتتبع وإدارة جميع حركات المركبات في المؤسسة</p>
+            </div>
+            <div class="header-right">
+                <div class="report-actions">
+                    <div class="report-options">
+                        <button class="report-option-btn active" data-report="all">
+                            <i class="fas fa-list"></i>
+                            <span data-lang-key="report_all">تقرير كامل</span>
+                        </button>
+                        <button class="report-option-btn" data-report="used">
+                            <i class="fas fa-car-side"></i>
+                            <span data-lang-key="report_used">تقرير المستخدمة</span>
+                        </button>
+                        <button class="report-option-btn" data-report="unused">
+                            <i class="fas fa-car-battery"></i>
+                            <span data-lang-key="report_unused">تقرير غير المستخدمة</span>
+                        </button>
+                        <button class="report-option-btn" data-report="pending">
+                            <i class="fas fa-clock"></i>
+                            <span data-lang-key="report_pending">تقرير تحتاج تسليم</span>
+                        </button>
+                        <button class="report-option-btn" data-report="summary">
+                            <i class="fas fa-chart-pie"></i>
+                            <span data-lang-key="report_summary">تقرير إحصائي</span>
+                        </button>
+                    </div>
+                </div>
+                <button id="print-report-btn" class="btn btn-secondary">
+                    <i class="fas fa-print"></i>
+                    <span data-lang-key="print_report">طباعة التقرير</span>
+                </button>
+                <button id="export-report-btn" class="btn btn-secondary">
+                    <i class="fas fa-download"></i>
+                    <span data-lang-key="export_report">تصدير Excel</span>
+                </button>
+                <button id="add-management-btn" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i>
+                    <span data-lang-key="add_management">إضافة حركة جديدة</span>
+                </button>
+                <button id="refresh-btn" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i>
+                    <span data-lang-key="refresh">تحديث</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+        <div class="filters-header">
+            <h3>
+                <i class="fas fa-filter"></i>
+                <span data-lang-key="filters_title">فلاتر البحث</span>
+            </h3>
+            <div class="filters-actions">
+                <button id="reset-filters" class="btn btn-outline" data-lang-key="reset_filters">إعادة تعيين</button>
+                <button id="apply-filters" class="btn btn-primary" data-lang-key="apply_filters">تطبيق الفلاتر</button>
+            </div>
+        </div>
+
+        <div class="filters-grid">
+            <!-- Date Range Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span data-lang-key="date_range">نطاق التاريخ</span>
+                </label>
+                <div class="input-with-icon">
+                    <input type="text" id="date-range" class="form-input" 
+                           data-lang-key-placeholder="select_date_range" 
+                           placeholder="اختر نطاق التاريخ">
+                    <i class="fas fa-calendar input-icon"></i>
+                </div>
+            </div>
+
+            <!-- Movement Type Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span data-lang-key="management_type">نوع الحركة</span>
+                </label>
+                <select id="management-type" class="form-input">
+                    <option value="" data-lang-key="all_types">جميع الأنواع</option>
+                    <option value="pickup" data-lang-key="pickup">استلام</option>
+                    <option value="return" data-lang-key="return">إرجاع</option>
+                </select>
+            </div>
+
+            <!-- Vehicle Code Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-car"></i>
+                    <span data-lang-key="vehicle_code">رمز المركبة</span>
+                </label>
+                <input type="text" id="vehicle-code" class="form-input" 
+                       data-lang-key-placeholder="enter_vehicle_code" 
+                       placeholder="أدخل رمز المركبة">
+            </div>
+
+            <!-- Employee Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-user"></i>
+                    <span data-lang-key="employee">الموظف</span>
+                </label>
+                <div class="input-with-icon">
+                    <input type="text" id="employee-search" class="form-input" 
+                           data-lang-key-placeholder="search_employee" 
+                           placeholder="ابحث عن موظف">
+                    <i class="fas fa-search input-icon"></i>
+                </div>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-building"></i>
+                    <span data-lang-key="department">الإدارة</span>
+                </label>
+                <select id="department" class="form-input">
+                    <option value="" data-lang-key="all_departments">جميع الإدارات</option>
+                </select>
+            </div>
+
+            <!-- Section Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-sitemap"></i>
+                    <span data-lang-key="section">القسم</span>
+                </label>
+                <select id="section" class="form-input" disabled>
+                    <option value="" data-lang-key="all_sections">جميع الأقسام</option>
+                </select>
+            </div>
+
+            <!-- Division Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-network-wired"></i>
+                    <span data-lang-key="division">الشعبة</span>
+                </label>
+                <select id="division" class="form-input" disabled>
+                    <option value="" data-lang-key="all_divisions">جميع الشعب</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-circle"></i>
+                    <span data-lang-key="status">الحالة</span>
+                </label>
+                <select id="status" class="form-input">
+                    <option value="" data-lang-key="all_statuses">جميع الحالات</option>
+                    <option value="operational" data-lang-key="operational">تشغيلية</option>
+                    <option value="out_of_service" data-lang-key="out_of_service">خارج الخدمة</option>
+                    <option value="maintenance" data-lang-key="maintenance">صيانة</option>
+                </select>
+            </div>
+
+            <!-- Vehicle Mode Filter -->
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-car"></i>
+                    <span data-lang-key="vehicle_mode">نوع السيارة</span>
+                </label>
+                <select id="vehicle-mode" class="form-input">
+                    <option value="" data-lang-key="all_modes">جميع الأنواع</option>
+                    <option value="private" data-lang-key="private">خاصة</option>
+                    <option value="shift" data-lang-key="shift">ورديات</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Cards -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="total-managements">0</h3>
+                    <p class="stat-label" data-lang-key="total_managements">إجمالي الحركات</p>
+                </div>
+            </div>
+            
+            <div class="stat-card pickup">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-circle-up"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="pickup-count">0</h3>
+                    <p class="stat-label" data-lang-key="pickup_managements">عمليات الاستلام</p>
+                </div>
+            </div>
+            
+            <div class="stat-card return">
+                <div class="stat-icon">
+                    <i class="fas fa-arrow-circle-down"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="return-count">0</h3>
+                    <p class="stat-label" data-lang-key="return_managements">عمليات الإرجاع</p>
+                </div>
+            </div>
+            
+            <div class="stat-card pending">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="pending-count">0</h3>
+                    <p class="stat-label" data-lang-key="pending_vehicles">مركبات تحتاج تسليم</p>
+                </div>
+            </div>
+            
+            <div class="stat-card used">
+                <div class="stat-icon">
+                    <i class="fas fa-car-side"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="used-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="used_vehicles">السيارات المستخدمة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card unused">
+                <div class="stat-icon">
+                    <i class="fas fa-car-battery"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="unused-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="unused_vehicles">السيارات غير المستخدمة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card private">
+                <div class="stat-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="total-private-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="private_vehicles">السيارات الخاصة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card shift">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="total-shift-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="shift_vehicles">السيارات بالورديات</p>
+                </div>
+            </div>
+            
+            <div class="stat-card operational">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="operational-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="operational_vehicles">سيارات تشغيلية</p>
+                </div>
+            </div>
+            
+            <div class="stat-card out_of_service">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="out-of-service-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="out_of_service_vehicles">سيارات خارج الخدمة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card maintenance">
+                <div class="stat-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="maintenance-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="maintenance_vehicles">سيارات تحت الصيانة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card used_private">
+                <div class="stat-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="used-private-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="used_private">خاصة مستخدمة</p>
+                </div>
+            </div>
+            
+            <div class="stat-card used_shift">
+                <div class="stat-icon">
+                    <i class="fas fa-car"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-value" id="used-shift-vehicles">0</h3>
+                    <p class="stat-label" data-lang-key="used_shift">ورديات مستخدمة</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Managements Table -->
+    <section class="managements-section">
+        <div class="view-tabs">
+            <button class="tab-btn active" id="tab-all" data-view="all">
+                <i class="fas fa-list"></i>
+                <span data-lang-key="all_movements">جميع الحركات</span>
+            </button>
+            <button class="tab-btn" id="tab-pending" data-view="pending">
+                <i class="fas fa-clock"></i>
+                <span data-lang-key="pending_delivery">السيارات تحتاج تسليم</span>
+                <span class="tab-badge" id="pending-badge">0</span>
+            </button>
+            <button class="tab-btn" id="tab-used" data-view="used">
+                <i class="fas fa-car-side"></i>
+                <span data-lang-key="used_vehicles_list">قائمة المستخدمة</span>
+            </button>
+            <button class="tab-btn" id="tab-unused" data-view="unused">
+                <i class="fas fa-car-battery"></i>
+                <span data-lang-key="unused_vehicles_list">قائمة غير المستخدمة</span>
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table id="managements-table" class="managements-table" style="width:100%">
+                <thead>
+                    <tr>
+                        <th data-lang-key="management_id">رقم الحركة</th>
+                        <th data-lang-key="vehicle_code">رمز المركبة</th>
+                        <th data-lang-key="operation_type">نوع العملية</th>
+                        <th data-lang-key="employee_name">اسم الموظف</th>
+                        <th data-lang-key="department">الإدارة</th>
+                        <th data-lang-key="section">القسم</th>
+                        <th data-lang-key="division">الشعبة</th>
+                        <th data-lang-key="management_date">تاريخ الحركة</th>
+                        <th data-lang-key="vehicle_type">نوع السيارة</th>
+                        <th data-lang-key="status">الحالة</th>
+                        <th data-lang-key="actions">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be loaded by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Employee Search Modal -->
+<div id="employee-search-modal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3><i class="fas fa-search"></i> <span data-lang-key="search_employee">بحث عن موظف</span></h3>
+            <button type="button" class="icon-btn close-btn close-search">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="search-box">
+                <input type="text" id="employee-modal-search" 
+                       data-lang-key-placeholder="search_employee_placeholder" 
+                       placeholder="ابحث بالاسم أو رقم الموظف...">
+                <button type="button" id="search-employee-modal-btn" class="icon-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div id="employee-modal-results" class="search-results"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="loading-content">
+        <i class="fas fa-spinner fa-spin fa-3x"></i>
+        <p data-lang-key="loading_data">جاري تحميل البيانات...</p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="/vehicle_management/assets/js/vehicle_management.js"></script>
+</body>
+</html>

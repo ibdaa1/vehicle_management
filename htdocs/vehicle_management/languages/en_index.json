@@ -1,0 +1,42 @@
+{
+  "title": "Vehicle Movement Dashboard - Sharjah Municipality",
+  "dashboardTitle": "Vehicle Movement Dashboard",
+  "departmentName": "Health Control and Safety Department",
+  "logoLine1": "Sharjah",
+  "logoLine2": "Municipality",
+
+  "systemAdmin": "System Administration",
+  "usersManagement": "Users Management",
+  "usersManagementDesc": "Add, edit, and delete user accounts",
+
+  "vehiclesSection": "Vehicles Management",
+  "addVehicle": "Add New Vehicle",
+  "addVehicleDesc": "Add a new vehicle to the municipality system",
+  "vehiclesReport": "Vehicles Report",
+  "vehiclesReportDesc": "View detailed reports on all vehicles",
+
+  "movementsSection": "Vehicle Movements",
+  "vehicleMovements": "Vehicle Movements",
+  "vehicleMovementsDesc": "View and track vehicle movements",
+  "addMovement": "Add Movement",
+  "addMovementDesc": "Record a new vehicle movement",
+  "movementsReport": "Movements Report",
+  "movementsReportDesc": "Statistical reports on vehicle movements",
+  "movementManagement": "Movement Management",
+  "movementManagementDesc": "Manage and organize vehicle movements",
+  "addViolation": "Add Violation",
+  "addViolationDesc": "Record a new vehicle violation",
+
+  "maintenanceSection": "Maintenance and Support",
+  "maintenance": "Vehicle Maintenance",
+  "maintenanceDesc": "Manage vehicle maintenance operations",
+  "maintenanceReport": "Maintenance Report",
+  "maintenanceReportDesc": "Detailed reports on vehicle maintenance",
+
+  "Profile": "Profile",
+  "Logout": "Logout",
+
+  "loading": "Loading...",
+
+  "footerText": "© 2025 Vehicle Management System - Sharjah Municipality - Health Control and Safety Department. All rights reserved."
+}

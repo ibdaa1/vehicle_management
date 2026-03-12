@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>إدارة صيانة المركبات</title>
+  <link rel="stylesheet" href="/vehicle_management/assets/css/Vehicle_Maintenance.css">
+  <!-- Font Awesome للأيقونات الشيكة -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <main class="container">
+    <section class="card" id="maintenanceCard" aria-labelledby="pageTitle">
+      <div class="header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">HCS</div>
+          <div>
+            <h1 id="pageTitle">إدارة صيانة المركبات</h1>
+            <div class="subtitle" id="pageSubtitle">عرض وإدارة سجلات صيانة المركبات</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <a href="/vehicle_management/public/index.html" class="btn ghost" style="text-decoration:none;margin-bottom:8px" title="العودة إلى الرئيسية"><i class="fas fa-home"></i></a>
+          <div class="meta" id="orgName">HCS Department</div>
+          <div class="userInfo" id="loggedUser">---</div>
+        </div>
+      </div>
+     
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث: رقم المركبة، السائق، الهاتف، الحالة، سنة الصنع، ID الموظف، النوع..." data-i18n-placeholder="search_placeholder" />
+          <select id="typeFilter" class="filter-select" data-i18n-label="label_maintenance_type">
+            <option value="" data-i18n="filter_all_types">كل الأنواع</option>
+            <option value="Routine" data-i18n="type_routine">صيانة دورية</option>
+            <option value="Emergency" data-i18n="type_emergency">صيانة طارئة</option>
+            <option value="Technical Check" data-i18n="type_technical">فحص فني</option>
+            <option value="Mechanical Repair" data-i18n="type_mechanical">إصلاح ميكانيكي</option>
+            <option value="Other" data-i18n="type_other">أخرى</option>
+          </select>
+          <select id="deptFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_depts">كل الإدارات</option>
+          </select>
+          <select id="sectionFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_sections">كل الأقسام</option>
+          </select>
+          <select id="divisionFilter" class="filter-select">
+            <option value="" data-i18n="filter_all_divisions">كل الشعب</option>
+          </select>
+          <input type="date" id="fromDate" class="filter-date" placeholder="من تاريخ" />
+          <input type="date" id="toDate" class="filter-date" placeholder="إلى تاريخ" />
+          <button id="searchBtn" class="btn" type="button" data-i18n="btn_search" title="بحث"><i class="fas fa-search"></i></button>
+          <button id="addNewBtn" class="btn success" type="button" data-i18n="btn_add" title="إضافة صيانة"><i class="fas fa-plus"></i></button>
+          <button id="printBtn" class="btn info" type="button" title="طباعة التقرير"><i class="fas fa-print"></i></button>
+        </div>
+      </div>
+      <!-- Results Table Section -->
+      <div id="resultsSection" class="results-section" style="display:none;">
+        <div class="results-header">
+          <h2><span data-i18n="results_count">نتائج البحث</span> (<span id="totalCount">0</span>)</h2>
+        </div>
+        <div class="table-container responsive-table">
+          <table id="maintenanceTable" class="maintenance-table">
+            <thead>
+              <tr>
+                <th data-i18n="table_header_id">ID</th>
+                <th data-i18n="table_header_vehicle_code">رقم المركبة</th>
+                <th data-i18n="label_driver">السائق</th>
+                <th data-i18n="label_driver_phone">هاتف السائق</th>
+                <th data-i18n="label_status">الحالة</th>
+                <th data-i18n="label_manufacture_year">سنة الصنع</th>
+                <th data-i18n="label_emp_id">ID الموظف</th>
+                <th data-i18n="label_type">النوع</th>
+                <th data-i18n="label_department">الإدارة</th>
+                <th data-i18n="label_section">القسم</th>
+                <th data-i18n="label_division">الشعبة</th>
+                <th data-i18n="table_header_visit_date">تاريخ الزيارة</th>
+                <th data-i18n="table_header_next_visit">الزيارة القادمة</th>
+                <th data-i18n="table_header_type">نوع الصيانة</th>
+                <th data-i18n="table_header_location">الموقع</th>
+                <th data-i18n="table_header_actions">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="maintenanceTableBody">
+              <!-- Results will be inserted here by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination">
+          <!-- Pagination controls will be inserted here by JS -->
+        </div>
+      </div>
+      <!-- Add/Edit Form Section -->
+      <div id="formSection" class="form-section" style="display:none;">
+        <h2 id="formTitle" data-i18n="form_title_add">نموذج الصيانة</h2>
+        <form id="maintenanceForm" autocomplete="off" novalidate>
+          <div class="form-row">
+            <div class="col">
+              <label for="vehicle_code" data-i18n="label_vehicle_code">رقم المركبة *</label>
+              <input type="text" id="vehicle_code" name="vehicle_code" class="form-control" list="vehicleList" required placeholder="اكتب أو اختر رقم المركبة" />
+              <datalist id="vehicleList">
+                <!-- Options will be populated by JS -->
+              </datalist>
+              <div id="vehicleNotFound" style="display:none; color: var(--danger); font-size: 0.8rem; margin-top: 4px;">المركبة غير موجودة</div>
+              <div id="vehicleDetails" style="margin-top:8px;font-size:0.75rem;color:var(--muted);display:none; border: 1px solid var(--border); padding: 8px; border-radius: 6px;">
+                <div><strong data-i18n="label_driver">السائق:</strong> <span id="detailDriver">-</span></div>
+                <div><strong data-i18n="label_driver_phone">هاتف السائق:</strong> <span id="detailDriverPhone">-</span></div>
+                <div><strong data-i18n="label_status">الحالة:</strong> <span id="detailStatus">-</span></div>
+                <div><strong data-i18n="label_manufacture_year">سنة الصنع:</strong> <span id="detailManufactureYear">-</span></div>
+                <div><strong data-i18n="label_emp_id">ID الموظف:</strong> <span id="detailEmpId">-</span></div>
+                <div><strong data-i18n="label_type">النوع:</strong> <span id="detailType">-</span></div>
+                <div><strong data-i18n="label_department">الإدارة:</strong> <span id="detailDept">-</span></div>
+                <div><strong data-i18n="label_section">القسم:</strong> <span id="detailSection">-</span></div>
+                <div><strong data-i18n="label_division">الشعبة:</strong> <span id="detailDivision">-</span></div>
+              </div>
+            </div>
+            <div class="col">
+              <label for="maintenance_type" data-i18n="label_maintenance_type">نوع الصيانة *</label>
+              <select id="maintenance_type" name="maintenance_type" class="form-control" required>
+                <option value="" data-i18n="select_type">اختر النوع</option>
+                <option value="Routine" data-i18n="type_routine">صيانة دورية</option>
+                <option value="Emergency" data-i18n="type_emergency">صيانة طارئة</option>
+                <option value="Technical Check" data-i18n="type_technical">فحص فني</option>
+                <option value="Mechanical Repair" data-i18n="type_mechanical">إصلاح ميكانيكي</option>
+                <option value="Other" data-i18n="type_other">أخرى</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="visit_date" data-i18n="label_visit_date">تاريخ الزيارة *</label>
+              <input id="visit_date" name="visit_date" type="date" class="form-control" required />
+            </div>
+            <div class="col">
+              <label for="next_visit_date" data-i18n="label_next_visit_date">تاريخ الزيارة القادمة</label>
+              <input id="next_visit_date" name="next_visit_date" type="date" class="form-control" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="location" data-i18n="label_location">الموقع</label>
+              <input id="location" name="location" class="form-control" placeholder="مثال: ورشة الصيانة الرئيسية" data-i18n-placeholder="placeholder_location" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="col">
+              <label for="notes" data-i18n="label_notes">ملاحظات</label>
+              <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="ملاحظات إضافية... (مرن حتى 3 أسطر)" data-i18n-placeholder="placeholder_notes" style="resize: vertical; min-height: 80px; max-height: 120px;"></textarea>
+            </div>
+          </div>
+          <div class="actions">
+            <button id="submitBtn" class="btn success" type="submit" data-i18n="btn_save" title="حفظ"><i class="fas fa-save"></i></button>
+            <button id="cancelBtn" type="button" class="btn ghost" data-i18n="btn_cancel" title="إلغاء"><i class="fas fa-times"></i></button>
+          </div>
+          <div id="msg" class="form-help" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+  <script src="/vehicle_management/assets/js/Vehicle_Maintenance.js"></script>
+</body>
+</html>
