@@ -31,7 +31,7 @@ class Database
             return;
         }
 
-        $conn = @new \mysqli(
+        $conn = new \mysqli(
             $this->config['host'] ?? 'localhost',
             $this->config['username'] ?? '',
             $this->config['password'] ?? '',
