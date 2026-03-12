@@ -42,6 +42,7 @@ class AuthController extends BaseController
 
         if ($identifier === '' || $password === '') {
             Response::error('emp_id/email/phone/username and password are required.', 400);
+            return;
         }
 
         // Find user by any identifier
@@ -49,10 +50,12 @@ class AuthController extends BaseController
 
         if (!$user || !$this->userModel->verifyPassword($user, $password)) {
             Response::error('Invalid credentials.', 401);
+            return;
         }
 
         if ((int)$user['is_active'] !== 1) {
             Response::error('Account not active.', 403);
+            return;
         }
 
         // Create session token
@@ -64,6 +67,7 @@ class AuthController extends BaseController
 
         if ($token === false) {
             Response::error('Server error: failed to create session token.', 500);
+            return;
         }
 
         // Store in PHP session as well
@@ -113,6 +117,7 @@ class AuthController extends BaseController
                 'user'       => $user,
                 'isLoggedIn' => true,
             ]);
+            return;
         }
 
         Response::json([
@@ -142,7 +147,7 @@ class AuthController extends BaseController
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $p = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+            setcookie(session_name(), '', time() - 3600, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
         }
         session_destroy();
 

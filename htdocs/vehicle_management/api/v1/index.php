@@ -15,13 +15,13 @@ require_once __DIR__ . '/../../config/autoload.php';
 
 use App\Core\App;
 
-// Bootstrap the application
+// Bootstrap the application (creates new App instance each request)
 $app = new App(dirname(__DIR__, 2));
 $app->boot();
 
 // Load route definitions
 $router = $app->router();
-require_once dirname(__DIR__, 2) . '/config/routes.php';
+require dirname(__DIR__, 2) . '/config/routes.php';
 
 // Dispatch the request
 $app->run();

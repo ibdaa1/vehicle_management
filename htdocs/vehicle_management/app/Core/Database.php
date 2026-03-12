@@ -23,7 +23,7 @@ class Database
         );
 
         if ($this->conn->connect_error) {
-            error_log("Database connection failed: " . $this->conn->connect_error);
+            error_log("Database connection failed. Check DB credentials and host.");
             throw new \RuntimeException('Database connection failed.');
         }
 

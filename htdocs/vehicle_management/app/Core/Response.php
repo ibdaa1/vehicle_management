@@ -11,16 +11,41 @@ namespace App\Core;
 class Response
 {
     /**
-     * Send a JSON response and exit.
+     * Whether a response has already been sent for this request.
+     */
+    private static bool $sent = false;
+
+    /**
+     * Check if a response has already been sent.
+     */
+    public static function isSent(): bool
+    {
+        return self::$sent;
+    }
+
+    /**
+     * Reset the sent flag (for use between requests in built-in server).
+     */
+    public static function reset(): void
+    {
+        self::$sent = false;
+    }
+
+    /**
+     * Send a JSON response and mark as sent.
      */
     public static function json(array $data, int $statusCode = 200): void
     {
+        if (self::$sent) {
+            return;
+        }
+        self::$sent = true;
+
         http_response_code($statusCode);
         if (!headers_sent()) {
             header('Content-Type: application/json; charset=utf-8');
         }
         echo json_encode($data, JSON_UNESCAPED_UNICODE);
-        exit;
     }
 
     /**
@@ -75,7 +100,7 @@ class Response
 
         if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
             http_response_code(204);
-            exit;
+            self::$sent = true;
         }
     }
 }

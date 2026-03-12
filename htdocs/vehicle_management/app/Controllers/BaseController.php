@@ -18,26 +18,31 @@ abstract class BaseController
 
     /**
      * Require the user to be authenticated.
-     * Sends 401 error and exits if not authenticated.
+     * Sends 401 error if not authenticated and returns empty array.
      */
     protected function requireAuth(Request $request): array
     {
         $user = $this->authenticate($request);
         if (!$user) {
             Response::error('Not authenticated', 401);
+            return [];
         }
         return $user;
     }
 
     /**
      * Require the user to have admin role (role_id 1 or 2).
-     * Sends 403 error and exits if not authorized.
+     * Sends 403 error if not authorized and returns empty array.
      */
     protected function requireAdmin(Request $request): array
     {
         $user = $this->requireAuth($request);
+        if (Response::isSent()) {
+            return [];
+        }
         if (!in_array((int)$user['role_id'], [1, 2], true)) {
             Response::error('Forbidden: admin access required', 403);
+            return [];
         }
         return $user;
     }

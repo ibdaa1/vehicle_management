@@ -116,8 +116,14 @@ class App
      */
     public function run(): void
     {
+        // Reset response state for new request
+        Response::reset();
+
         // Set CORS headers
         Response::cors();
+        if (Response::isSent()) {
+            return;
+        }
 
         // Dispatch to route
         $match = $this->router->dispatch($this->request);
