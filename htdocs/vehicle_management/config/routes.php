@@ -17,6 +17,7 @@ use App\Controllers\SettingsController;
 use App\Controllers\VehicleController;
 use App\Controllers\ReferencesController;
 use App\Controllers\UserController;
+use App\Controllers\MovementController;
 
 // === Health Check Route (diagnostic) ===
 $router->get('api/v1/health', \App\Controllers\HealthController::class, 'check');
@@ -72,6 +73,15 @@ $router->get('api/v1/references', ReferencesController::class, 'index');
 $router->get('api/v1/references/departments', ReferencesController::class, 'departments');
 $router->get('api/v1/references/sections/{departmentId}', ReferencesController::class, 'sections');
 $router->get('api/v1/references/divisions/{sectionId}', ReferencesController::class, 'divisions');
+
+// === Movement Routes ===
+$router->get('api/v1/movements', MovementController::class, 'index');
+$router->get('api/v1/movements/{id}', MovementController::class, 'show');
+$router->post('api/v1/movements', MovementController::class, 'store');
+$router->put('api/v1/movements/{id}', MovementController::class, 'update');
+$router->delete('api/v1/movements/{id}', MovementController::class, 'destroy');
+$router->get('api/v1/movements/{id}/photos', MovementController::class, 'photos');
+$router->post('api/v1/movements/{id}/photos', MovementController::class, 'uploadPhotos');
 
 // === User Routes ===
 $router->get('api/v1/users', UserController::class, 'index');

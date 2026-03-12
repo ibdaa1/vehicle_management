@@ -114,13 +114,13 @@ $menuItems = [
         <div class="logo-area">
             <button class="btn btn-ghost btn-icon" data-action="toggle-sidebar-mobile" style="color:var(--text-light)">&#9776;</button>
             <img src="<?= htmlspecialchars($logoUrl) ?>" alt="Logo" id="headerLogo" onerror="this.style.display='none'">
-            <h1 id="headerTitle"><?= htmlspecialchars($systemTitleAr) ?></h1>
+            <h1 id="headerTitle" data-title-ar="<?= htmlspecialchars($systemTitleAr) ?>" data-title-en="<?= htmlspecialchars($systemTitleEn) ?>"><?= htmlspecialchars($systemTitleAr) ?></h1>
         </div>
         <div class="header-actions">
             <button class="btn btn-ghost btn-icon" data-action="toggle-theme" title="تبديل المظهر" id="themeBtn">&#9728;&#65039;</button>
             <button class="btn btn-ghost btn-sm" data-action="toggle-lang" id="langBtn">EN</button>
             <div class="user-info"></div>
-            <button class="btn btn-ghost btn-sm" data-action="logout">خروج</button>
+            <button class="btn btn-ghost btn-sm" data-action="logout" id="logoutBtn">خروج</button>
         </div>
     </header>
 
@@ -135,7 +135,7 @@ $menuItems = [
                        href="<?= $publicUrl ?>/dashboard.php?page=<?= urlencode($item['page']) ?>"
                        data-perm="<?= htmlspecialchars($item['perm'] ?? '') ?>">
                         <span class="menu-icon"><?= $item['icon'] ?></span>
-                        <span class="menu-label"><?= htmlspecialchars($item['label_ar']) ?></span>
+                        <span class="menu-label" data-label-ar="<?= htmlspecialchars($item['label_ar']) ?>" data-label-en="<?= htmlspecialchars($item['label_en']) ?>"><?= htmlspecialchars($item['label_ar']) ?></span>
                     </a>
                 <?php endif; ?>
             <?php endforeach; ?>
