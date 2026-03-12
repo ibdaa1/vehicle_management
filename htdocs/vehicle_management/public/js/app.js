@@ -105,9 +105,10 @@ const Auth = {
         if (!token) return null;
         try {
             const res = await API.get('/auth/check');
-            if (res && res.data) {
-                this.setUser(res.data);
-                return res.data;
+            const user = (res && res.data) || (res && res.user) || null;
+            if (user) {
+                this.setUser(user);
+                return user;
             }
             return null;
         } catch {

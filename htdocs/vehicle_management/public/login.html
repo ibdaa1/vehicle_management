@@ -499,8 +499,8 @@
       if(j.success||j.token){
         if(j.token) localStorage.setItem('auth_token',j.token);
         if(j.data&&j.data.token) localStorage.setItem('auth_token',j.data.token);
-        if(j.user) localStorage.setItem('user',JSON.stringify(j.user));
-        if(j.data&&j.data.user) localStorage.setItem('user',JSON.stringify(j.data.user));
+        if(j.user) localStorage.setItem('auth_user',JSON.stringify(j.user));
+        if(j.data&&j.data.user) localStorage.setItem('auth_user',JSON.stringify(j.data.user));
         showMsg(el.loginMsg, t.loginSuccess+' ✓', 'success');
         setTimeout(()=>{ location.href=BASE+'/public/dashboard.php'; },600);
       } else {

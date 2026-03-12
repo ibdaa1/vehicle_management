@@ -124,9 +124,36 @@ class AuthController extends BaseController
         $user = $this->authenticate($request);
 
         if ($user) {
+            // Load permissions for the user
+            $permissions = [];
+            try {
+                $db = \App\Core\Database::getInstance();
+                $roleId = (int)($user['role_id'] ?? 0);
+                if ($roleId <= 2) {
+                    $permissions = ['*'];
+                } else {
+                    $rows = $db->fetchAll(
+                        "SELECT p.key_name FROM permissions p
+                         JOIN role_permissions rp ON rp.permission_id = p.id
+                         WHERE rp.role_id = ? AND p.is_active = 1",
+                        'i',
+                        [$roleId]
+                    );
+                    foreach ($rows as $row) {
+                        $permissions[] = $row['key_name'];
+                    }
+                }
+            } catch (\Throwable $e) {
+                error_log("AuthController::check permissions error: " . $e->getMessage());
+                $permissions = ['*'];
+            }
+
+            $user['permissions'] = $permissions;
+
             Response::json([
                 'success'    => true,
                 'user'       => $user,
+                'data'       => $user,
                 'isLoggedIn' => true,
             ]);
             return;
