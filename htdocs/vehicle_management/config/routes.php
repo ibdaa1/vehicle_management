@@ -18,6 +18,7 @@ use App\Controllers\VehicleController;
 use App\Controllers\ReferencesController;
 use App\Controllers\UserController;
 use App\Controllers\MovementController;
+use App\Controllers\ViolationController;
 
 // === Health Check Route (diagnostic) ===
 $router->get('api/v1/health', \App\Controllers\HealthController::class, 'check');
@@ -86,3 +87,11 @@ $router->get('api/v1/users/{id}', UserController::class, 'show');
 $router->post('api/v1/users', UserController::class, 'store');
 $router->put('api/v1/users/{id}', UserController::class, 'update');
 $router->delete('api/v1/users/{id}', UserController::class, 'destroy');
+
+// === Violation Routes ===
+$router->get('api/v1/violations/stats', ViolationController::class, 'stats');
+$router->get('api/v1/violations', ViolationController::class, 'index');
+$router->get('api/v1/violations/{id}', ViolationController::class, 'show');
+$router->post('api/v1/violations', ViolationController::class, 'store');
+$router->put('api/v1/violations/{id}', ViolationController::class, 'update');
+$router->delete('api/v1/violations/{id}', ViolationController::class, 'destroy');
