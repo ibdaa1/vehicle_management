@@ -1,0 +1,208 @@
+/* Global UI system styles for Vehicle Management
+   - Theme variables
+   - Reset / base
+   - Buttons / inputs / form layout
+   - Accessibility (focus, visually-hidden)
+   - RTL support
+   - Utility helpers (spacing, text, flex/grid)
+   Place this file early in <head> and let page-specific CSS override when needed.
+*/
+
+/* ----------------------
+   Theme variables
+   ---------------------- */
+:root{
+  /* Palette */
+  --bg: #fbfbfb;
+  --surface: #ffffff;
+  --muted: #6b7280;
+  --text: #1f2d1f;
+  --accent: #254b2a;        /* primary (dark/olive green) */
+  --accent-600: #2f6231;
+  --accent-100: #eaf4ea;
+  --danger: #b22222;
+  --success: #065f46;
+  --gold: #bda36b;
+
+  /* Sizes */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --control-height: 40px;
+  --control-padding: 10px 12px;
+
+  /* Typography */
+  --font-sans: "Tajawal", "Helvetica Neue", Arial, sans-serif;
+  --base-font-size: 15px;
+  --heading-weight: 700;
+  --body-weight: 400;
+
+  /* motion */
+  --ease: cubic-bezier(.2,.8,.2,1);
+}
+
+/* ----------------------
+   Reset / Base
+   ---------------------- */
+* { box-sizing: border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: var(--font-sans);
+  font-size: var(--base-font-size);
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  line-height:1.45;
+}
+
+/* Remove default focus outlines but keep accessible focus style */
+:focus{ outline: none; }
+:focus-visible{ outline-offset: 2px; outline: 3px solid color-mix(in srgb, var(--accent) 16%, transparent); }
+
+/* Typography helpers */
+h1,h2,h3,h4,h5{ margin:0 0 .5rem; font-weight:var(--heading-weight); color:var(--text); }
+p{ margin:0 0 0.8rem; color:var(--muted); }
+
+/* ----------------------
+   Containers & layout
+   ---------------------- */
+.container{ width:100%; max-width:1200px; margin:0 auto; padding:0 16px; }
+.card{ background:var(--surface); border-radius:var(--radius-md); border:1px solid rgba(16,24,40,0.04); padding:18px; box-shadow:0 6px 20px rgba(16,24,40,0.06); }
+
+/* Forms grid */
+.form-row{ display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.form-row.full{ flex-direction:column; align-items:stretch; }
+.select-row .form-control{ width:48%; }
+@media (max-width:540px){ .select-row .form-control{ width:100%; } }
+
+/* ----------------------
+   Form controls
+   ---------------------- */
+.form-control, input[type="text"], input[type="password"], input[type="email"], select, textarea {
+  height: var(--control-height);
+  padding: var(--control-padding);
+  border:1px solid rgba(16,24,40,0.06);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: box-shadow .18s var(--ease), border-color .12s var(--ease);
+  width:100%;
+  min-width:0;
+}
+
+textarea.form-control, textarea{ height:auto; min-height:96px; padding:10px 12px; resize:vertical; }
+
+.form-control:focus, input:focus, select:focus, textarea:focus{
+  border-color: var(--accent-600);
+  box-shadow: 0 4px 14px rgba(37,75,42,0.08);
+}
+
+/* disabled / readonly */
+.form-control[disabled], .form-control[readonly]{ opacity:0.6; cursor:not-allowed; }
+
+/* validation states */
+.form-control.is-invalid{ border-color: var(--danger); box-shadow: 0 0 0 3px rgba(178,34,34,0.06); }
+.form-help{ font-size:0.85rem; color:var(--muted); margin-top:6px; }
+.form-error{ font-size:0.88rem; color:var(--danger); font-weight:600; margin-top:6px; }
+
+/* ----------------------
+   Buttons (system)
+   ---------------------- */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:.5rem;
+  padding:8px 14px;
+  height:40px;
+  border-radius:10px;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-weight:700;
+  font-size:0.95rem;
+  transition: transform .07s var(--ease), box-shadow .12s var(--ease), opacity .12s var(--ease);
+  background:var(--surface);
+  color:var(--text);
+}
+.btn:active{ transform: translateY(1px); }
+.btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+
+/* primary */
+.btn-primary{
+  background: linear-gradient(180deg,var(--accent) 0%, var(--accent-600) 100%);
+  color:#fff;
+  border-color: rgba(0,0,0,0.04);
+  box-shadow: 0 6px 18px rgba(37,75,42,0.08);
+}
+.btn-primary:hover{ filter:brightness(.98); }
+
+/* ghost / outline */
+.btn-ghost{
+  background:transparent;
+  border:1px solid rgba(16,24,40,0.06);
+  color:var(--text);
+}
+.btn-outline{
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent);
+}
+
+/* small / large */
+.btn-sm{ padding:6px 10px; height:34px; border-radius:8px; font-size:0.9rem; }
+.btn-lg{ padding:12px 18px; height:48px; border-radius:12px; font-size:1.02rem; }
+
+/* icon buttons */
+.icon-btn{ background:transparent; border:1px solid rgba(16,24,40,0.06); padding:8px; border-radius:8px; }
+
+/* ----------------------
+   Utilities
+   ---------------------- */
+.row{ display:flex; gap:12px; align-items:center; }
+.col{ flex:1; }
+.text-muted{ color:var(--muted); font-size:0.92rem; }
+.small{ font-size:0.85rem; color:var(--muted); }
+
+/* spacing helpers */
+.mt-1{ margin-top:6px } .mt-2{ margin-top:12px } .mb-1{ margin-bottom:6px } .mb-2{ margin-bottom:12px }
+
+/* visually hidden (for accessibility) */
+.visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+
+/* focus ring accessible for keyboard only */
+:root:not(.using-mouse) .form-control:focus{ outline: none; box-shadow: 0 0 0 4px rgba(37,75,42,0.06); }
+
+/* ----------------------
+   RTL support (if document uses dir="rtl")
+   ---------------------- */
+html[dir="rtl"], body[dir="rtl"] {
+  direction: rtl;
+}
+html[dir="rtl"] .form-row { flex-direction: row-reverse; }
+html[dir="rtl"] .select-row .form-control { text-align: right; }
+
+/* ----------------------
+   Compact responsive tweaks
+   ---------------------- */
+@media (max-width:720px){
+  .form-row{ flex-direction:column; align-items:stretch; }
+  .card{ padding:14px; border-radius:8px; }
+  .btn{ width:100%; justify-content:center; }
+}
+
+/* ----------------------
+   Theme override helpers (light/dark adjustable)
+   ---------------------- */
+/* Example: add .theme-dark to body to invert palette */
+body.theme-dark{
+  --bg: #0b1410;
+  --surface: #07110b;
+  --text: #e6efe9;
+  --muted: #9aa79a;
+  --accent: #5db86a;
+  background: #07110b;
+}
+
+/* EOF */

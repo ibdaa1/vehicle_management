@@ -1,0 +1,163 @@
+/* vehicle_management/assets/css/login.css
+   Palette: light background, dark/olive green primary, gold accents for small text.
+*/
+* { box-sizing: border-box; font-family: "Tajawal", "Helvetica Neue", Arial, sans-serif; }
+html,body{height:100%}
+body { margin:0; background:#fbfbfb; color:#254b2a; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+
+.auth-wrapper { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+.auth-card {
+    width:480px; /* Wider card */
+    min-height: 480px; /* Taller card */
+    background:#ffffff;
+    border-radius:10px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Stronger shadow */
+    padding:32px; /* Increased padding */
+    text-align:center;
+}
+.logo {
+    /* Logo container setup for positioning */
+    display: flex;
+    justify-content: flex-start; /* Default LTR: Start (Left) */
+    margin-bottom: 20px;
+}
+.logo img {
+    width:120px; /* Larger logo */
+    height:auto;
+    margin: 0; /* Remove auto margin */
+    display:block;
+}
+/* Titles aligned to start (left in LTR) */
+h1#title { text-align: left; margin:6px 0 4px; font-size:24px; color:#254b2a; font-weight:700; }
+#subtitle { text-align: left; margin:0 0 14px; color:#556b4a; font-size:15px; }
+
+/* Language Toggle Button Style */
+.lang-toggle-btn {
+  padding:8px 16px;
+  border-radius:6px;
+  border:1px solid #254b2a;
+  background:transparent;
+  cursor:pointer;
+  color:#254b2a;
+  font-weight:600;
+  transition: all 0.2s ease;
+}
+.lang-toggle-btn:hover {
+  background: #254b2a;
+  color: #fff;
+}
+
+.mode-switch { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+.mode-switch button { padding:8px 16px; border-radius:6px; border:1px solid transparent; background:transparent; cursor:pointer; color:#254b2a; font-weight:600; }
+.mode-switch button.active { background:#254b2a; color:#fff; box-shadow: 0 2px 6px rgba(37,75,42,0.12); }
+
+.form-row { margin-bottom:12px; display:flex; gap:8px; } /* Increased row margin */
+input[type="text"], input[type="password"], input[type="email"], select { width:100%; padding:10px 12px; border:1px solid #e6dec8; border-radius:6px; background:#fff; color:#254b2a; font-size:14px; }
+/* Input focus style (Global/Professional Look) */
+input:focus, select:focus {
+    border-color: #254b2a;
+    box-shadow: 0 0 0 3px rgba(37, 75, 42, 0.2); /* Stronger focus shadow */
+    outline: none;
+}
+.select-row select { width:48%; }
+
+/* Default LTR (English) select arrow position */
+select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #bda36b 50%), linear-gradient(135deg, #bda36b 50%, transparent 50%);
+  background-position: right 10px center, right 5px center;
+  background-repeat: no-repeat;
+  background-size: 8px 8px;
+  padding-right:32px;
+}
+
+/* Submit Button Styling (Global/Iconic) */
+#submitBtn {
+    padding:14px; /* Taller button */
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    font-weight:700;
+    background:#254b2a;
+    color:#fff;
+    width:100%;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Initial shadow */
+    position: relative;
+    font-size: 16px;
+}
+#submitBtn:hover:not(:disabled) {
+    background: #1a391f;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25); /* Lift on hover */
+    transform: translateY(-1px);
+}
+#submitBtn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* Add a global icon (arrow) after the text in LTR */
+#submitBtn::after {
+    content: "\2192"; /* Right Arrow */
+    display: inline-block;
+    margin-left: 10px;
+    transition: transform 0.2s ease;
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+#submitBtn:hover::after {
+    transform: translateX(4px);
+}
+
+.msg { margin-top:12px; font-size:13px; color:#b22222; min-height:18px; text-align:center; }
+
+/* --- RTL (Arabic) Support --- */
+
+/* Base Direction: Set text-align for the entire card and titles */
+html[dir="rtl"] .auth-card {
+    text-align: right;
+}
+html[dir="rtl"] .logo {
+    justify-content: flex-end; /* Logo to the right in RTL (اقصى اليمين) */
+}
+html[dir="rtl"] h1#title, html[dir="rtl"] #subtitle {
+    text-align: right; /* Titles to the right in RTL */
+}
+
+/* Inputs direction and alignment */
+html[dir="rtl"] input[type="text"],
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] select {
+  direction: rtl;
+  text-align: right;
+  /* Adjust padding for RTL select arrow */
+  padding-right: 12px;
+  padding-left: 32px;
+}
+
+/* RTL select arrow position */
+html[dir="rtl"] select {
+  background-position: left 10px center, left 5px center;
+}
+
+/* Form rows direction (important for flexbox/wrapping) */
+html[dir="rtl"] .form-row {
+  direction: rtl;
+}
+
+/* Submit button RTL icon adjustment */
+html[dir="rtl"] #submitBtn::after {
+    content: "\2190"; /* Left Arrow in RTL */
+    margin-left: 0;
+    margin-right: 10px;
+}
+html[dir="rtl"] #submitBtn:hover::after {
+    transform: translateX(-4px);
+}
+
+
+/* responsive */
+@media (max-width:550px) {
+  .auth-card { width:100%; padding:18px; }
+  .select-row, .form-row { flex-direction: column; gap: 10px; }
+  .select-row select { width:100%; }
+  .logo img { width: 100px; }
+}
