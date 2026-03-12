@@ -56,7 +56,7 @@ try {
         'message' => 'Internal server error',
     ];
 
-    // Always include error type and a sanitized hint for debugging
+    // Always include error type for debugging (safe, no credentials)
     $response['error_type'] = $cls;
 
     // Always include a hint for connection errors to help diagnose
@@ -65,8 +65,11 @@ try {
         || stripos($msg, 'Access denied') !== false
         || stripos($msg, 'connect') !== false
     ) {
-        $response['message'] = 'Database connection failed. Please check database host, username, password, and database name in config/database.php';
-        $response['hint'] = $msg;
+        $response['message'] = 'Database connection failed. Please check database host, username, password, and database name in config/database.php. Use /api/v1/health to diagnose.';
+        // Sanitize: remove credentials from error message before exposing
+        $sanitized = preg_replace("/for user '.*?'@/", "for user '***'@", $msg);
+        $sanitized = preg_replace("/'.*?'@'.*?'/", "'***'@'***'", $sanitized);
+        $response['hint'] = $sanitized;
     }
 
     if ($debug) {
