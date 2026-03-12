@@ -49,12 +49,17 @@ $router->get('api/v1/dashboard/stats', DashboardController::class, 'stats');
 
 // === Settings & Theme Routes ===
 $router->get('api/v1/settings/public', SettingsController::class, 'publicSettings');
+$router->get('api/v1/settings/themes', SettingsController::class, 'themes');
 $router->get('api/v1/settings/theme', SettingsController::class, 'theme');
+$router->put('api/v1/settings/theme/{slug}', SettingsController::class, 'switchTheme');
 $router->get('api/v1/settings', SettingsController::class, 'index');
 $router->put('api/v1/settings/{key}', SettingsController::class, 'update');
 
 // === Vehicle Routes ===
 $router->get('api/v1/vehicles/stats', VehicleController::class, 'stats');
+$router->get('api/v1/vehicles/{id}/handovers', VehicleController::class, 'handovers');
+$router->post('api/v1/vehicles/{id}/handover', VehicleController::class, 'handover');
+$router->post('api/v1/vehicles/{id}/receive', VehicleController::class, 'receive');
 $router->get('api/v1/vehicles', VehicleController::class, 'index');
 $router->get('api/v1/vehicles/{id}', VehicleController::class, 'show');
 $router->post('api/v1/vehicles', VehicleController::class, 'store');

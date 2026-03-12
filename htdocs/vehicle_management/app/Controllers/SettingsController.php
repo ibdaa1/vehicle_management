@@ -93,6 +93,79 @@ class SettingsController extends BaseController
     }
 
     /**
+     * GET /api/v1/settings/themes
+     * Returns all available themes – no auth required.
+     */
+    public function themes(Request $request, array $params = []): void
+    {
+        try {
+            $themes = $this->themeModel->where([]);
+            $data = array_map(fn($t) => [
+                'id'          => (int)$t['id'],
+                'name'        => $t['name'],
+                'slug'        => $t['slug'],
+                'description' => $t['description'],
+                'is_active'   => (int)$t['is_active'],
+            ], $themes);
+        } catch (\Throwable $e) {
+            error_log("SettingsController::themes error: " . $e->getMessage());
+            $data = [];
+        }
+
+        Response::json([
+            'success' => true,
+            'data' => $data,
+        ]);
+        return;
+    }
+
+    /**
+     * PUT /api/v1/settings/theme/{slug}
+     * Activate a theme by slug – requires admin.
+     */
+    public function switchTheme(Request $request, array $params = []): void
+    {
+        $this->requireAdmin($request);
+        if (Response::isSent()) return;
+
+        $slug = $params['slug'] ?? '';
+        if (empty($slug)) {
+            Response::error('Theme slug is required', 400);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::getInstance();
+
+            // Find the theme by slug
+            $theme = $db->fetchOne(
+                "SELECT id FROM themes WHERE slug = ? LIMIT 1",
+                's', [$slug]
+            );
+
+            if (!$theme) {
+                Response::error('Theme not found', 404);
+                return;
+            }
+
+            // Deactivate all themes
+            $db->execute("UPDATE themes SET is_active = 0");
+
+            // Activate the requested theme
+            $db->execute(
+                "UPDATE themes SET is_active = 1 WHERE id = ?",
+                'i', [(int)$theme['id']]
+            );
+
+            Response::success(null, 'Theme switched successfully');
+        } catch (\Throwable $e) {
+            error_log("SettingsController::switchTheme error: " . $e->getMessage());
+            Response::error('Failed to switch theme: ' . $e->getMessage(), 500);
+        }
+        return;
+    }
+
+    /**
      * PUT /api/v1/settings/{key}
      * Update a setting value – requires admin.
      */
