@@ -49,25 +49,32 @@ class AuthMiddleware
     }
 
     /**
-     * Require authentication. Sends 401 response and exits if not authenticated.
+     * Require authentication. Sends 401 response if not authenticated.
+     * Returns user array or empty array (check Response::isSent() after calling).
      */
     public static function requireAuth(Request $request): array
     {
         $user = self::check($request);
         if (!$user) {
             Response::error('Not authenticated', 401);
+            return [];
         }
         return $user;
     }
 
     /**
-     * Require admin role. Sends 403 response and exits if not admin.
+     * Require admin role. Sends 403 response if not admin.
+     * Returns user array or empty array (check Response::isSent() after calling).
      */
     public static function requireAdmin(Request $request): array
     {
         $user = self::requireAuth($request);
+        if (Response::isSent()) {
+            return [];
+        }
         if (!in_array((int)$user['role_id'], [1, 2], true)) {
             Response::error('Forbidden: admin access required', 403);
+            return [];
         }
         return $user;
     }

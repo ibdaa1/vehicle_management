@@ -66,8 +66,12 @@ class App
         ini_set('log_errors', '1');
         ini_set('default_charset', 'UTF-8');
 
-        // Initialize database
-        Database::init($this->config['database']);
+        // Initialize database (guard: config might be missing if file not found)
+        $dbConfig = $this->config['database'] ?? [];
+        if (!is_array($dbConfig)) {
+            $dbConfig = [];
+        }
+        Database::init($dbConfig);
 
         // Initialize request
         $this->request = new Request();
@@ -158,7 +162,17 @@ class App
         }
 
         // Call the controller action with request and route params
-        $controller->$action($this->request, $params);
+        try {
+            $controller->$action($this->request, $params);
+        } catch (\Throwable $e) {
+            $cls = get_class($e);
+            $msg = $e->getMessage();
+            $file = $e->getFile() . ':' . $e->getLine();
+            error_log("Controller action failed ({$controllerClass}::{$action}) [{$cls}]: {$msg} in {$file}");
+            if (!Response::isSent()) {
+                Response::error("Controller error: {$msg}", 500);
+            }
+        }
     }
 
     /**

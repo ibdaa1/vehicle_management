@@ -51,13 +51,21 @@ try {
     }
 
     $debug = (bool)(getenv('APP_DEBUG') ?: false);
+
+    // Sanitize error message: remove database credentials and sensitive info
+    $sanitizedMsg = preg_replace("/for user '.*?'@/", "for user '***'@", $msg);
+    $sanitizedMsg = preg_replace("/'.*?'@'.*?'/", "'***'@'***'", $sanitizedMsg);
+    $sanitizedMsg = preg_replace("/password.*?['\"]/i", "password ***'", $sanitizedMsg);
+
     $response = [
         'success' => false,
         'message' => 'Internal server error',
     ];
 
-    // Always include error type for debugging (safe, no credentials)
+    // Always include error type and sanitized message for debugging
     $response['error_type'] = $cls;
+    $response['error_message'] = $sanitizedMsg;
+    $response['error_location'] = basename($e->getFile()) . ':' . $e->getLine();
 
     // Always include a hint for connection errors to help diagnose
     if (stripos($msg, 'Database connection failed') !== false
@@ -66,10 +74,6 @@ try {
         || stripos($msg, 'connect') !== false
     ) {
         $response['message'] = 'Database connection failed. Please check database host, username, password, and database name in config/database.php. Use /api/v1/health to diagnose.';
-        // Sanitize: remove credentials from error message before exposing
-        $sanitized = preg_replace("/for user '.*?'@/", "for user '***'@", $msg);
-        $sanitized = preg_replace("/'.*?'@'.*?'/", "'***'@'***'", $sanitized);
-        $response['hint'] = $sanitized;
     }
 
     if ($debug) {

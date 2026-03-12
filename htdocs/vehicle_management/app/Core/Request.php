@@ -23,13 +23,20 @@ class Request
         $this->post    = $_POST ?? [];
 
         // Parse JSON body BEFORE resolveMethod (which may access $this->body)
+        // Guard: file_get_contents can return false on some restricted hosting
         $raw = file_get_contents('php://input');
+        if (!is_string($raw)) {
+            $raw = '';
+        }
         $json = json_decode($raw, true);
         $this->body = is_array($json) ? $json : [];
 
         $this->headers = $this->normalizeHeaders();
         $this->method  = $this->resolveMethod();
-        $this->uri     = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+
+        // Guard: parse_url can return null or false; typed string property requires string
+        $parsedPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+        $this->uri = is_string($parsedPath) ? $parsedPath : '/';
     }
 
     /**
