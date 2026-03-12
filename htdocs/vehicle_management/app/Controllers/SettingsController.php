@@ -27,7 +27,12 @@ class SettingsController extends BaseController
      */
     public function publicSettings(Request $request, array $params = []): void
     {
-        $settings = $this->settingsModel->getPublicSettings();
+        try {
+            $settings = $this->settingsModel->getPublicSettings();
+        } catch (\Throwable $e) {
+            error_log("SettingsController::publicSettings error: " . $e->getMessage());
+            $settings = [];
+        }
         Response::json([
             'success' => true,
             'data' => $settings,
@@ -41,7 +46,13 @@ class SettingsController extends BaseController
      */
     public function theme(Request $request, array $params = []): void
     {
-        $theme = $this->themeModel->getActiveTheme();
+        try {
+            $theme = $this->themeModel->getActiveTheme();
+        } catch (\Throwable $e) {
+            error_log("SettingsController::theme error: " . $e->getMessage());
+            $theme = null;
+        }
+
         if (!$theme) {
             Response::json([
                 'success' => true,
@@ -67,7 +78,13 @@ class SettingsController extends BaseController
         $this->requireAdmin($request);
         if (Response::isSent()) return;
 
-        $settings = $this->settingsModel->all();
+        try {
+            $settings = $this->settingsModel->all();
+        } catch (\Throwable $e) {
+            error_log("SettingsController::index error: " . $e->getMessage());
+            Response::error('Failed to load settings: ' . $e->getMessage(), 500);
+            return;
+        }
         Response::json([
             'success' => true,
             'data' => $settings,
@@ -92,7 +109,14 @@ class SettingsController extends BaseController
             return;
         }
 
-        $success = $this->settingsModel->setValue($key, $value);
+        try {
+            $success = $this->settingsModel->setValue($key, $value);
+        } catch (\Throwable $e) {
+            error_log("SettingsController::update error: " . $e->getMessage());
+            Response::error('Failed to update setting: ' . $e->getMessage(), 500);
+            return;
+        }
+
         if (!$success) {
             Response::error('Setting not found or not updatable', 404);
             return;

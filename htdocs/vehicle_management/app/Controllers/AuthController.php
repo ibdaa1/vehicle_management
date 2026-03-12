@@ -46,7 +46,13 @@ class AuthController extends BaseController
         }
 
         // Find user by any identifier
-        $user = $this->userModel->findByIdentifier($identifier);
+        try {
+            $user = $this->userModel->findByIdentifier($identifier);
+        } catch (\Throwable $e) {
+            error_log("AuthController::login DB error: " . $e->getMessage());
+            Response::error('Database error during authentication. Please contact administrator.', 500);
+            return;
+        }
 
         if (!$user || !$this->userModel->verifyPassword($user, $password)) {
             Response::error('Invalid credentials.', 401);
@@ -59,11 +65,17 @@ class AuthController extends BaseController
         }
 
         // Create session token
-        $token = $this->userModel->createSessionToken(
-            (int)$user['id'],
-            $request->userAgent(),
-            $request->ip()
-        );
+        try {
+            $token = $this->userModel->createSessionToken(
+                (int)$user['id'],
+                $request->userAgent(),
+                $request->ip()
+            );
+        } catch (\Throwable $e) {
+            error_log("AuthController::login token error: " . $e->getMessage());
+            Response::error('Server error: failed to create session token.', 500);
+            return;
+        }
 
         if ($token === false) {
             Response::error('Server error: failed to create session token.', 500);

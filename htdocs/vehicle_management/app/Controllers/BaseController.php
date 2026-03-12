@@ -62,26 +62,34 @@ abstract class BaseController
         // Try token authentication first
         $token = $request->bearerToken();
         if ($token) {
-            $row = $db->fetchOne(
-                "SELECT user_id FROM user_sessions WHERE token = ? AND revoked = 0 AND expires_at > NOW() LIMIT 1",
-                's',
-                [$token]
-            );
-            if ($row) {
-                $this->currentUser = $this->getUserById((int)$row['user_id']);
-                return $this->currentUser;
+            try {
+                $row = $db->fetchOne(
+                    "SELECT user_id FROM user_sessions WHERE token = ? AND revoked = 0 AND expires_at > NOW() LIMIT 1",
+                    's',
+                    [$token]
+                );
+                if ($row) {
+                    $this->currentUser = $this->getUserById((int)$row['user_id']);
+                    return $this->currentUser;
+                }
+            } catch (\Throwable $e) {
+                error_log("BaseController::authenticate token error: " . $e->getMessage());
             }
         }
 
         // Fallback to PHP session
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        try {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
 
-        $sessUser = $_SESSION['user'] ?? null;
-        if ($sessUser && !empty($sessUser['id'])) {
-            $this->currentUser = $this->getUserById((int)$sessUser['id']);
-            return $this->currentUser;
+            $sessUser = $_SESSION['user'] ?? null;
+            if ($sessUser && !empty($sessUser['id'])) {
+                $this->currentUser = $this->getUserById((int)$sessUser['id']);
+                return $this->currentUser;
+            }
+        } catch (\Throwable $e) {
+            error_log("BaseController::authenticate session error: " . $e->getMessage());
         }
 
         return null;

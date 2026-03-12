@@ -27,7 +27,12 @@ class VehicleController extends BaseController
         if (Response::isSent()) return;
 
         $filters = $request->only(['status', 'vehicle_mode', 'department_id']);
-        $vehicles = $this->vehicleModel->allWithRelations($filters);
+        try {
+            $vehicles = $this->vehicleModel->allWithRelations($filters);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::index error: " . $e->getMessage());
+            $vehicles = [];
+        }
 
         Response::json([
             'success' => true,
@@ -174,7 +179,12 @@ class VehicleController extends BaseController
         $this->requireAuth($request);
         if (Response::isSent()) return;
 
-        $stats = $this->vehicleModel->getStats();
+        try {
+            $stats = $this->vehicleModel->getStats();
+        } catch (\Throwable $e) {
+            error_log("VehicleController::stats error: " . $e->getMessage());
+            $stats = ['total' => 0, 'operational' => 0, 'maintenance' => 0, 'out_of_service' => 0, 'private' => 0, 'shift' => 0];
+        }
         Response::json(['success' => true, 'data' => $stats]);
         return;
     }

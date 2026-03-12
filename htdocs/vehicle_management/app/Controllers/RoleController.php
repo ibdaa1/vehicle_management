@@ -314,7 +314,12 @@ class RoleController extends BaseController
      */
     public function publicList(Request $request, array $params = []): void
     {
-        $roles = $this->roleModel->all();
+        try {
+            $roles = $this->roleModel->all();
+        } catch (\Throwable $e) {
+            error_log("RoleController::publicList error: " . $e->getMessage());
+            $roles = [];
+        }
 
         // Filter to basic info only
         $publicRoles = array_map(function ($role) {

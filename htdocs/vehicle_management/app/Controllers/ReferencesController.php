@@ -24,7 +24,12 @@ class ReferencesController extends BaseController
      */
     public function index(Request $request, array $params = []): void
     {
-        $refs = $this->deptModel->getAllReferences();
+        try {
+            $refs = $this->deptModel->getAllReferences();
+        } catch (\Throwable $e) {
+            error_log("ReferencesController::index error: " . $e->getMessage());
+            $refs = ['departments' => [], 'sections' => [], 'divisions' => []];
+        }
         Response::json([
             'success' => true,
             'data' => $refs,
@@ -37,7 +42,12 @@ class ReferencesController extends BaseController
      */
     public function departments(Request $request, array $params = []): void
     {
-        $departments = $this->deptModel->allDepartments();
+        try {
+            $departments = $this->deptModel->allDepartments();
+        } catch (\Throwable $e) {
+            error_log("ReferencesController::departments error: " . $e->getMessage());
+            $departments = [];
+        }
         Response::json(['success' => true, 'data' => $departments]);
         return;
     }
@@ -52,7 +62,12 @@ class ReferencesController extends BaseController
             Response::error('Invalid department ID', 400);
             return;
         }
-        $sections = $this->deptModel->getSections($deptId);
+        try {
+            $sections = $this->deptModel->getSections($deptId);
+        } catch (\Throwable $e) {
+            error_log("ReferencesController::sections error: " . $e->getMessage());
+            $sections = [];
+        }
         Response::json(['success' => true, 'data' => $sections]);
         return;
     }
@@ -67,7 +82,12 @@ class ReferencesController extends BaseController
             Response::error('Invalid section ID', 400);
             return;
         }
-        $divisions = $this->deptModel->getDivisions($secId);
+        try {
+            $divisions = $this->deptModel->getDivisions($secId);
+        } catch (\Throwable $e) {
+            error_log("ReferencesController::divisions error: " . $e->getMessage());
+            $divisions = [];
+        }
         Response::json(['success' => true, 'data' => $divisions]);
         return;
     }

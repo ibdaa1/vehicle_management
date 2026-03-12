@@ -22,28 +22,29 @@ class DashboardController extends BaseController
 
         $db = Database::getInstance();
 
-        $vehicles     = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles") ?? ['cnt' => 0];
-        $operational  = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles WHERE status='operational'") ?? ['cnt' => 0];
-        $maintenance  = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles WHERE status='maintenance'") ?? ['cnt' => 0];
-        $outOfService = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles WHERE status='out_of_service'") ?? ['cnt' => 0];
-        $privateCnt   = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles WHERE vehicle_mode='private'") ?? ['cnt' => 0];
-        $shiftCnt     = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicles WHERE vehicle_mode='shift'") ?? ['cnt' => 0];
-        $users        = $db->fetchOne("SELECT COUNT(*) as cnt FROM users WHERE is_active=1") ?? ['cnt' => 0];
-        $violations   = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicle_violations WHERE violation_status='unpaid'") ?? ['cnt' => 0];
-        $maintenanceDue = $db->fetchOne("SELECT COUNT(*) as cnt FROM vehicle_maintenance WHERE next_visit_date <= CURDATE()") ?? ['cnt' => 0];
+        // Helper to safely count from a table (returns 0 if table doesn't exist)
+        $safeCount = function (string $sql) use ($db): int {
+            try {
+                $row = $db->fetchOne($sql);
+                return (int)($row['cnt'] ?? 0);
+            } catch (\Throwable $e) {
+                error_log("DashboardController::stats query error: " . $e->getMessage());
+                return 0;
+            }
+        };
 
         Response::json([
             'success' => true,
             'data' => [
-                'vehicles_total'     => (int)$vehicles['cnt'],
-                'vehicles_operational' => (int)$operational['cnt'],
-                'vehicles_maintenance' => (int)$maintenance['cnt'],
-                'vehicles_out_of_service' => (int)$outOfService['cnt'],
-                'vehicles_private'   => (int)$privateCnt['cnt'],
-                'vehicles_shift'     => (int)$shiftCnt['cnt'],
-                'users_active'       => (int)$users['cnt'],
-                'violations_unpaid'  => (int)$violations['cnt'],
-                'maintenance_due'    => (int)$maintenanceDue['cnt'],
+                'vehicles_total'          => $safeCount("SELECT COUNT(*) as cnt FROM vehicles"),
+                'vehicles_operational'    => $safeCount("SELECT COUNT(*) as cnt FROM vehicles WHERE status='operational'"),
+                'vehicles_maintenance'    => $safeCount("SELECT COUNT(*) as cnt FROM vehicles WHERE status='maintenance'"),
+                'vehicles_out_of_service' => $safeCount("SELECT COUNT(*) as cnt FROM vehicles WHERE status='out_of_service'"),
+                'vehicles_private'        => $safeCount("SELECT COUNT(*) as cnt FROM vehicles WHERE vehicle_mode='private'"),
+                'vehicles_shift'          => $safeCount("SELECT COUNT(*) as cnt FROM vehicles WHERE vehicle_mode='shift'"),
+                'users_active'            => $safeCount("SELECT COUNT(*) as cnt FROM users WHERE is_active=1"),
+                'violations_unpaid'       => $safeCount("SELECT COUNT(*) as cnt FROM vehicle_violations WHERE violation_status='unpaid'"),
+                'maintenance_due'         => $safeCount("SELECT COUNT(*) as cnt FROM vehicle_maintenance WHERE next_visit_date <= CURDATE()"),
             ],
         ]);
         return;
