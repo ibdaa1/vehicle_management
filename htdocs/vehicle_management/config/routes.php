@@ -16,6 +16,7 @@ use App\Controllers\DashboardController;
 use App\Controllers\SettingsController;
 use App\Controllers\VehicleController;
 use App\Controllers\ReferencesController;
+use App\Controllers\UserController;
 
 // === Health Check Route (diagnostic) ===
 $router->get('api/v1/health', \App\Controllers\HealthController::class, 'check');
@@ -71,3 +72,10 @@ $router->get('api/v1/references', ReferencesController::class, 'index');
 $router->get('api/v1/references/departments', ReferencesController::class, 'departments');
 $router->get('api/v1/references/sections/{departmentId}', ReferencesController::class, 'sections');
 $router->get('api/v1/references/divisions/{sectionId}', ReferencesController::class, 'divisions');
+
+// === User Routes ===
+$router->get('api/v1/users', UserController::class, 'index');
+$router->get('api/v1/users/{id}', UserController::class, 'show');
+$router->post('api/v1/users', UserController::class, 'store');
+$router->put('api/v1/users/{id}', UserController::class, 'update');
+$router->delete('api/v1/users/{id}', UserController::class, 'destroy');
