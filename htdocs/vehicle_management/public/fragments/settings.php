@@ -327,10 +327,12 @@ ob_start();
                 groups[cat].push(s);
             });
             let h='';
-            const catLabels={general:'عام',security:'الأمان',appearance:'المظهر',system:'النظام',contact:'التواصل'};
+            const catLabels={general:{ar:'عام',en:'General'},security:{ar:'الأمان',en:'Security'},appearance:{ar:'المظهر',en:'Appearance'},system:{ar:'النظام',en:'System'},contact:{ar:'التواصل',en:'Contact'},branding:{ar:'العلامة التجارية',en:'Branding'}};
+            const lang=localStorage.getItem('lang')||'ar';
             for(const[cat,items]of Object.entries(groups)){
                 h+='<div class="st-settings-group">';
-                h+='<h4>📁 '+(catLabels[cat]||esc(cat))+'</h4>';
+                const lbl=catLabels[cat];
+                h+='<h4>📁 '+(lbl?lbl[lang]:esc(cat))+'</h4>';
                 h+='<div class="st-settings-grid">';
                 items.forEach(s=>{
                     const editable=s.is_editable!==undefined?parseInt(s.is_editable):1;
