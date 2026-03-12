@@ -1,0 +1,8 @@
+[24-Dec-2025 11:41:20 America/New_York] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #2 cannot be passed by reference in /home/hcsfcsto/public_html/vehicle_management/api/vehicle/delete_photos_by_date.php:196
+Stack trace:
+#0 {main}
+  thrown in /home/hcsfcsto/public_html/vehicle_management/api/vehicle/delete_photos_by_date.php on line 196
+[24-Dec-2025 11:45:25 America/New_York] PHP Fatal error:  Uncaught Error: mysqli_stmt::bind_param(): Argument #2 cannot be passed by reference in /home/hcsfcsto/public_html/vehicle_management/api/vehicle/delete_photos_by_date.php:176
+Stack trace:
+#0 {main}
+  thrown in /home/hcsfcsto/public_html/vehicle_management/api/vehicle/delete_photos_by_date.php on line 176
