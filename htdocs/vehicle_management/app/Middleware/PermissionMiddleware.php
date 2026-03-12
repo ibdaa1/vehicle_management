@@ -62,19 +62,26 @@ class PermissionMiddleware
             return true;
         }
 
-        $db = Database::getInstance();
-        $validActions = [
-            'can_view_all', 'can_view_own', 'can_view_tenant',
-            'can_create', 'can_edit_all', 'can_edit_own',
-            'can_delete_all', 'can_delete_own'
+        // Whitelist mapping: only these exact column names are allowed
+        $allowedActions = [
+            'can_view_all'    => 'can_view_all',
+            'can_view_own'    => 'can_view_own',
+            'can_view_tenant' => 'can_view_tenant',
+            'can_create'      => 'can_create',
+            'can_edit_all'    => 'can_edit_all',
+            'can_edit_own'    => 'can_edit_own',
+            'can_delete_all'  => 'can_delete_all',
+            'can_delete_own'  => 'can_delete_own',
         ];
 
-        if (!in_array($action, $validActions, true)) {
+        if (!isset($allowedActions[$action])) {
             return false;
         }
 
+        $column = $allowedActions[$action];
+        $db = Database::getInstance();
         $row = $db->fetchOne(
-            "SELECT `{$action}` as allowed
+            "SELECT `{$column}` as allowed
              FROM resource_permissions
              WHERE role_id = ? AND resource_type = ?
              LIMIT 1",
@@ -140,7 +147,7 @@ class PermissionMiddleware
      */
     public static function requirePermission(Request $request, string $permissionKey): array
     {
-        $user = AuthMiddleware::require($request);
+        $user = AuthMiddleware::requireAuth($request);
         if (!self::hasPermission((int)$user['role_id'], $permissionKey)) {
             Response::error('Forbidden: missing permission ' . $permissionKey, 403);
         }
@@ -152,7 +159,7 @@ class PermissionMiddleware
      */
     public static function requireResourcePermission(Request $request, string $resourceType, string $action): array
     {
-        $user = AuthMiddleware::require($request);
+        $user = AuthMiddleware::requireAuth($request);
         if (!self::hasResourcePermission((int)$user['role_id'], $resourceType, $action)) {
             Response::error("Forbidden: missing {$action} on {$resourceType}", 403);
         }

@@ -22,6 +22,15 @@ abstract class BaseModel
     }
 
     /**
+     * Validate that a column name is safe for SQL interpolation.
+     * Only allows alphanumeric characters and underscores.
+     */
+    protected function validateColumnName(string $column): bool
+    {
+        return (bool)preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $column);
+    }
+
+    /**
      * Find a record by its primary key.
      */
     public function find(int $id): ?array
@@ -57,6 +66,9 @@ abstract class BaseModel
         $params  = [];
 
         foreach ($conditions as $column => $value) {
+            if (!$this->validateColumnName($column)) {
+                throw new \InvalidArgumentException("Invalid column name: {$column}");
+            }
             $clauses[] = "`{$column}` = ?";
             if (is_int($value)) {
                 $types .= 'i';
@@ -85,6 +97,11 @@ abstract class BaseModel
         }
 
         $columns = array_keys($data);
+        foreach ($columns as $col) {
+            if (!$this->validateColumnName($col)) {
+                throw new \InvalidArgumentException("Invalid column name: {$col}");
+            }
+        }
         $placeholders = array_fill(0, count($columns), '?');
         $types = '';
         $params = [];
@@ -126,6 +143,9 @@ abstract class BaseModel
         $params = [];
 
         foreach ($data as $column => $value) {
+            if (!$this->validateColumnName($column)) {
+                throw new \InvalidArgumentException("Invalid column name: {$column}");
+            }
             $setClauses[] = "`{$column}` = ?";
             if (is_int($value)) {
                 $types .= 'i';
@@ -174,6 +194,9 @@ abstract class BaseModel
         $params  = [];
 
         foreach ($conditions as $column => $value) {
+            if (!$this->validateColumnName($column)) {
+                throw new \InvalidArgumentException("Invalid column name: {$column}");
+            }
             $clauses[] = "`{$column}` = ?";
             if (is_int($value)) {
                 $types .= 'i';

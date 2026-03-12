@@ -103,7 +103,7 @@ INSERT IGNORE INTO `permissions` (`key_name`, `display_name`, `description`, `mo
 -- 3. Role-Permission Mapping Table
 -- -------------------------------------------
 CREATE TABLE IF NOT EXISTS `role_permissions` (
-    `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+    `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
     `role_id` BIGINT(20) UNSIGNED NOT NULL,
     `permission_id` BIGINT(20) UNSIGNED NOT NULL,
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,

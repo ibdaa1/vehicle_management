@@ -54,9 +54,15 @@ class App
             mb_internal_encoding($this->config['app']['charset'] ?? 'UTF-8');
         }
 
-        // Error handling
-        error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
-        ini_set('display_errors', '0');
+        // Error handling based on debug config
+        $debug = $this->config['app']['debug'] ?? false;
+        if ($debug) {
+            error_reporting(E_ALL);
+            ini_set('display_errors', '1');
+        } else {
+            error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+            ini_set('display_errors', '0');
+        }
         ini_set('log_errors', '1');
         ini_set('default_charset', 'UTF-8');
 
@@ -66,8 +72,9 @@ class App
         // Initialize request
         $this->request = new Request();
 
-        // Initialize router
-        $this->router = new Router();
+        // Initialize router with base URL path
+        $baseUrl = $this->config['app']['base_url'] ?? '';
+        $this->router = new Router($baseUrl);
 
         return $this;
     }

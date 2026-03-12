@@ -51,7 +51,7 @@ class AuthMiddleware
     /**
      * Require authentication. Sends 401 response and exits if not authenticated.
      */
-    public static function require(Request $request): array
+    public static function requireAuth(Request $request): array
     {
         $user = self::check($request);
         if (!$user) {
@@ -65,7 +65,7 @@ class AuthMiddleware
      */
     public static function requireAdmin(Request $request): array
     {
-        $user = self::require($request);
+        $user = self::requireAuth($request);
         if (!in_array((int)$user['role_id'], [1, 2], true)) {
             Response::error('Forbidden: admin access required', 403);
         }

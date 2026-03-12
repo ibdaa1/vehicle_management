@@ -29,12 +29,15 @@ class AuthController extends BaseController
      */
     public function login(Request $request, array $params = []): void
     {
-        $identifier = trim((string)$request->input('username', 
-            $request->input('login', 
-                $request->input('emp_id', 
-                    $request->input('email', 
-                        $request->input('phone', ''))))));
-
+        // Check multiple identifier fields in priority order
+        $identifier = '';
+        foreach (['username', 'login', 'emp_id', 'email', 'phone'] as $field) {
+            $value = $request->input($field, '');
+            if ($value !== '') {
+                $identifier = trim((string)$value);
+                break;
+            }
+        }
         $password = (string)$request->input('password', '');
 
         if ($identifier === '' || $password === '') {
