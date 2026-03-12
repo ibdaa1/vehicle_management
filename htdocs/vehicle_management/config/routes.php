@@ -12,6 +12,10 @@
 use App\Controllers\AuthController;
 use App\Controllers\RoleController;
 use App\Controllers\PermissionController;
+use App\Controllers\DashboardController;
+use App\Controllers\SettingsController;
+use App\Controllers\VehicleController;
+use App\Controllers\ReferencesController;
 
 // === Authentication Routes ===
 $router->post('api/v1/auth/login', AuthController::class, 'login');
@@ -36,3 +40,26 @@ $router->get('api/v1/permissions/my', PermissionController::class, 'myPermission
 $router->post('api/v1/permissions', PermissionController::class, 'store');
 $router->put('api/v1/permissions/{id}', PermissionController::class, 'update');
 $router->delete('api/v1/permissions/{id}', PermissionController::class, 'destroy');
+
+// === Dashboard Routes ===
+$router->get('api/v1/dashboard/stats', DashboardController::class, 'stats');
+
+// === Settings & Theme Routes ===
+$router->get('api/v1/settings/public', SettingsController::class, 'publicSettings');
+$router->get('api/v1/settings/theme', SettingsController::class, 'theme');
+$router->get('api/v1/settings', SettingsController::class, 'index');
+$router->put('api/v1/settings/{key}', SettingsController::class, 'update');
+
+// === Vehicle Routes ===
+$router->get('api/v1/vehicles/stats', VehicleController::class, 'stats');
+$router->get('api/v1/vehicles', VehicleController::class, 'index');
+$router->get('api/v1/vehicles/{id}', VehicleController::class, 'show');
+$router->post('api/v1/vehicles', VehicleController::class, 'store');
+$router->put('api/v1/vehicles/{id}', VehicleController::class, 'update');
+$router->delete('api/v1/vehicles/{id}', VehicleController::class, 'destroy');
+
+// === References Routes (departments, sections, divisions) ===
+$router->get('api/v1/references', ReferencesController::class, 'index');
+$router->get('api/v1/references/departments', ReferencesController::class, 'departments');
+$router->get('api/v1/references/sections/{departmentId}', ReferencesController::class, 'sections');
+$router->get('api/v1/references/divisions/{sectionId}', ReferencesController::class, 'divisions');

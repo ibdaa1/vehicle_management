@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Vehicle Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--c-primary:#2c3e2c;--c-primary-light:#3a513a;--c-primary-dark:#1a2e1a;--c-gold:#d4af37;--c-bg:#f5f6f8;--c-card:#fff;--c-text:#1a1a2e;--c-text2:#6b7280;--c-border:#e5e7eb;--c-success:#28a745;--c-warning:#ffc107;--c-danger:#dc3545;--c-info:#17a2b8;--sidebar-w:260px;--header-h:60px;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans Arabic','Inter',sans-serif;background:var(--c-bg);color:var(--c-text);font-size:14px;line-height:1.6}
+[dir=ltr] body{font-family:'Inter','Noto Sans Arabic',sans-serif}
+
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:linear-gradient(135deg,var(--c-primary),var(--c-primary-light));color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-left .logo{height:36px;width:auto;border-radius:4px}
+.header-left h1{font-size:16px;font-weight:600;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:10px}
+.header-btn{background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font:inherit;font-size:13px;display:flex;align-items:center;gap:6px;transition:.2s}
+.header-btn:hover{background:rgba(255,255,255,.25)}
+.user-pill{background:var(--c-gold);color:#1a1a2e;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.toggle-sidebar{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px}
+.toggle-sidebar:hover{background:rgba(255,255,255,.15)}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:var(--header-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--c-primary-dark);color:#fff;overflow-y:auto;transition:width .3s;z-index:90;padding-top:12px}
+[dir=rtl] .sidebar{left:auto;right:0}
+.sidebar.collapsed{width:64px}
+.sidebar.collapsed .menu-label,.sidebar.collapsed .menu-text{display:none}
+.menu-label{padding:10px 20px 4px;font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.4);letter-spacing:.5px}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:rgba(255,255,255,.75);text-decoration:none;cursor:pointer;transition:.2s;border-radius:0;font-size:13px}
+.menu-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.menu-item.active{background:rgba(212,175,55,.15);color:var(--c-gold);border-inline-start:3px solid var(--c-gold)}
+.menu-item .icon{width:20px;text-align:center;font-size:16px;flex-shrink:0}
+
+/* MAIN */
+.main{margin-top:var(--header-h);margin-inline-start:var(--sidebar-w);padding:24px;transition:margin .3s;min-height:calc(100vh - var(--header-h))}
+.sidebar.collapsed~.main{margin-inline-start:64px}
+.page-title{font-size:22px;font-weight:700;margin-bottom:20px;color:var(--c-primary)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{background:var(--c-card);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--c-border);position:relative;overflow:hidden;transition:.2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.stat-card.green::before{background:var(--c-success)}
+.stat-card.gold::before{background:var(--c-gold)}
+.stat-card.red::before{background:var(--c-danger)}
+.stat-card.blue::before{background:var(--c-info)}
+.stat-card.yellow::before{background:var(--c-warning)}
+.stat-card.purple::before{background:#7c3aed}
+.stat-value{font-size:32px;font-weight:700;color:var(--c-primary);line-height:1.1}
+.stat-label{font-size:13px;color:var(--c-text2);margin-top:4px}
+
+/* VEHICLES */
+.section-title{font-size:18px;font-weight:600;margin:24px 0 16px;color:var(--c-primary);display:flex;align-items:center;gap:8px}
+.vehicles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.v-card{background:var(--c-card);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--c-border);transition:.25s}
+.v-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.v-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.v-code{font-size:18px;font-weight:700;color:var(--c-primary)}
+.v-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#fff}
+.v-badge.operational{background:var(--c-success)}
+.v-badge.maintenance{background:var(--c-warning);color:#1a1a2e}
+.v-badge.out_of_service{background:var(--c-danger)}
+.v-type{font-size:14px;color:var(--c-text);margin-bottom:8px;font-weight:500}
+.v-detail{font-size:12px;color:var(--c-text2);display:flex;align-items:center;gap:6px;margin-top:4px}
+.v-detail .icon{font-size:14px}
+.v-mode{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;background:#f0f4f0;color:var(--c-primary);margin-top:8px;font-weight:500}
+
+/* FOOTER */
+.footer{text-align:center;padding:16px;color:var(--c-text2);font-size:12px;margin-top:24px;border-top:1px solid var(--c-border)}
+
+/* LOADING */
+.skeleton{background:linear-gradient(90deg,#e5e7eb 25%,#f0f0f0 50%,#e5e7eb 75%);background-size:200%;animation:shimmer 1.5s infinite;border-radius:8px;min-height:100px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;z-index:999;font-size:16px;color:var(--c-primary)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+.sidebar{width:0;overflow:hidden}.sidebar.open{width:var(--sidebar-w)}
+.main{margin-inline-start:0!important}
+.stats-grid{grid-template-columns:repeat(2,1fr)}
+.vehicles-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="loading" class="loading-overlay">⏳ Loading...</div>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <div class="header-left">
+    <button class="toggle-sidebar" onclick="toggleSidebar()" title="Toggle Menu">☰</button>
+    <img class="logo" id="logo" src="" alt="Logo"/>
+    <h1 id="siteTitle">Vehicle Management System</h1>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="toggleLang()" id="langBtn">EN</button>
+    <span class="user-pill" id="userPill">...</span>
+    <button class="header-btn" onclick="goProfile()">👤</button>
+    <button class="header-btn" onclick="doLogout()">🚪</button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="menu-label" data-i="menu_main">القائمة الرئيسية</div>
+  <a class="menu-item active" data-page="dashboard"><span class="icon">📊</span><span class="menu-text" data-i="menu_dashboard">لوحة التحكم</span></a>
+  
+  <div class="menu-label" data-i="menu_vehicles_section">المركبات</div>
+  <a class="menu-item" data-perm="vehicles_read" data-page="vehicles"><span class="icon">🚗</span><span class="menu-text" data-i="menu_vehicles">المركبات</span></a>
+  <a class="menu-item" data-perm="movements_read" data-page="movements"><span class="icon">🔄</span><span class="menu-text" data-i="menu_movements">الحركات</span></a>
+  <a class="menu-item" data-perm="maintenance_read" data-page="maintenance"><span class="icon">🔧</span><span class="menu-text" data-i="menu_maintenance">الصيانة</span></a>
+  <a class="menu-item" data-perm="violations_read" data-page="violations"><span class="icon">⚠️</span><span class="menu-text" data-i="menu_violations">المخالفات</span></a>
+  
+  <div class="menu-label" data-i="menu_reports_section">التقارير</div>
+  <a class="menu-item" data-perm="reports_view" data-page="reports"><span class="icon">📈</span><span class="menu-text" data-i="menu_reports">التقارير</span></a>
+  
+  <div class="menu-label" data-perm="roles_manage" data-i="menu_admin_section">الإدارة</div>
+  <a class="menu-item" data-perm="roles_manage" data-page="users"><span class="icon">👥</span><span class="menu-text" data-i="menu_users">المستخدمون</span></a>
+  <a class="menu-item" data-perm="roles_manage" data-page="roles"><span class="icon">🔑</span><span class="menu-text" data-i="menu_roles">الأدوار</span></a>
+  <a class="menu-item" data-perm="settings_view" data-page="settings"><span class="icon">⚙️</span><span class="menu-text" data-i="menu_settings">الإعدادات</span></a>
+</nav>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <h2 class="page-title" data-i="dashboard_title">لوحة التحكم</h2>
+  
+  <div class="stats-grid" id="statsGrid">
+    <div class="skeleton" style="height:100px"></div>
+    <div class="skeleton" style="height:100px"></div>
+    <div class="skeleton" style="height:100px"></div>
+    <div class="skeleton" style="height:100px"></div>
+    <div class="skeleton" style="height:100px"></div>
+    <div class="skeleton" style="height:100px"></div>
+  </div>
+  
+  <h3 class="section-title">🚗 <span data-i="vehicles_title">المركبات</span></h3>
+  <div class="vehicles-grid" id="vehiclesGrid">
+    <div class="skeleton" style="height:160px"></div>
+    <div class="skeleton" style="height:160px"></div>
+    <div class="skeleton" style="height:160px"></div>
+  </div>
+  
+  <footer class="footer" id="footer">© 2025</footer>
+</div>
+
+<script>
+const API_BASE = window.location.pathname.includes('/vehicle_management/') ? '/vehicle_management' : '';
+const TOKEN = localStorage.getItem('auth_token') || localStorage.getItem('token') || '';
+let currentLang = localStorage.getItem('lang') || 'ar';
+let userData = null;
+let userPerms = [];
+let i18n = {};
+
+// ─── Translations ──────────────────────────
+const defaultI18n = {
+  ar: {
+    menu_main:'القائمة الرئيسية',menu_dashboard:'لوحة التحكم',menu_vehicles_section:'المركبات',
+    menu_vehicles:'المركبات',menu_movements:'الحركات',menu_maintenance:'الصيانة',
+    menu_violations:'المخالفات',menu_reports_section:'التقارير',menu_reports:'التقارير',
+    menu_admin_section:'الإدارة',menu_users:'المستخدمون',menu_roles:'الأدوار',menu_settings:'الإعدادات',
+    dashboard_title:'لوحة التحكم',vehicles_title:'المركبات',
+    stat_total:'إجمالي المركبات',stat_operational:'تعمل',stat_maintenance:'صيانة',
+    stat_out:'خارج الخدمة',stat_violations:'مخالفات غير مدفوعة',stat_users:'مستخدمون نشطون',
+    status_operational:'تعمل',status_maintenance:'صيانة',status_out_of_service:'خارج الخدمة',
+    mode_private:'خاص',mode_shift:'وردية',driver:'السائق',dept:'الإدارة',loading:'جاري التحميل...'
+  },
+  en: {
+    menu_main:'Main Menu',menu_dashboard:'Dashboard',menu_vehicles_section:'Vehicles',
+    menu_vehicles:'Vehicles',menu_movements:'Movements',menu_maintenance:'Maintenance',
+    menu_violations:'Violations',menu_reports_section:'Reports',menu_reports:'Reports',
+    menu_admin_section:'Administration',menu_users:'Users',menu_roles:'Roles',menu_settings:'Settings',
+    dashboard_title:'Dashboard',vehicles_title:'Vehicles',
+    stat_total:'Total Vehicles',stat_operational:'Operational',stat_maintenance:'Maintenance',
+    stat_out:'Out of Service',stat_violations:'Unpaid Violations',stat_users:'Active Users',
+    status_operational:'Operational',status_maintenance:'Maintenance',status_out_of_service:'Out of Service',
+    mode_private:'Private',mode_shift:'Shift',driver:'Driver',dept:'Department',loading:'Loading...'
+  }
+};
+
+function t(key){ return i18n[key] || defaultI18n[currentLang]?.[key] || key; }
+
+function applyLang(){
+  const dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = dir;
+  document.getElementById('langBtn').textContent = currentLang === 'ar' ? 'EN' : 'عربي';
+  i18n = defaultI18n[currentLang] || {};
+  document.querySelectorAll('[data-i]').forEach(el => {
+    const k = el.getAttribute('data-i');
+    if(i18n[k]) el.textContent = i18n[k];
+  });
+}
+
+function toggleLang(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('lang', currentLang);
+  applyLang();
+  if(userData) renderStats(); renderVehicles();
+}
+
+// ─── API helpers ──────────────────────────
+async function api(path, opts={}){
+  const res = await fetch(API_BASE + path, {
+    headers: {'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json',...(opts.headers||{})},
+    ...opts
+  });
+  return res.json();
+}
+
+// ─── Auth check ──────────────────────────
+async function init(){
+  if(!TOKEN){ window.location.href = 'login.html'; return; }
+  try {
+    const [auth, settings, theme] = await Promise.all([
+      api('/api/v1/auth/check'),
+      api('/api/v1/settings/public'),
+      api('/api/v1/settings/theme')
+    ]);
+    
+    if(!auth.success || !auth.isLoggedIn){ window.location.href = 'login.html'; return; }
+    userData = auth.user;
+    
+    // Apply settings
+    const s = settings.data || {};
+    const titleKey = currentLang === 'ar' ? 'system_title_ar' : 'system_title_en';
+    document.getElementById('siteTitle').textContent = s[titleKey] || 'Vehicle Management';
+    document.title = s[titleKey] || 'Vehicle Management';
+    if(s.logo_url) document.getElementById('logo').src = API_BASE + s.logo_url.replace(/^\/vehicle_management/,'');
+    const footKey = currentLang === 'ar' ? 'footer_text_ar' : 'footer_text_en';
+    document.getElementById('footer').textContent = s[footKey] || '';
+    document.getElementById('userPill').textContent = userData.username || userData.emp_id;
+    
+    // Apply theme CSS vars
+    if(theme.data){
+      const root = document.documentElement.style;
+      (theme.data.colors||[]).forEach(c => root.setProperty('--'+c.setting_key, c.color_value));
+      (theme.data.design||[]).forEach(d => root.setProperty('--'+d.setting_key, d.setting_value));
+    }
+    
+    // Load permissions and filter menu
+    try {
+      const permsRes = await api('/api/v1/permissions/my');
+      if(permsRes.success && permsRes.data){
+        userPerms = (permsRes.data.permissions||[]).map(p=>p.key_name);
+        // Superadmin/admin has all
+        if(userData.role_id <= 2) userPerms = ['all'];
+      }
+    } catch(e){}
+    filterMenu();
+    
+    // Load dashboard data
+    await Promise.all([loadStats(), loadVehicles()]);
+  } catch(e){
+    console.error(e);
+    window.location.href = 'login.html';
+    return;
+  }
+  document.getElementById('loading').style.display = 'none';
+  applyLang();
+}
+
+function filterMenu(){
+  document.querySelectorAll('.menu-item[data-perm],.menu-label[data-perm]').forEach(el => {
+    const perm = el.getAttribute('data-perm');
+    const has = userPerms.includes('all') || userPerms.includes(perm);
+    el.style.display = has ? '' : 'none';
+  });
+}
+
+// ─── Stats ──────────────────────────
+let statsData = {};
+async function loadStats(){
+  try {
+    const res = await api('/api/v1/dashboard/stats');
+    if(res.success) statsData = res.data;
+  } catch(e){}
+  renderStats();
+}
+
+function renderStats(){
+  const d = statsData;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card green"><div class="stat-value">${d.vehicles_total||0}</div><div class="stat-label">${t('stat_total')}</div></div>
+    <div class="stat-card green"><div class="stat-value">${d.vehicles_operational||0}</div><div class="stat-label">${t('stat_operational')}</div></div>
+    <div class="stat-card yellow"><div class="stat-value">${d.vehicles_maintenance||0}</div><div class="stat-label">${t('stat_maintenance')}</div></div>
+    <div class="stat-card red"><div class="stat-value">${d.vehicles_out_of_service||0}</div><div class="stat-label">${t('stat_out')}</div></div>
+    <div class="stat-card gold"><div class="stat-value">${d.violations_unpaid||0}</div><div class="stat-label">${t('stat_violations')}</div></div>
+    <div class="stat-card blue"><div class="stat-value">${d.users_active||0}</div><div class="stat-label">${t('stat_users')}</div></div>
+  `;
+}
+
+// ─── Vehicles ──────────────────────────
+let vehiclesData = [];
+async function loadVehicles(){
+  try {
+    const res = await api('/api/v1/vehicles');
+    if(res.success) vehiclesData = res.data || [];
+  } catch(e){}
+  renderVehicles();
+}
+
+function renderVehicles(){
+  const grid = document.getElementById('vehiclesGrid');
+  if(!vehiclesData.length){ grid.innerHTML = '<p style="color:var(--c-text2)">No vehicles found</p>'; return; }
+  grid.innerHTML = vehiclesData.map(v => {
+    const statusText = t('status_'+v.status) || v.status;
+    const modeText = t('mode_'+v.vehicle_mode) || v.vehicle_mode;
+    const deptName = currentLang==='ar' ? (v.department_name_ar||'') : (v.department_name_en||'');
+    return `<div class="v-card">
+      <div class="v-card-head">
+        <span class="v-code">${v.vehicle_code}</span>
+        <span class="v-badge ${v.status}">${statusText}</span>
+      </div>
+      <div class="v-type">${v.type}</div>
+      ${v.driver_name ? `<div class="v-detail"><span class="icon">👤</span>${t('driver')}: ${v.driver_name}</div>` : ''}
+      ${deptName ? `<div class="v-detail"><span class="icon">🏢</span>${t('dept')}: ${deptName}</div>` : ''}
+      <span class="v-mode">${modeText} · ${v.manufacture_year||''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── Actions ──────────────────────────
+function toggleSidebar(){ document.getElementById('sidebar').classList.toggle('collapsed'); document.getElementById('sidebar').classList.toggle('open'); }
+function goProfile(){ window.location.href = 'profile.html'; }
+async function doLogout(){
+  try { await api('/api/v1/auth/logout',{method:'POST'}); } catch(e){}
+  localStorage.removeItem('auth_token'); localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+
+// Menu click
+document.querySelectorAll('.menu-item').forEach(item => {
+  item.addEventListener('click', function(){
+    document.querySelectorAll('.menu-item').forEach(i=>i.classList.remove('active'));
+    this.classList.add('active');
+    const page = this.dataset.page;
+    const pages = {
+      vehicles:'vehicle_management.html', movements:'vehicle_movements.html',
+      maintenance:'Vehicle_Maintenance.html', violations:'violations_list.html',
+      users:'admin_users.html', roles:'admin_roles.html', settings:'admin_activations.html'
+    };
+    if(pages[page]) window.location.href = pages[page];
+  });
+});
+
+init();
+</script>
+</body>
+</html>
