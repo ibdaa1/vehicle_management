@@ -61,6 +61,40 @@ $router->put('api/v1/settings/themes/{id}/design', SettingsController::class, 'u
 $router->get('api/v1/settings', SettingsController::class, 'index');
 $router->put('api/v1/settings/{key}', SettingsController::class, 'update');
 
+// Theme CRUD
+$router->post('api/v1/settings/themes', SettingsController::class, 'storeTheme');
+$router->put('api/v1/settings/themes/{id}', SettingsController::class, 'updateTheme');
+$router->delete('api/v1/settings/themes/{id}', SettingsController::class, 'destroyTheme');
+
+// Color Settings CRUD
+$router->post('api/v1/settings/themes/{id}/colors', SettingsController::class, 'storeColor');
+$router->put('api/v1/settings/colors/{colorId}', SettingsController::class, 'updateColor');
+$router->delete('api/v1/settings/colors/{colorId}', SettingsController::class, 'destroyColor');
+
+// Font Settings CRUD
+$router->post('api/v1/settings/themes/{id}/fonts', SettingsController::class, 'storeFont');
+$router->put('api/v1/settings/fonts/{fontId}', SettingsController::class, 'updateFont');
+$router->delete('api/v1/settings/fonts/{fontId}', SettingsController::class, 'destroyFont');
+
+// Button Styles CRUD
+$router->post('api/v1/settings/themes/{id}/buttons', SettingsController::class, 'storeButton');
+$router->put('api/v1/settings/buttons/{buttonId}', SettingsController::class, 'updateButton');
+$router->delete('api/v1/settings/buttons/{buttonId}', SettingsController::class, 'destroyButton');
+
+// Card Styles CRUD
+$router->post('api/v1/settings/themes/{id}/cards', SettingsController::class, 'storeCard');
+$router->put('api/v1/settings/cards/{cardId}', SettingsController::class, 'updateCard');
+$router->delete('api/v1/settings/cards/{cardId}', SettingsController::class, 'destroyCard');
+
+// Design Settings CRUD
+$router->post('api/v1/settings/themes/{id}/design', SettingsController::class, 'storeDesignSetting');
+$router->put('api/v1/settings/design/{designId}', SettingsController::class, 'updateDesignSetting');
+$router->delete('api/v1/settings/design/{designId}', SettingsController::class, 'destroyDesignSetting');
+
+// System Settings CRUD
+$router->post('api/v1/settings', SettingsController::class, 'storeSetting');
+$router->delete('api/v1/settings/{id}', SettingsController::class, 'destroySetting');
+
 // === Vehicle Routes ===
 $router->get('api/v1/vehicles/stats', VehicleController::class, 'stats');
 $router->get('api/v1/vehicles', VehicleController::class, 'index');
