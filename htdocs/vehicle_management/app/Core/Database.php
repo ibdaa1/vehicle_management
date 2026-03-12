@@ -24,6 +24,10 @@ class Database
 
     /**
      * Establish the actual database connection (called lazily on first use).
+     *
+     * Uses MYSQLI_REPORT_OFF to prevent PHP 8.1+ from throwing
+     * mysqli_sql_exception on connection errors. We check connect_error
+     * manually and throw a RuntimeException with a descriptive message.
      */
     private function connect(): void
     {
@@ -31,12 +35,28 @@ class Database
             return;
         }
 
-        $conn = new \mysqli(
-            $this->config['host'] ?? 'localhost',
-            $this->config['username'] ?? '',
-            $this->config['password'] ?? '',
-            $this->config['database'] ?? ''
-        );
+        // Disable mysqli exception mode so we can handle errors ourselves.
+        // PHP 8.1+ defaults to MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT
+        // which throws mysqli_sql_exception before we can check connect_error.
+        $prevReport = mysqli_report(MYSQLI_REPORT_OFF);
+
+        try {
+            $conn = @new \mysqli(
+                $this->config['host'] ?? 'localhost',
+                $this->config['username'] ?? '',
+                $this->config['password'] ?? '',
+                $this->config['database'] ?? ''
+            );
+        } catch (\Throwable $e) {
+            // Restore previous report mode
+            mysqli_report($prevReport);
+            $msg = $e->getMessage();
+            error_log("Database connection failed (exception): " . $msg);
+            throw new \RuntimeException('Database connection failed: ' . $msg, 0, $e);
+        }
+
+        // Restore previous report mode
+        mysqli_report($prevReport);
 
         if ($conn->connect_error) {
             $error = $conn->connect_error;

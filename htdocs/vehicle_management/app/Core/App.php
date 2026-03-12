@@ -142,7 +142,16 @@ class App
             return;
         }
 
-        $controller = new $controllerClass();
+        // Wrap controller instantiation in try-catch
+        // Controller constructors create model instances which could fail
+        try {
+            $controller = new $controllerClass();
+        } catch (\Throwable $e) {
+            error_log("Controller instantiation failed ({$controllerClass}): " . $e->getMessage());
+            Response::error('Failed to initialize controller: ' . $e->getMessage(), 500);
+            return;
+        }
+
         if (!method_exists($controller, $action)) {
             Response::error('Action not found: ' . $action, 500);
             return;

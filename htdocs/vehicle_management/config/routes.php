@@ -17,6 +17,9 @@ use App\Controllers\SettingsController;
 use App\Controllers\VehicleController;
 use App\Controllers\ReferencesController;
 
+// === Health Check Route (diagnostic) ===
+$router->get('api/v1/health', \App\Controllers\HealthController::class, 'check');
+
 // === Authentication Routes ===
 $router->post('api/v1/auth/login', AuthController::class, 'login');
 $router->get('api/v1/auth/check', AuthController::class, 'check');

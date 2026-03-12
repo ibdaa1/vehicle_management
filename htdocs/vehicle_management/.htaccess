@@ -1,8 +1,32 @@
-RewriteEngine On
+# Enable URL rewriting for the MVC router
+# Compatible with InfinityFree and most shared hosting providers
 
-# If the request is for an existing file or directory, serve it directly
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-# Route all /api/v1/* requests to the MVC front controller
-RewriteRule ^api/v1/(.*)$ api/v1/index.php [QSA,L]
+    # If the request is for an existing file or directory, serve it directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route all /api/v1/* requests to the MVC front controller
+    RewriteRule ^api/v1/(.*)$ api/v1/index.php [QSA,L]
+</IfModule>
+
+# Security: Deny access to sensitive files
+<FilesMatch "\.(sql|md|log|sh|env)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Deny access to config and app directories (except through PHP)
+<IfModule mod_rewrite.c>
+    RewriteRule ^config/ - [F,L]
+    RewriteRule ^app/ - [F,L]
+    RewriteRule ^logs/ - [F,L]
+    RewriteRule ^database/ - [F,L]
+</IfModule>
