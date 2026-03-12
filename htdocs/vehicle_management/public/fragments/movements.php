@@ -185,7 +185,7 @@
                     <label>📷 Photos (max 6)</label>
                     <div class="photo-area" id="mvPhotoArea">
                         <p>Click or drag photos here</p>
-                        <input type="file" id="mvPhotoInput" accept="image/*" multiple>
+                        <input type="file" id="mvPhotoInput" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple>
                     </div>
                     <div id="mvPhotosPreview"></div>
                 </div>
@@ -339,7 +339,7 @@
         const remaining=6-pendingPhotos.length;
         const arr=Array.from(files).slice(0,remaining);
         arr.forEach(f=>{
-            if(!f.type.startsWith('image/'))return;
+            if(!/^image\/(jpeg|jpg|png)$/.test(f.type))return;
             const reader=new FileReader();
             reader.onload=e=>{
                 pendingPhotos.push(e.target.result);
