@@ -35,10 +35,10 @@ class Database
             return;
         }
 
-        // Disable mysqli exception mode globally so we can handle errors ourselves.
+        // Disable mysqli exception mode globally for the entire request lifecycle.
         // PHP 8.1+ defaults to MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT
         // which throws mysqli_sql_exception before we can check errors manually.
-        // We keep it OFF permanently to prevent unexpected exceptions during queries.
+        // This setting persists for all subsequent queries in this request.
         mysqli_report(MYSQLI_REPORT_OFF);
 
         try {

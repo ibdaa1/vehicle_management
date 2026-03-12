@@ -67,9 +67,11 @@ class App
         ini_set('default_charset', 'UTF-8');
 
         // Initialize database (guard: config might be missing if file not found)
-        $dbConfig = $this->config['database'] ?? [];
-        if (!is_array($dbConfig)) {
-            $dbConfig = [];
+        $dbConfig = $this->config['database'] ?? null;
+        if (!is_array($dbConfig) || empty($dbConfig)) {
+            throw new \RuntimeException(
+                'Database configuration missing. Ensure config/database.php exists and returns an array.'
+            );
         }
         Database::init($dbConfig);
 

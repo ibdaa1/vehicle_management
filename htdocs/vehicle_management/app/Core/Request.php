@@ -25,7 +25,7 @@ class Request
         // Parse JSON body BEFORE resolveMethod (which may access $this->body)
         // Guard: file_get_contents can return false on some restricted hosting
         $raw = file_get_contents('php://input');
-        if (!is_string($raw)) {
+        if ($raw === false) {
             $raw = '';
         }
         $json = json_decode($raw, true);
