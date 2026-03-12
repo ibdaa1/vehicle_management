@@ -1,4 +1,4 @@
--- Migration 004: Create vehicle_movements table
+-- Migration 004: Create vehicle_movements and vehicle_movement_photos tables
 -- This replaces the vehicle_handovers system with a more comprehensive movement tracking table
 
 CREATE TABLE IF NOT EXISTS `vehicle_movements` (
@@ -19,4 +19,15 @@ CREATE TABLE IF NOT EXISTS `vehicle_movements` (
     PRIMARY KEY (`id`),
     KEY `idx_vehicle_code` (`vehicle_code`),
     KEY `idx_performed_by` (`performed_by`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `vehicle_movement_photos` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `movement_id` INT(11) NOT NULL,
+    `photo_url` VARCHAR(255) NOT NULL,
+    `taken_by` VARCHAR(50) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_movement_id` (`movement_id`),
+    CONSTRAINT `fk_movement_photos_movement` FOREIGN KEY (`movement_id`) REFERENCES `vehicle_movements` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
