@@ -82,12 +82,18 @@
             <option value="private">خاصة</option>
             <option value="shift">وردية</option>
         </select>
+        <select class="form-select" id="filterGender">
+            <option value="">كل الجنس</option>
+            <option value="men">رجال</option>
+            <option value="women">نساء</option>
+        </select>
     </div>
     <div class="toolbar-end">
         <div class="view-toggle">
             <button class="btn btn-ghost btn-icon active" id="viewCards" title="بطاقات">🗂️</button>
             <button class="btn btn-ghost btn-icon" id="viewTable" title="جدول">📋</button>
         </div>
+        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
         <button class="btn btn-primary" id="btnAddVehicle">➕ إضافة مركبة</button>
     </div>
 </div>
@@ -100,7 +106,7 @@
     <div class="table-wrapper">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
-                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>السنة</th><th>الإجراءات</th>
+                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
             </tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -139,6 +145,14 @@
                             <option value="">— اختر —</option>
                             <option value="private">خاصة</option>
                             <option value="shift">وردية</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الجنس</label>
+                        <select class="form-select" id="fGender">
+                            <option value="">— غير محدد —</option>
+                            <option value="men">رجال</option>
+                            <option value="women">نساء</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -323,6 +337,7 @@ $pageScripts = <<<'SCRIPT'
             const st=$('filterStatus').value;if(st)params.push('status='+st);
             const dp=$('filterDept').value;if(dp)params.push('department_id='+dp);
             const md=$('filterMode').value;if(md)params.push('vehicle_mode='+md);
+            const gn=$('filterGender').value;if(gn)params.push('gender='+gn);
             const q=params.length?'?'+params.join('&'):'';
             const res=await API.get('/vehicles'+q);
             allVehicles=Array.isArray(res.data)?res.data:(Array.isArray(res)?res:[]);
@@ -372,7 +387,9 @@ $pageScripts = <<<'SCRIPT'
 
     function renderTable(list){
         const tb=$('tableBody');
-        if(!list.length){tb.innerHTML='<tr><td colspan="9" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
+        if(!list.length){tb.innerHTML='<tr><td colspan="11" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
+        const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'—';
+        const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'—';
         let h='';
         list.forEach((v,i)=>{
             h+='<tr>';
@@ -383,6 +400,8 @@ $pageScripts = <<<'SCRIPT'
             h+='<td>'+esc(v.driver_phone)+'</td>';
             h+='<td>'+esc(v.department_name_ar)+'</td>';
             h+='<td>'+badge(v.status)+'</td>';
+            h+='<td>'+modeLabel(v.vehicle_mode)+'</td>';
+            h+='<td>'+genderLabel(v.gender)+'</td>';
             h+='<td>'+(v.manufacture_year||'—')+'</td>';
             h+='<td class="table-actions">';
             h+='<button class="btn btn-ghost btn-icon" onclick="VPage.view('+v.id+')" title="عرض">👁️</button>';
@@ -415,8 +434,43 @@ $pageScripts = <<<'SCRIPT'
     $('filterStatus').addEventListener('change',loadVehicles);
     $('filterDept').addEventListener('change',loadVehicles);
     $('filterMode').addEventListener('change',loadVehicles);
+    $('filterGender').addEventListener('change',loadVehicles);
     let searchTimer;
     $('searchInput').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(applySearch,300);});
+
+    /* --- Export Excel --- */
+    $('btnExportExcel').addEventListener('click',function(){
+        const data=filteredVehicles;
+        if(!data.length){UI.showToast('لا توجد بيانات للتصدير','error');return;}
+        const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'';
+        const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'';
+        const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
+        const headers=['#','رقم المركبة','النوع','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
+        let csv='\uFEFF'+headers.join(',')+'\n';
+        data.forEach((v,i)=>{
+            const row=[
+                i+1,
+                '"'+(v.vehicle_code||'').replace(/"/g,'""')+'"',
+                '"'+(v.type||'').replace(/"/g,'""')+'"',
+                '"'+(v.driver_name||'').replace(/"/g,'""')+'"',
+                '"'+(v.driver_phone||'').replace(/"/g,'""')+'"',
+                '"'+(v.department_name_ar||'').replace(/"/g,'""')+'"',
+                '"'+statusLabel(v.status)+'"',
+                '"'+modeLabel(v.vehicle_mode)+'"',
+                '"'+genderLabel(v.gender)+'"',
+                v.manufacture_year||'',
+                '"'+(v.emp_id||'').replace(/"/g,'""')+'"',
+                '"'+(v.notes||'').replace(/"/g,'""')+'"'
+            ];
+            csv+=row.join(',')+'\n';
+        });
+        const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+        const link=document.createElement('a');
+        link.href=URL.createObjectURL(blob);
+        link.download='vehicles_export_'+new Date().toISOString().slice(0,10)+'.csv';
+        link.click();
+        UI.showToast('تم التصدير بنجاح','success');
+    });
 
     /* --- Add Vehicle --- */
     $('btnAddVehicle').addEventListener('click',()=>{
@@ -433,6 +487,7 @@ $pageScripts = <<<'SCRIPT'
             type:$('fType').value.trim(),
             manufacture_year:parseInt($('fYear').value)||null,
             vehicle_mode:$('fMode').value,
+            gender:$('fGender').value||null,
             emp_id:$('fEmpId').value.trim(),
             driver_name:$('fDriverName').value.trim(),
             driver_phone:$('fDriverPhone').value.trim(),
@@ -464,6 +519,10 @@ $pageScripts = <<<'SCRIPT'
                 h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">السنة</span><span class="v-val">'+(v.manufacture_year||'—')+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الحالة</span><span class="v-val">'+badge(v.status)+'</span></div>';
+                const genderLabel=v.gender==='men'?'رجال':v.gender==='women'?'نساء':'—';
+                const modeLabel=v.vehicle_mode==='private'?'خاصة':v.vehicle_mode==='shift'?'وردية':'—';
+                h+='<div class="v-row"><span class="v-label">النمط</span><span class="v-val">'+modeLabel+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">الجنس</span><span class="v-val">'+genderLabel+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الهاتف</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الموظف</span><span class="v-val">'+esc(v.emp_id)+'</span></div>';
@@ -498,6 +557,7 @@ $pageScripts = <<<'SCRIPT'
                 $('fType').value=v.type||'';
                 $('fYear').value=v.manufacture_year||'';
                 $('fMode').value=v.vehicle_mode||'';
+                $('fGender').value=v.gender||'';
                 $('fEmpId').value=v.emp_id||'';
                 $('fDriverName').value=v.driver_name||'';
                 $('fDriverPhone').value=v.driver_phone||'';

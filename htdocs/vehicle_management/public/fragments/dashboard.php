@@ -136,12 +136,14 @@ $pageScripts = <<<'SCRIPT'
         try{
             const res=await API.get('/dashboard/stats');
             const d=res.data||res;
-            if(d.total!==undefined) $('statTotal').textContent=d.total;
-            if(d.operational!==undefined) $('statOperational').textContent=d.operational;
-            if(d.maintenance!==undefined) $('statMaintenance').textContent=d.maintenance;
-            if(d.out_of_service!==undefined) $('statOutOfService').textContent=d.out_of_service;
-            if(d.unpaid_violations!==undefined) $('statViolations').textContent=d.unpaid_violations;
-            if(d.active_users!==undefined) $('statUsers').textContent=d.active_users;
+            // Support both prefixed (vehicles_total) and unprefixed (total) keys
+            const val = (k, alt) => d[k] !== undefined ? d[k] : (d[alt] !== undefined ? d[alt] : 0);
+            $('statTotal').textContent = val('total','vehicles_total');
+            $('statOperational').textContent = val('operational','vehicles_operational');
+            $('statMaintenance').textContent = val('maintenance','vehicles_maintenance');
+            $('statOutOfService').textContent = val('out_of_service','vehicles_out_of_service');
+            $('statViolations').textContent = val('unpaid_violations','violations_unpaid');
+            $('statUsers').textContent = val('active_users','users_active');
         }catch(e){}
     }
 

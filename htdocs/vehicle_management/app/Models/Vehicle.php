@@ -45,6 +45,11 @@ class Vehicle extends BaseModel
             $types .= 'i';
             $params[] = (int)$filters['department_id'];
         }
+        if (!empty($filters['gender'])) {
+            $sql .= " AND v.gender = ?";
+            $types .= 's';
+            $params[] = $filters['gender'];
+        }
 
         $sql .= " ORDER BY v.id DESC";
         return $db->fetchAll($sql, $types, $params);

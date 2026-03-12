@@ -29,7 +29,7 @@ class VehicleController extends BaseController
         $this->requireAuth($request);
         if (Response::isSent()) return;
 
-        $filters = $request->only(['status', 'vehicle_mode', 'department_id']);
+        $filters = $request->only(['status', 'vehicle_mode', 'department_id', 'gender']);
         try {
             $vehicles = $this->vehicleModel->allWithRelations($filters);
         } catch (\Throwable $e) {

@@ -84,6 +84,11 @@
             <option value="1">نشط</option>
             <option value="0">غير نشط</option>
         </select>
+        <select class="form-select" id="filterGender">
+            <option value="">كل الجنس</option>
+            <option value="men">ذكر</option>
+            <option value="women">أنثى</option>
+        </select>
     </div>
     <div class="u-toolbar-end">
         <button class="btn btn-primary" onclick="openAddUser()">➕ إضافة مستخدم</button>
@@ -103,12 +108,13 @@
                     <th>الهاتف</th>
                     <th>الدور</th>
                     <th>الحالة</th>
+                    <th>الجنس</th>
                     <th>تاريخ الإنشاء</th>
                     <th>إجراءات</th>
                 </tr>
             </thead>
             <tbody id="usersBody">
-                <tr><td colspan="9" class="empty-state"><div class="empty-icon">👥</div><p>جارٍ التحميل...</p></td></tr>
+                <tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>جارٍ التحميل...</p></td></tr>
             </tbody>
         </table>
     </div>
@@ -229,6 +235,7 @@
         const search = (document.getElementById('userSearch').value || '').toLowerCase();
         const roleFilter = document.getElementById('filterRole').value;
         const activeFilter = document.getElementById('filterActive').value;
+        const genderFilter = document.getElementById('filterGender').value;
 
         let filtered = allUsers.filter(u => {
             if (search) {
@@ -237,12 +244,13 @@
             }
             if (roleFilter && String(u.role_id) !== roleFilter) return false;
             if (activeFilter !== '' && String(u.is_active) !== activeFilter) return false;
+            if (genderFilter && (u.gender || '') !== genderFilter) return false;
             return true;
         });
 
         const tbody = document.getElementById('usersBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="empty-state"><div class="empty-icon">👥</div><p>لا يوجد مستخدمون</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>لا يوجد مستخدمون</p></td></tr>';
             return;
         }
 
@@ -251,6 +259,7 @@
                 ? '<span class="badge badge-active">نشط</span>'
                 : '<span class="badge badge-inactive">غير نشط</span>';
             const roleBadge = '<span class="badge badge-role">' + (u.role_name || '\u2014') + '</span>';
+            const genderLabel = u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
                 '<td>' + (i + 1) + '</td>' +
@@ -260,6 +269,7 @@
                 '<td>' + escHtml(u.phone || '\u2014') + '</td>' +
                 '<td>' + roleBadge + '</td>' +
                 '<td>' + statusBadge + '</td>' +
+                '<td>' + genderLabel + '</td>' +
                 '<td>' + created + '</td>' +
                 '<td class="table-actions">' +
                     '<button class="btn-icon btn-view" title="عرض" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
@@ -404,6 +414,7 @@
     document.getElementById('userSearch').addEventListener('input', renderTable);
     document.getElementById('filterRole').addEventListener('change', renderTable);
     document.getElementById('filterActive').addEventListener('change', renderTable);
+    document.getElementById('filterGender').addEventListener('change', renderTable);
 
     document.querySelectorAll('.modal-overlay').forEach(m => {
         m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });

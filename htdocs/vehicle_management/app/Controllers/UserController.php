@@ -53,6 +53,14 @@ class UserController extends BaseController
             $binds[] = (int)$deptId;
         }
 
+        // Filter by gender
+        $gender = $request->query('gender');
+        if ($gender !== null && $gender !== '') {
+            $where[] = 'u.gender = ?';
+            $types .= 's';
+            $binds[] = $gender;
+        }
+
         // Search
         $search = $request->query('search');
         if ($search !== null && trim($search) !== '') {
@@ -186,8 +194,34 @@ class UserController extends BaseController
                 [$username]
             );
             if ($existing) {
-                Response::error('Username already exists', 409);
+                Response::error('اسم المستخدم موجود مسبقاً', 409);
                 return;
+            }
+
+            // Check unique emp_id (if provided)
+            if ($empId !== '') {
+                $existingEmp = $db->fetchOne(
+                    "SELECT id FROM users WHERE emp_id = ? LIMIT 1",
+                    's',
+                    [$empId]
+                );
+                if ($existingEmp) {
+                    Response::error('رقم الموظف موجود مسبقاً', 409);
+                    return;
+                }
+            }
+
+            // Check unique email (if provided)
+            if ($email !== '') {
+                $existingEmail = $db->fetchOne(
+                    "SELECT id FROM users WHERE email = ? LIMIT 1",
+                    's',
+                    [$email]
+                );
+                if ($existingEmail) {
+                    Response::error('البريد الإلكتروني موجود مسبقاً', 409);
+                    return;
+                }
             }
         } catch (\Throwable $e) {
             // Ignore, let the insert fail if duplicate
@@ -225,11 +259,40 @@ class UserController extends BaseController
             if ($result->success) {
                 Response::success(['id' => $result->insert_id], 'User created successfully');
             } else {
-                Response::error('Failed to create user', 500);
+                $errMsg = 'Failed to create user';
+                if (!empty($result->error)) {
+                    if (strpos($result->error, 'Duplicate') !== false) {
+                        if (strpos($result->error, 'emp_id') !== false) {
+                            $errMsg = 'رقم الموظف موجود مسبقاً';
+                        } elseif (strpos($result->error, 'email') !== false) {
+                            $errMsg = 'البريد الإلكتروني موجود مسبقاً';
+                        } elseif (strpos($result->error, 'username') !== false) {
+                            $errMsg = 'اسم المستخدم موجود مسبقاً';
+                        } else {
+                            $errMsg = 'بيانات مكررة: ' . $result->error;
+                        }
+                    } else {
+                        $errMsg = $result->error;
+                    }
+                }
+                Response::error($errMsg, 500);
             }
         } catch (\Throwable $e) {
             error_log("UserController::store error: " . $e->getMessage());
-            Response::error('Failed to create user: ' . $e->getMessage(), 500);
+            $errMsg = 'Failed to create user';
+            $msg = $e->getMessage();
+            if (strpos($msg, 'Duplicate') !== false) {
+                if (strpos($msg, 'emp_id') !== false) {
+                    $errMsg = 'رقم الموظف موجود مسبقاً';
+                } elseif (strpos($msg, 'email') !== false) {
+                    $errMsg = 'البريد الإلكتروني موجود مسبقاً';
+                } elseif (strpos($msg, 'username') !== false) {
+                    $errMsg = 'اسم المستخدم موجود مسبقاً';
+                } else {
+                    $errMsg = 'بيانات مكررة';
+                }
+            }
+            Response::error($errMsg, 500);
         }
     }
 
