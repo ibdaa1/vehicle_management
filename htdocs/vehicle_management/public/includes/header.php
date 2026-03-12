@@ -120,7 +120,7 @@ $menuItems = [
             <button class="btn btn-ghost btn-icon" data-action="toggle-theme" title="تبديل المظهر" id="themeBtn">&#9728;&#65039;</button>
             <button class="btn btn-ghost btn-sm" data-action="toggle-lang" id="langBtn">EN</button>
             <div class="user-info"></div>
-            <button class="btn btn-ghost btn-sm" data-action="logout" id="logoutBtn">خروج</button>
+            <button class="btn btn-ghost btn-sm" data-action="logout" id="logoutBtn" data-label-ar="خروج" data-label-en="Logout">خروج</button>
         </div>
     </header>
 

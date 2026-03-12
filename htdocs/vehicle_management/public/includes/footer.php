@@ -39,7 +39,9 @@
             if (lb) lb.textContent = isEn ? 'AR' : 'EN';
             // Logout button
             var lo = document.getElementById('logoutBtn');
-            if (lo) lo.textContent = isEn ? 'Logout' : 'خروج';
+            if (lo && lo.hasAttribute('data-label-ar')) {
+                lo.textContent = lo.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || lo.textContent;
+            }
         }
 
         // Apply stored language on load

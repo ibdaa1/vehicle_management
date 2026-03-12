@@ -349,9 +349,10 @@
         });
     }
     function renderPhotosPrev(){
-        $('mvPhotosPreview').innerHTML=pendingPhotos.map((p,i)=>
-            '<img src="'+p+'" class="thumb" onclick="MvPage.removePhoto('+i+')">'
-        ).join('');
+        $('mvPhotosPreview').innerHTML=pendingPhotos.map((p,i)=>{
+            var safe=p.replace(/[^a-zA-Z0-9+/=:;,]/g,'');
+            return '<img src="'+safe+'" class="thumb" onclick="MvPage.removePhoto('+i+')">';
+        }).join('');
     }
 
     /* ---- Filters ---- */
