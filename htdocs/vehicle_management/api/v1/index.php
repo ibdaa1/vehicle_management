@@ -29,7 +29,9 @@ try {
     $app->run();
 } catch (\Throwable $e) {
     // Catch any unhandled exception and return a proper JSON error response
-    error_log("API v1 Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+    $msg = $e->getMessage();
+    $file = $e->getFile() . ':' . $e->getLine();
+    error_log("API v1 Error: {$msg} in {$file}");
 
     if (!headers_sent()) {
         http_response_code(500);
@@ -41,9 +43,18 @@ try {
         'success' => false,
         'message' => 'Internal server error',
     ];
-    if ($debug) {
-        $response['error'] = $e->getMessage();
-        $response['file']  = $e->getFile() . ':' . $e->getLine();
+
+    // Always include a hint for connection errors to help diagnose
+    if (stripos($msg, 'Database connection failed') !== false) {
+        $response['message'] = 'Database connection failed. Please check database host, username, password, and database name in config/database.php';
+        $response['hint'] = $msg;
     }
+
+    if ($debug) {
+        $response['error'] = $msg;
+        $response['file']  = $file;
+        $response['trace'] = $e->getTraceAsString();
+    }
+
     echo json_encode($response, JSON_UNESCAPED_UNICODE);
 }

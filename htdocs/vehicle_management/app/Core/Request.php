@@ -21,14 +21,15 @@ class Request
     {
         $this->get     = $_GET ?? [];
         $this->post    = $_POST ?? [];
-        $this->headers = $this->normalizeHeaders();
-        $this->method  = $this->resolveMethod();
-        $this->uri     = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
-        // Parse JSON body
+        // Parse JSON body BEFORE resolveMethod (which may access $this->body)
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         $this->body = is_array($json) ? $json : [];
+
+        $this->headers = $this->normalizeHeaders();
+        $this->method  = $this->resolveMethod();
+        $this->uri     = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     }
 
     /**

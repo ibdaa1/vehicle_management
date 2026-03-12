@@ -3,7 +3,10 @@
  * Core Database Class
  * 
  * Singleton wrapper around mysqli for clean access throughout the application.
- * Replaces the procedural db.php approach with an OOP pattern.
+ * Uses lazy connection: the actual MySQL connection is created only when the
+ * first query is executed, not during init(). This prevents boot() from
+ * crashing when the database is unavailable, allowing controllers to handle
+ * DB errors gracefully.
  */
 
 namespace App\Core;
@@ -11,31 +14,43 @@ namespace App\Core;
 class Database
 {
     private static ?Database $instance = null;
-    private \mysqli $conn;
+    private ?\mysqli $conn = null;
+    private array $config;
 
     private function __construct(array $config)
     {
-        $this->conn = new \mysqli(
-            $config['host'],
-            $config['username'],
-            $config['password'],
-            $config['database']
+        $this->config = $config;
+    }
+
+    /**
+     * Establish the actual database connection (called lazily on first use).
+     */
+    private function connect(): void
+    {
+        if ($this->conn !== null) {
+            return;
+        }
+
+        $conn = @new \mysqli(
+            $this->config['host'] ?? 'localhost',
+            $this->config['username'] ?? '',
+            $this->config['password'] ?? '',
+            $this->config['database'] ?? ''
         );
 
-        if ($this->conn->connect_error) {
-            error_log("Database connection failed. Check DB credentials and host.");
-            throw new \RuntimeException('Database connection failed.');
+        if ($conn->connect_error) {
+            $error = $conn->connect_error;
+            error_log("Database connection failed: " . $error);
+            throw new \RuntimeException('Database connection failed: ' . $error);
         }
 
-        $this->conn->set_charset($config['charset'] ?? 'utf8mb4');
-
-        if (!empty($config['timezone'])) {
-            date_default_timezone_set($config['timezone']);
-        }
+        $conn->set_charset($this->config['charset'] ?? 'utf8mb4');
+        $this->conn = $conn;
     }
 
     /**
      * Initialize the singleton with config array.
+     * Does NOT connect to the database yet (lazy connection).
      */
     public static function init(array $config): self
     {
@@ -61,6 +76,7 @@ class Database
      */
     public function getConnection(): \mysqli
     {
+        $this->connect();
         return $this->conn;
     }
 
@@ -74,6 +90,8 @@ class Database
      */
     public function query(string $sql, string $types = '', array $params = [])
     {
+        $this->connect();
+
         $stmt = $this->conn->prepare($sql);
         if ($stmt === false) {
             throw new \RuntimeException('Query prepare failed: ' . $this->conn->error);
@@ -130,6 +148,8 @@ class Database
      */
     public function execute(string $sql, string $types = '', array $params = []): object
     {
+        $this->connect();
+
         $stmt = $this->conn->prepare($sql);
         if ($stmt === false) {
             throw new \RuntimeException('Query prepare failed: ' . $this->conn->error);
@@ -155,7 +175,10 @@ class Database
      */
     public function close(): void
     {
-        $this->conn->close();
+        if ($this->conn !== null) {
+            $this->conn->close();
+            $this->conn = null;
+        }
         self::$instance = null;
     }
 }

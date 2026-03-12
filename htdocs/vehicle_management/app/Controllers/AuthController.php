@@ -50,7 +50,7 @@ class AuthController extends BaseController
             $user = $this->userModel->findByIdentifier($identifier);
         } catch (\Throwable $e) {
             error_log("AuthController::login DB error: " . $e->getMessage());
-            Response::error('Database error during authentication. Please contact administrator.', 500);
+            Response::error('Database error: ' . $e->getMessage(), 500);
             return;
         }
 
