@@ -448,7 +448,7 @@
         async del(id){
             if(!confirm('Delete this movement?'))return;
             try{
-                await API.delete('/movements/'+id);
+                await API.del('/movements/'+id);
                 UI.showToast('Movement deleted','success');
                 loadMovements();
             }catch(e){UI.showToast(e.message||'Error','error');}

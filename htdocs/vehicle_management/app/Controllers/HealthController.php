@@ -73,7 +73,7 @@ class HealthController extends BaseController
                 'button_styles', 'activity_logs',
                 'Departments', 'Sections', 'Divisions',
                 'vehicles', 'vehicle_maintenance', 'vehicle_violations',
-                'vehicle_movement_photos',
+                'vehicle_movements', 'vehicle_movement_photos',
             ];
             foreach ($expectedTables as $table) {
                 try {

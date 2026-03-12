@@ -309,7 +309,7 @@ class MovementController extends BaseController
             }
 
             $decoded = base64_decode($parts[1] ?? '', true);
-            if ($decoded === false || strlen($decoded) < 100) {
+            if ($decoded === false || strlen($decoded) < 10) {
                 continue;
             }
 

@@ -67,6 +67,14 @@ class Request
     }
 
     /**
+     * Get the raw parsed request body (JSON or POST data).
+     */
+    public function body(): array
+    {
+        return $this->body;
+    }
+
+    /**
      * Get all input data merged.
      */
     public function all(): array
