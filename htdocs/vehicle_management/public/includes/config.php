@@ -112,10 +112,13 @@ function vm_get_settings() {
 }
 
 // Helper: Get user permissions (by role_id)
+// Role IDs 1 (superadmin) and 2 (admin) get all permissions
+define('VM_MAX_ADMIN_ROLE_ID', 2);
+
 function vm_get_permissions($roleId) {
     $db = vm_get_db();
     if (!$db) return ['*']; // Fallback: allow everything if DB unavailable
-    if ((int)$roleId <= 2) return ['*']; // Superadmin/admin has all
+    if ((int)$roleId <= VM_MAX_ADMIN_ROLE_ID) return ['*']; // Superadmin/admin has all
 
     try {
         $roleId = (int)$roleId;
