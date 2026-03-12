@@ -198,4 +198,143 @@ class SettingsController extends BaseController
         Response::success(null, 'Setting updated successfully');
         return;
     }
+
+    /**
+     * GET /api/v1/settings/themes/{id}
+     * Returns a specific theme with all its style data – requires admin.
+     */
+    public function themeDetail(Request $request, array $params = []): void
+    {
+        $this->requireAdmin($request);
+        if (Response::isSent()) return;
+
+        $id = (int)($params['id'] ?? 0);
+        if (!$id) {
+            Response::error('Theme ID is required', 400);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::getInstance();
+            $theme = $db->fetchOne("SELECT * FROM themes WHERE id = ? LIMIT 1", 'i', [$id]);
+            if (!$theme) {
+                Response::error('Theme not found', 404);
+                return;
+            }
+
+            $theme['colors'] = $db->fetchAll(
+                "SELECT id, setting_key, setting_name, color_value, category FROM color_settings WHERE theme_id = ? ORDER BY sort_order",
+                'i', [$id]
+            );
+            $theme['fonts'] = $db->fetchAll(
+                "SELECT id, setting_key, setting_name, font_family, font_size, font_weight, line_height, category FROM font_settings WHERE theme_id = ? ORDER BY sort_order",
+                'i', [$id]
+            );
+            $theme['buttons'] = $db->fetchAll(
+                "SELECT id, slug, name, button_type, background_color, text_color, border_color, border_radius, padding, font_size, font_weight, hover_background_color, hover_text_color FROM button_styles WHERE theme_id = ?",
+                'i', [$id]
+            );
+            $theme['cards'] = $db->fetchAll(
+                "SELECT id, slug, name, card_type, background_color, border_color, border_width, border_radius, shadow_style, padding, hover_effect, text_align FROM card_styles WHERE theme_id = ?",
+                'i', [$id]
+            );
+            $theme['design'] = $db->fetchAll(
+                "SELECT id, setting_key, setting_name, setting_value, setting_type, category FROM design_settings WHERE theme_id = ? ORDER BY sort_order",
+                'i', [$id]
+            );
+
+            Response::json(['success' => true, 'data' => $theme]);
+        } catch (\Throwable $e) {
+            error_log("SettingsController::themeDetail error: " . $e->getMessage());
+            Response::error('Failed to load theme: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * PUT /api/v1/settings/themes/{id}/colors
+     * Update color settings for a specific theme – requires admin.
+     * Expects JSON body: { colors: [{id, color_value}, ...] }
+     */
+    public function updateColors(Request $request, array $params = []): void
+    {
+        $this->requireAdmin($request);
+        if (Response::isSent()) return;
+
+        $themeId = (int)($params['id'] ?? 0);
+        if (!$themeId) {
+            Response::error('Theme ID is required', 400);
+            return;
+        }
+
+        $colors = $request->input('colors', []);
+        if (!is_array($colors) || empty($colors)) {
+            Response::error('Colors array is required', 400);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::getInstance();
+            $updated = 0;
+            foreach ($colors as $c) {
+                $colorId = (int)($c['id'] ?? 0);
+                $colorValue = $c['color_value'] ?? '';
+                if ($colorId && preg_match('/^#[0-9A-Fa-f]{6}$/', $colorValue)) {
+                    $db->execute(
+                        "UPDATE color_settings SET color_value = ? WHERE id = ? AND theme_id = ?",
+                        'sii', [$colorValue, $colorId, $themeId]
+                    );
+                    $updated++;
+                }
+            }
+
+            Response::success(['updated' => $updated], "Updated {$updated} color(s)");
+        } catch (\Throwable $e) {
+            error_log("SettingsController::updateColors error: " . $e->getMessage());
+            Response::error('Failed to update colors: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * PUT /api/v1/settings/themes/{id}/design
+     * Update design settings for a specific theme – requires admin.
+     * Expects JSON body: { settings: [{id, setting_value}, ...] }
+     */
+    public function updateDesign(Request $request, array $params = []): void
+    {
+        $this->requireAdmin($request);
+        if (Response::isSent()) return;
+
+        $themeId = (int)($params['id'] ?? 0);
+        if (!$themeId) {
+            Response::error('Theme ID is required', 400);
+            return;
+        }
+
+        $settings = $request->input('settings', []);
+        if (!is_array($settings) || empty($settings)) {
+            Response::error('Settings array is required', 400);
+            return;
+        }
+
+        try {
+            $db = \App\Core\Database::getInstance();
+            $updated = 0;
+            foreach ($settings as $s) {
+                $settingId = (int)($s['id'] ?? 0);
+                $settingValue = $s['setting_value'] ?? '';
+                if ($settingId && is_string($settingValue)) {
+                    $db->execute(
+                        "UPDATE design_settings SET setting_value = ? WHERE id = ? AND theme_id = ?",
+                        'sii', [$settingValue, $settingId, $themeId]
+                    );
+                    $updated++;
+                }
+            }
+
+            Response::success(['updated' => $updated], "Updated {$updated} design setting(s)");
+        } catch (\Throwable $e) {
+            error_log("SettingsController::updateDesign error: " . $e->getMessage());
+            Response::error('Failed to update design settings: ' . $e->getMessage(), 500);
+        }
+    }
 }

@@ -53,8 +53,11 @@ $router->get('api/v1/dashboard/stats', DashboardController::class, 'stats');
 // === Settings & Theme Routes ===
 $router->get('api/v1/settings/public', SettingsController::class, 'publicSettings');
 $router->get('api/v1/settings/themes', SettingsController::class, 'themes');
+$router->get('api/v1/settings/themes/{id}', SettingsController::class, 'themeDetail');
 $router->get('api/v1/settings/theme', SettingsController::class, 'theme');
 $router->put('api/v1/settings/theme/{slug}', SettingsController::class, 'switchTheme');
+$router->put('api/v1/settings/themes/{id}/colors', SettingsController::class, 'updateColors');
+$router->put('api/v1/settings/themes/{id}/design', SettingsController::class, 'updateDesign');
 $router->get('api/v1/settings', SettingsController::class, 'index');
 $router->put('api/v1/settings/{key}', SettingsController::class, 'update');
 
