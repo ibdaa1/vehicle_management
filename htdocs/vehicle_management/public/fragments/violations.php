@@ -84,8 +84,8 @@
 </div>
 
 <!-- Table -->
-<div style="overflow-x:auto">
-<table class="vl-table">
+<div class="table-responsive">
+<table class="vl-table data-table">
     <thead><tr>
         <th>#</th>
         <th>رقم المركبة</th>

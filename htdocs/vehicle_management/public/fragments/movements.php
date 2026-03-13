@@ -110,7 +110,7 @@
 </div>
 
 <!-- Table -->
-<div style="overflow-x:auto">
+<div class="table-responsive">
 <table class="mv-table data-table">
     <thead><tr>
         <th>#</th>

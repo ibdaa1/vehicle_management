@@ -113,7 +113,7 @@
 
 <!-- Table View -->
 <div id="vehicleTable" style="display:none">
-    <div class="table-wrapper">
+    <div class="table-wrapper table-responsive">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
                 <th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>التوفر</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>

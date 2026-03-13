@@ -111,7 +111,7 @@
 
 <!-- Roles Table -->
 <div class="section-card">
-    <div class="table-wrapper">
+    <div class="table-wrapper table-responsive">
         <table class="data-table" id="rolesTable">
             <thead>
                 <tr>
