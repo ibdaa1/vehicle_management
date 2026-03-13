@@ -15,6 +15,9 @@
 .mv-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
 .mv-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
 .mv-toolbar .btn-add{margin-inline-start:auto}
+.mv-date-range{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mv-date-range label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap}
+.mv-date-range input[type="date"]{padding:8px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.85rem;max-width:150px}
 .mv-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .mv-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
 .mv-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
@@ -83,35 +86,42 @@
 <div class="mv-toolbar">
     <div class="search-box">
         <span class="ico">🔍</span>
-        <input type="text" id="mvSearch" placeholder="Search by vehicle code or employee...">
+        <input type="text" id="mvSearch" placeholder="بحث برقم المركبة أو الموظف...">
     </div>
     <select id="mvFilterType">
-        <option value="">All Types</option>
-        <option value="pickup">Pickup</option>
-        <option value="return">Return</option>
+        <option value="">كل الأنواع</option>
+        <option value="pickup">استلام</option>
+        <option value="return">إرجاع</option>
     </select>
     <select id="mvFilterCondition">
-        <option value="">All Conditions</option>
-        <option value="clean">Clean</option>
-        <option value="acceptable">Acceptable</option>
-        <option value="damaged">Damaged</option>
+        <option value="">كل الحالات</option>
+        <option value="clean">نظيفة</option>
+        <option value="acceptable">مقبولة</option>
+        <option value="damaged">متضررة</option>
     </select>
-    <button class="btn btn-primary btn-sm btn-add" id="mvBtnAdd">➕ Add Movement</button>
+    <div class="mv-date-range">
+        <label>من:</label>
+        <input type="date" id="mvDateFrom" class="form-control">
+        <label>إلى:</label>
+        <input type="date" id="mvDateTo" class="form-control">
+    </div>
+    <button class="btn btn-outline btn-sm" id="mvBtnPrint" title="طباعة">🖨️ طباعة</button>
+    <button class="btn btn-primary btn-sm btn-add" id="mvBtnAdd">➕ إضافة حركة</button>
 </div>
 
 <!-- Table -->
 <div style="overflow-x:auto">
-<table class="mv-table">
+<table class="mv-table data-table">
     <thead><tr>
         <th>#</th>
-        <th data-lang-key="vehicle_code_label">Vehicle Code</th>
-        <th data-lang-key="operation_type_label">Type</th>
-        <th data-lang-key="performed_by_label">Performed By</th>
-        <th>Date/Time</th>
-        <th>Condition</th>
-        <th>Fuel</th>
+        <th>رقم المركبة</th>
+        <th>النوع</th>
+        <th>بواسطة</th>
+        <th>التاريخ</th>
+        <th>الحالة</th>
+        <th>الوقود</th>
         <th>📍</th>
-        <th data-lang-key="actions">Actions</th>
+        <th>الإجراءات</th>
     </tr></thead>
     <tbody id="mvTableBody"></tbody>
 </table>
@@ -244,10 +254,20 @@
         const q=($('mvSearch').value||'').toLowerCase();
         const t=$('mvFilterType').value;
         const c=$('mvFilterCondition').value;
+        const dateFrom=$('mvDateFrom').value;
+        const dateTo=$('mvDateTo').value;
         filteredMovements=allMovements.filter(m=>{
             if(t && m.operation_type!==t) return false;
             if(c && m.vehicle_condition!==c) return false;
             if(q && !((m.vehicle_code||'').toLowerCase().includes(q)||(m.performed_by||'').toLowerCase().includes(q))) return false;
+            if(dateFrom){
+                const md=(m.movement_datetime||'').substring(0,10);
+                if(md<dateFrom) return false;
+            }
+            if(dateTo){
+                const md=(m.movement_datetime||'').substring(0,10);
+                if(md>dateTo) return false;
+            }
             return true;
         });
         currentPage=1;
@@ -259,29 +279,29 @@
         const page=filteredMovements.slice(start,start+perPage);
         const tbody=$('mvTableBody');
         if(!page.length){
-            tbody.innerHTML='<tr><td colspan="9"><div class="mv-empty"><div class="ico">🔄</div><p>No movements recorded yet</p></div></td></tr>';
+            tbody.innerHTML='<tr><td colspan="9"><div class="mv-empty"><div class="ico">🔄</div><p>لا توجد حركات مسجلة</p></div></td></tr>';
             $('mvPagination').innerHTML='';
             return;
         }
-        const condLabel=c=>c==='clean'?'Clean':c==='acceptable'?'Acceptable':c==='damaged'?'Damaged':'—';
-        const fuelLabel=f=>{const m={full:'Full',three_quarter:'3/4',half:'Half',quarter:'1/4',empty:'Empty'};return m[f]||'—';};
-        const typeLabel=t=>t==='pickup'?'Pickup':'Return';
+        const condLabel=c=>c==='clean'?'نظيفة':c==='acceptable'?'مقبولة':c==='damaged'?'متضررة':'—';
+        const fuelLabel=f=>{const m={full:'ممتلئ',three_quarter:'3/4',half:'نصف',quarter:'1/4',empty:'فارغ'};return m[f]||'—';};
+        const typeLabel=t=>t==='pickup'?'استلام':'إرجاع';
         let h='';
         page.forEach((m,i)=>{
             const hasLoc=m.latitude&&m.longitude;
             h+='<tr>';
-            h+='<td>'+(start+i+1)+'</td>';
-            h+='<td><strong>'+esc(m.vehicle_code)+'</strong></td>';
-            h+='<td><span class="mv-badge '+m.operation_type+'">'+typeLabel(m.operation_type)+'</span></td>';
-            h+='<td>'+esc(m.performed_by)+'</td>';
-            h+='<td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
-            h+='<td>'+(m.vehicle_condition?'<span class="mv-badge '+m.vehicle_condition+'">'+condLabel(m.vehicle_condition)+'</span>':'—')+'</td>';
-            h+='<td>'+fuelLabel(m.fuel_level)+'</td>';
-            h+='<td>'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
-            h+='<td class="mv-actions">';
-            h+='<button onclick="MvPage.view('+m.id+')" title="View">👁</button>';
-            h+='<button onclick="MvPage.edit('+m.id+')" title="Edit">✏️</button>';
-            h+='<button onclick="MvPage.del('+m.id+')" title="Delete">🗑️</button>';
+            h+='<td data-label="#">'+(start+i+1)+'</td>';
+            h+='<td data-label="رقم المركبة"><strong>'+esc(m.vehicle_code)+'</strong></td>';
+            h+='<td data-label="النوع"><span class="mv-badge '+m.operation_type+'">'+typeLabel(m.operation_type)+'</span></td>';
+            h+='<td data-label="بواسطة">'+esc(m.performed_by)+'</td>';
+            h+='<td data-label="التاريخ">'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
+            h+='<td data-label="الحالة">'+(m.vehicle_condition?'<span class="mv-badge '+m.vehicle_condition+'">'+condLabel(m.vehicle_condition)+'</span>':'—')+'</td>';
+            h+='<td data-label="الوقود">'+fuelLabel(m.fuel_level)+'</td>';
+            h+='<td data-label="الموقع">'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
+            h+='<td data-label="الإجراءات" class="mv-actions">';
+            h+='<button onclick="MvPage.view('+m.id+')" title="عرض">👁</button>';
+            h+='<button onclick="MvPage.edit('+m.id+')" title="تعديل">✏️</button>';
+            h+='<button onclick="MvPage.del('+m.id+')" title="حذف">🗑️</button>';
             h+='</td></tr>';
         });
         tbody.innerHTML=h;
@@ -374,6 +394,26 @@
     $('mvSearch').addEventListener('input',applyFilters);
     $('mvFilterType').addEventListener('change',applyFilters);
     $('mvFilterCondition').addEventListener('change',applyFilters);
+    $('mvDateFrom').addEventListener('change',applyFilters);
+    $('mvDateTo').addEventListener('change',applyFilters);
+
+    /* ---- Print Report ---- */
+    $('mvBtnPrint').addEventListener('click',function(){
+        const data=filteredMovements;
+        if(!data.length){UI.showToast('لا توجد بيانات للطباعة','error');return;}
+        const typeLabel=t=>t==='pickup'?'استلام':'إرجاع';
+        const condLabel=c=>c==='clean'?'نظيفة':c==='acceptable'?'مقبولة':c==='damaged'?'متضررة':'—';
+        let html='<html dir="rtl"><head><meta charset="utf-8"><title>تقرير الحركات</title><style>body{font-family:Arial,sans-serif;direction:rtl}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center}@media print{body{margin:0}}</style></head><body>';
+        html+='<h2>تقرير حركات المركبات</h2><p>العدد: '+data.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>رقم المركبة</th><th>النوع</th><th>بواسطة</th><th>التاريخ</th><th>الحالة</th><th>الوقود</th></tr></thead><tbody>';
+        data.forEach((m,i)=>{
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td>';
+            html+='<td>'+esc(m.performed_by)+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
+            html+='<td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td></tr>';
+        });
+        html+='</tbody></table></body></html>';
+        const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+    });
 
     /* ---- Save ---- */
     $('mvSaveBtn').addEventListener('click',async()=>{

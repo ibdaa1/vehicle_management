@@ -79,6 +79,11 @@
             <option value="maintenance">صيانة</option>
             <option value="out_of_service">خارج الخدمة</option>
         </select>
+        <select class="form-select" id="filterAvailability">
+            <option value="">كل التوفر</option>
+            <option value="available">متاحة للتسليم</option>
+            <option value="checked_out">مُستلمة</option>
+        </select>
         <select class="form-select" id="filterDept"><option value="">كل الإدارات</option></select>
         <select class="form-select" id="filterSection"><option value="">كل الأقسام</option></select>
         <select class="form-select" id="filterMode">
@@ -97,6 +102,7 @@
             <button class="btn btn-ghost btn-icon active" id="viewCards" title="بطاقات">🗂️</button>
             <button class="btn btn-ghost btn-icon" id="viewTable" title="جدول">📋</button>
         </div>
+        <button class="btn btn-outline btn-sm" id="btnPrintReport" title="طباعة التقرير">🖨️ طباعة</button>
         <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
         <button class="btn btn-primary" id="btnAddVehicle">➕ إضافة مركبة</button>
     </div>
@@ -317,7 +323,13 @@ $pageScripts = <<<'SCRIPT'
 
     function applySearch(){
         const q=$('searchInput').value.trim().toLowerCase();
-        filteredVehicles=q?allVehicles.filter(v=>(v.vehicle_code||'').toLowerCase().includes(q)||(v.driver_name||'').toLowerCase().includes(q)):allVehicles;
+        const avail=$('filterAvailability').value;
+        filteredVehicles=allVehicles.filter(v=>{
+            if(q && !((v.vehicle_code||'').toLowerCase().includes(q)||(v.driver_name||'').toLowerCase().includes(q))) return false;
+            if(avail==='available' && !v.available) return false;
+            if(avail==='checked_out' && v.available) return false;
+            return true;
+        });
         currentPage=1;
         render();
     }
@@ -413,12 +425,31 @@ $pageScripts = <<<'SCRIPT'
 
     /* --- Filters --- */
     $('filterStatus').addEventListener('change',loadVehicles);
+    $('filterAvailability').addEventListener('change',applySearch);
     $('filterDept').addEventListener('change',loadVehicles);
     $('filterSection').addEventListener('change',loadVehicles);
     $('filterMode').addEventListener('change',loadVehicles);
     $('filterGender').addEventListener('change',loadVehicles);
     let searchTimer;
     $('searchInput').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(applySearch,300);});
+
+    /* --- Print Report --- */
+    $('btnPrintReport').addEventListener('click',function(){
+        const data=filteredVehicles;
+        if(!data.length){UI.showToast('لا توجد بيانات للطباعة','error');return;}
+        const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
+        let html='<html dir="rtl"><head><meta charset="utf-8"><title>تقرير المركبات</title><style>body{font-family:Arial,sans-serif;direction:rtl}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center}.avail{color:green}.noavail{color:#b8860b}@media print{body{margin:0}}</style></head><body>';
+        html+='<h2>تقرير المركبات</h2><p>العدد: '+data.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>التوفر</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>السنة</th></tr></thead><tbody>';
+        data.forEach((v,i)=>{
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(v.vehicle_code)+'</td><td>'+esc(v.type)+'</td><td>'+categoryLabel(v.vehicle_category)+'</td>';
+            html+='<td class="'+(v.available?'avail':'noavail')+'">'+(v.available?'متاحة للتسليم':'مُستلمة')+'</td>';
+            html+='<td>'+esc(v.driver_name)+'</td><td>'+esc(v.driver_phone)+'</td><td>'+esc(v.department_name_ar)+'</td>';
+            html+='<td>'+statusLabel(v.status)+'</td><td>'+(v.manufacture_year||'—')+'</td></tr>';
+        });
+        html+='</tbody></table></body></html>';
+        const w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+    });
 
     /* --- Export Excel --- */
     $('btnExportExcel').addEventListener('click',function(){
@@ -574,12 +605,14 @@ $pageScripts = <<<'SCRIPT'
         $('searchInput').placeholder=t('search_vehicle');
         // Filter dropdowns
         const fs=$('filterStatus');fs.options[0].text=t('all_statuses');fs.options[1].text=t('operational');fs.options[2].text=t('under_maintenance');fs.options[3].text=t('out_of_service');
+        const fa=$('filterAvailability');fa.options[0].text=t('all_availability');fa.options[1].text=t('available_only');fa.options[2].text=t('checked_out_only');
         $('filterDept').options[0].text=t('all_departments');
         $('filterSection').options[0].text=t('all_sections');
         const fm=$('filterMode');fm.options[0].text=t('all_modes');fm.options[1].text=t('private');fm.options[2].text=t('shift');
         const fg=$('filterGender');fg.options[0].text=t('all_genders');fg.options[1].text=t('men');fg.options[2].text=t('women');
         // Buttons and titles
         $('viewCards').title=t('card_view');$('viewTable').title=t('table_view');
+        $('btnPrintReport').innerHTML='🖨️ '+t('print');
         $('btnExportExcel').innerHTML='📥 '+t('export');
         $('btnAddVehicle').innerHTML='➕ '+t('add_vehicle');
     }

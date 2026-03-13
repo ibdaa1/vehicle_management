@@ -282,16 +282,16 @@
             const genderLabel = u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
-                '<td>' + (start + i + 1) + '</td>' +
-                '<td>' + escHtml(u.emp_id || '\u2014') + '</td>' +
-                '<td><strong>' + escHtml(u.username) + '</strong></td>' +
-                '<td>' + escHtml(u.email || '\u2014') + '</td>' +
-                '<td>' + escHtml(u.phone || '\u2014') + '</td>' +
-                '<td>' + roleBadge + '</td>' +
-                '<td>' + statusBadge + '</td>' +
-                '<td>' + genderLabel + '</td>' +
-                '<td>' + created + '</td>' +
-                '<td class="table-actions">' +
+                '<td data-label="#">' + (start + i + 1) + '</td>' +
+                '<td data-label="الرقم الوظيفي">' + escHtml(u.emp_id || '\u2014') + '</td>' +
+                '<td data-label="اسم المستخدم"><strong>' + escHtml(u.username) + '</strong></td>' +
+                '<td data-label="البريد">' + escHtml(u.email || '\u2014') + '</td>' +
+                '<td data-label="الهاتف">' + escHtml(u.phone || '\u2014') + '</td>' +
+                '<td data-label="الدور">' + roleBadge + '</td>' +
+                '<td data-label="الحالة">' + statusBadge + '</td>' +
+                '<td data-label="الجنس">' + genderLabel + '</td>' +
+                '<td data-label="تاريخ الإنشاء">' + created + '</td>' +
+                '<td data-label="الإجراءات" class="table-actions">' +
                     '<button class="btn-icon btn-view" title="عرض" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
                     '<button class="btn-icon btn-edit" title="تعديل" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' +
                     '<button class="btn-icon btn-delete" title="حذف" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' +

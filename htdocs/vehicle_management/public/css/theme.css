@@ -1127,6 +1127,10 @@ body[dir="ltr"] .toast.removing { animation-name: toastOutLtr; }
     z-index: 1100;
   }
 
+  .app-sidebar.mobile-open .menu-label {
+    display: inline;
+  }
+
   .app-main,
   .app-footer {
     margin-right: 0;
