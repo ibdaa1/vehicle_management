@@ -166,7 +166,7 @@
 (function(){
     const $=id=>document.getElementById(id);
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
-    let allViolations=[], filteredViolations=[], currentPage=1, perPage=15;
+    let allViolations=[], filteredViolations=[], currentPage=1, perPage=100;
 
     /* ---- Load ---- */
     async function loadViolations(){

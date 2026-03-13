@@ -232,7 +232,7 @@ $pageScripts = <<<'SCRIPT'
 (function(){
     'use strict';
     const $=id=>document.getElementById(id);
-    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=12, refs={departments:[],sections:[],divisions:[]};
+    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=100, refs={departments:[],sections:[],divisions:[]};
 
     const STATUS={operational:{key:'operational',cls:'badge-success'},maintenance:{key:'under_maintenance',cls:'badge-warning'},out_of_service:{key:'out_of_service',cls:'badge-danger'}};
     function badge(s){const m=STATUS[s]||{key:'operational',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+i18n.t(m.key)+'</span>';}

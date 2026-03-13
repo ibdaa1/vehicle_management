@@ -179,6 +179,18 @@
                     <select id="fRoleId"></select>
                 </div>
                 <div class="form-group">
+                    <label id="lblFormDept">Department</label>
+                    <select id="fDeptId"><option value="">-- All --</option></select>
+                </div>
+                <div class="form-group">
+                    <label id="lblFormSection">Section</label>
+                    <select id="fSectionId"><option value="">-- All --</option></select>
+                </div>
+                <div class="form-group">
+                    <label id="lblFormDivision">Division</label>
+                    <select id="fDivisionId"><option value="">-- All --</option></select>
+                </div>
+                <div class="form-group">
                     <label id="lblFormGender">Gender</label>
                     <select id="fGender">
                         <option value="" id="fOptUnspecified">-- Unspecified --</option>
@@ -230,6 +242,36 @@
         });
     }
 
+    let uRefs = {departments:[],sections:[],divisions:[]};
+    async function loadUserRefs() {
+        try {
+            const res = await API.get('/references');
+            uRefs = res || {departments:[],sections:[],divisions:[]};
+        } catch(e) { uRefs = {departments:[],sections:[],divisions:[]}; }
+        var dd = document.getElementById('fDeptId');
+        dd.innerHTML = '<option value="">--</option>';
+        (uRefs.departments||[]).forEach(function(d){
+            dd.innerHTML += '<option value="'+d.department_id+'">'+(d.name_ar||d.name_en)+'</option>';
+        });
+        dd.addEventListener('change', function(){ cascadeSection(this.value); });
+        document.getElementById('fSectionId').addEventListener('change', function(){ cascadeDivision(this.value); });
+    }
+    function cascadeSection(did) {
+        var s = document.getElementById('fSectionId');
+        s.innerHTML = '<option value="">--</option>';
+        (uRefs.sections||[]).filter(function(sc){ return sc.department_id == did; }).forEach(function(sc){
+            s.innerHTML += '<option value="'+sc.section_id+'">'+(sc.name_ar||sc.name_en)+'</option>';
+        });
+        cascadeDivision('');
+    }
+    function cascadeDivision(sid) {
+        var d = document.getElementById('fDivisionId');
+        d.innerHTML = '<option value="">--</option>';
+        (uRefs.divisions||[]).filter(function(dv){ return dv.section_id == sid; }).forEach(function(dv){
+            d.innerHTML += '<option value="'+dv.division_id+'">'+(dv.name_ar||dv.name_en)+'</option>';
+        });
+    }
+
     async function loadUsers() {
         try {
             const res = await API.get('/users');
@@ -249,7 +291,7 @@
         document.getElementById('uInactive').textContent = total - active;
     }
 
-    var uCurrentPage = 1, uPerPage = 15;
+    var uCurrentPage = 1, uPerPage = 100;
 
     function renderTable() {
         const search = (document.getElementById('userSearch').value || '').toLowerCase();
@@ -372,6 +414,8 @@
         document.getElementById('userForm').reset();
         document.getElementById('fActive').value = '1';
         document.getElementById('fLang').value = 'ar';
+        document.getElementById('fDeptId').value = '';
+        cascadeSection('');
         document.getElementById('formModal').classList.add('active');
     };
 
@@ -391,12 +435,19 @@
         document.getElementById('fGender').value = u.gender || '';
         document.getElementById('fLang').value = u.preferred_language || 'ar';
         document.getElementById('fActive').value = u.is_active != null ? String(u.is_active) : '1';
+        document.getElementById('fDeptId').value = u.department_id || '';
+        cascadeSection(u.department_id || '');
+        setTimeout(function(){ document.getElementById('fSectionId').value = u.section_id || ''; cascadeDivision(u.section_id || ''); setTimeout(function(){ document.getElementById('fDivisionId').value = u.division_id || ''; },50); },50);
         document.getElementById('formModal').classList.add('active');
     };
 
     window.viewUser = function(id) {
         const u = allUsers.find(x => x.id == id);
         if (!u) return;
+        var deptName = '\u2014', sectName = '\u2014', divName = '\u2014';
+        if(u.department_id) { var dd=(uRefs.departments||[]).find(function(d){return d.department_id==u.department_id;}); if(dd) deptName=dd.name_ar||dd.name_en; }
+        if(u.section_id) { var ss=(uRefs.sections||[]).find(function(s){return s.section_id==u.section_id;}); if(ss) sectName=ss.name_ar||ss.name_en; }
+        if(u.division_id) { var dv=(uRefs.divisions||[]).find(function(d){return d.division_id==u.division_id;}); if(dv) divName=dv.name_ar||dv.name_en; }
         const statusText = parseInt(u.is_active) === 1 ? '<span class="badge badge-active">' + i18n.t('active') + '</span>' : '<span class="badge badge-inactive">' + i18n.t('inactive') + '</span>';
         document.getElementById('viewBody').innerHTML =
             '<div class="user-detail">' +
@@ -405,6 +456,9 @@
             '<div class="detail-item"><div class="detail-label">' + i18n.t('email') + '</div><div class="detail-value">' + escHtml(u.email || '\u2014') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('phone') + '</div><div class="detail-value">' + escHtml(u.phone || '\u2014') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('role') + '</div><div class="detail-value"><span class="badge badge-role">' + escHtml(u.role_name || '\u2014') + '</span></div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('department') + '</div><div class="detail-value">' + escHtml(deptName) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('section') + '</div><div class="detail-value">' + escHtml(sectName) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('division') + '</div><div class="detail-value">' + escHtml(divName) + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('status') + '</div><div class="detail-value">' + statusText + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('gender') + '</div><div class="detail-value">' + (u.gender === 'men' ? i18n.t('male') : u.gender === 'women' ? i18n.t('female') : '\u2014') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('preferred_language') + '</div><div class="detail-value">' + (u.preferred_language === 'ar' ? i18n.t('arabic') : i18n.t('english')) + '</div></div>' +
@@ -424,6 +478,9 @@
             gender: document.getElementById('fGender').value || null,
             preferred_language: document.getElementById('fLang').value || 'ar',
             is_active: parseInt(document.getElementById('fActive').value),
+            department_id: document.getElementById('fDeptId').value ? parseInt(document.getElementById('fDeptId').value) : null,
+            section_id: document.getElementById('fSectionId').value ? parseInt(document.getElementById('fSectionId').value) : null,
+            division_id: document.getElementById('fDivisionId').value ? parseInt(document.getElementById('fDivisionId').value) : null,
         };
 
         const pw = document.getElementById('fPassword').value;
@@ -514,6 +571,9 @@
             'lblEmail': 'email',
             'lblPhone': 'phone',
             'lblRole': 'role',
+            'lblFormDept': 'department',
+            'lblFormSection': 'section',
+            'lblFormDivision': 'division',
             'lblFormGender': 'gender',
             'fOptUnspecified': 'unspecified',
             'fOptMale': 'male',
@@ -542,7 +602,7 @@
     }
 
     translateStatic();
-    loadRoles().then(() => loadUsers());
+    loadRoles().then(() => loadUserRefs()).then(() => loadUsers());
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>

@@ -251,7 +251,7 @@
 (function(){
     const $=id=>document.getElementById(id);
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
-    let allMovements=[], filteredMovements=[], currentPage=1, perPage=15, pendingPhotos=[];
+    let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
     let vehicleMap={}, latestByVehicle={};
 
     /* ---- Load vehicles & references for cross-filters ---- */
