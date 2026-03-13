@@ -292,8 +292,15 @@ const i18n = {
             localStorage.setItem('lang', userLang);
         }
         try {
-            const langDir = document.querySelector('link[rel="stylesheet"][href*="css/theme.css"]');
-            const basePath = langDir ? langDir.getAttribute('href').replace(/css\/theme\.css.*$/, '') : './';
+            // Detect base path from stylesheet or script references
+            const link = document.querySelector('link[rel="stylesheet"][href*="css/theme.css"]');
+            let basePath = './';
+            if (link) {
+                basePath = link.getAttribute('href').replace(/css\/theme\.css.*$/, '');
+            } else {
+                const script = document.querySelector('script[src*="js/app.js"]');
+                if (script) basePath = script.getAttribute('src').replace(/js\/app\.js.*$/, '');
+            }
             const res = await fetch(basePath + 'languages/' + this.lang + '.json');
             if (res.ok) {
                 this.strings = await res.json();
