@@ -292,16 +292,23 @@ const i18n = {
             localStorage.setItem('lang', userLang);
         }
         try {
-            // Detect base path from stylesheet or script references
-            const link = document.querySelector('link[rel="stylesheet"][href*="css/theme.css"]');
-            let basePath = './';
-            if (link) {
-                basePath = link.getAttribute('href').replace(/css\/theme\.css.*$/, '');
+            // Use API.baseUrl (set in DOMContentLoaded or footer.php) for reliable path
+            let langUrl = '';
+            if (typeof API !== 'undefined' && API.baseUrl) {
+                langUrl = API.baseUrl + '/public/languages/' + this.lang + '.json';
             } else {
-                const script = document.querySelector('script[src*="js/app.js"]');
-                if (script) basePath = script.getAttribute('src').replace(/js\/app\.js.*$/, '');
+                // Fallback: detect base path from stylesheet or script references
+                const link = document.querySelector('link[rel="stylesheet"][href*="css/theme.css"]');
+                let basePath = './';
+                if (link) {
+                    basePath = link.getAttribute('href').replace(/css\/theme\.css.*$/, '');
+                } else {
+                    const script = document.querySelector('script[src*="js/app.js"]');
+                    if (script) basePath = script.getAttribute('src').replace(/js\/app\.js.*$/, '');
+                }
+                langUrl = basePath + 'languages/' + this.lang + '.json';
             }
-            const res = await fetch(basePath + 'languages/' + this.lang + '.json');
+            const res = await fetch(langUrl);
             if (res.ok) {
                 this.strings = await res.json();
             }

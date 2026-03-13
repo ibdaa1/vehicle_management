@@ -67,6 +67,13 @@
 .user-detail .detail-label{font-size:.8rem;color:var(--text-secondary);margin-bottom:2px}
 .user-detail .detail-value{font-weight:600;color:var(--text-primary)}
 @media(max-width:480px){.user-detail{grid-template-columns:1fr}}
+/* Toggle switch */
+.toggle-switch{position:relative;display:inline-block;width:42px;height:24px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:24px;transition:.3s}
+.toggle-slider:before{content:"";position:absolute;height:18px;width:18px;bottom:3px;left:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--status-success,#4caf50)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(18px)}
 </style>
 
 <div class="page-header">
@@ -275,9 +282,10 @@
         var pageData = filtered.slice(start, start + uPerPage);
 
         tbody.innerHTML = pageData.map((u, i) => {
-            const statusBadge = parseInt(u.is_active) === 1
-                ? '<span class="badge badge-active">نشط</span>'
-                : '<span class="badge badge-inactive">غير نشط</span>';
+            const isActive = parseInt(u.is_active) === 1;
+            const toggleSwitch = '<label class="toggle-switch" title="' + (isActive ? i18n.t('active') : i18n.t('inactive')) + '">' +
+                '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="UsersPage.toggleActive(' + parseInt(u.id) + ', this.checked)">' +
+                '<span class="toggle-slider"></span></label>';
             const roleBadge = '<span class="badge badge-role">' + (u.role_name || '\u2014') + '</span>';
             const genderLabel = u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
@@ -288,7 +296,7 @@
                 '<td data-label="البريد">' + escHtml(u.email || '\u2014') + '</td>' +
                 '<td data-label="الهاتف">' + escHtml(u.phone || '\u2014') + '</td>' +
                 '<td data-label="الدور">' + roleBadge + '</td>' +
-                '<td data-label="الحالة">' + statusBadge + '</td>' +
+                '<td data-label="الحالة">' + toggleSwitch + '</td>' +
                 '<td data-label="الجنس">' + genderLabel + '</td>' +
                 '<td data-label="تاريخ الإنشاء">' + created + '</td>' +
                 '<td data-label="الإجراءات" class="table-actions">' +
@@ -319,7 +327,21 @@
 
     window.UsersPage = {
         goPage: function(p) { var totalPg = Math.ceil(allUsers.length / uPerPage); if (p < 1) p = 1; if (p > totalPg) p = totalPg; uCurrentPage = p; renderTable(); window.scrollTo({top: 0, behavior: 'smooth'}); },
-        gotoPage: function() { var inp = document.getElementById('uGotoInput'); if (inp) { var p = parseInt(inp.value); if (p && p >= 1) this.goPage(p); } }
+        gotoPage: function() { var inp = document.getElementById('uGotoInput'); if (inp) { var p = parseInt(inp.value); if (p && p >= 1) this.goPage(p); } },
+        toggleActive: async function(id, checked) {
+            try {
+                var u = allUsers.find(function(x){ return x.id == id; });
+                if (!u) return;
+                var newVal = checked ? 1 : 0;
+                await API.put('/users/' + id, { is_active: newVal });
+                u.is_active = newVal;
+                updateStats();
+                Toast.show(i18n.t('success'), 'success');
+            } catch(e) {
+                Toast.show(i18n.t('error') + ': ' + e.message, 'error');
+                renderTable();
+            }
+        }
     };
 
     // Event delegation for table action buttons

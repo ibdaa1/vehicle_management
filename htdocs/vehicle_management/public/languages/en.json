@@ -140,5 +140,7 @@
   "all_vehicle_statuses": "Vehicle Status",
   "return_vehicle": "Return Vehicle",
   "vehicle_returned_success": "Vehicle returned successfully",
-  "all_vehicles": "All Vehicles"
+  "all_vehicles": "All Vehicles",
+  "active": "Active",
+  "inactive": "Inactive"
 }
