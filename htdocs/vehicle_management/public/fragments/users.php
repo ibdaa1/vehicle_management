@@ -77,37 +77,37 @@
 </style>
 
 <div class="page-header">
-    <h2>إدارة المستخدمين</h2>
+    <h2 id="pageTitle">User Management</h2>
 </div>
 
 <!-- Stats -->
 <div class="u-stats">
-    <div class="u-stat"><div class="u-stat-val" id="uTotal">—</div><div class="u-stat-lbl">إجمالي المستخدمين</div></div>
-    <div class="u-stat"><div class="u-stat-val" id="uActive" style="color:var(--status-success)">—</div><div class="u-stat-lbl">نشط</div></div>
-    <div class="u-stat"><div class="u-stat-val" id="uInactive" style="color:var(--status-danger)">—</div><div class="u-stat-lbl">غير نشط</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uTotal">—</div><div class="u-stat-lbl" id="lblTotalUsers">Total Users</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uActive" style="color:var(--status-success)">—</div><div class="u-stat-lbl" id="lblActiveUsers">Active</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uInactive" style="color:var(--status-danger)">—</div><div class="u-stat-lbl" id="lblInactiveUsers">Inactive</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="u-toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="userSearch" placeholder="بحث بالاسم أو البريد أو الرقم الوظيفي...">
+        <input type="text" class="form-control" id="userSearch" placeholder="Search user...">
         <span class="search-icon">🔍</span>
     </div>
     <div class="filters">
-        <select class="form-select" id="filterRole"><option value="">كل الأدوار</option></select>
+        <select class="form-select" id="filterRole"><option value="" id="optAllRoles">All Roles</option></select>
         <select class="form-select" id="filterActive">
-            <option value="">الكل</option>
-            <option value="1">نشط</option>
-            <option value="0">غير نشط</option>
+            <option value="" id="optAllStatus">All</option>
+            <option value="1" id="optActiveStatus">Active</option>
+            <option value="0" id="optInactiveStatus">Inactive</option>
         </select>
         <select class="form-select" id="filterGender">
-            <option value="">كل الجنس</option>
-            <option value="men">ذكر</option>
-            <option value="women">أنثى</option>
+            <option value="" id="optAllGenders">All Genders</option>
+            <option value="men" id="optMaleGender">Male</option>
+            <option value="women" id="optFemaleGender">Female</option>
         </select>
     </div>
     <div class="u-toolbar-end">
-        <button class="btn btn-primary" onclick="openAddUser()">➕ إضافة مستخدم</button>
+        <button class="btn btn-primary" id="btnAddUser" onclick="openAddUser()">➕ Add User</button>
     </div>
 </div>
 
@@ -118,19 +118,19 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>الرقم الوظيفي</th>
-                    <th>اسم المستخدم</th>
-                    <th>البريد</th>
-                    <th>الهاتف</th>
-                    <th>الدور</th>
-                    <th>الحالة</th>
-                    <th>الجنس</th>
-                    <th>تاريخ الإنشاء</th>
-                    <th>إجراءات</th>
+                    <th id="thEmpId">Employee ID</th>
+                    <th id="thUsername">Username</th>
+                    <th id="thEmail">Email</th>
+                    <th id="thPhone">Phone</th>
+                    <th id="thRole">Role</th>
+                    <th id="thStatus">Status</th>
+                    <th id="thGender">Gender</th>
+                    <th id="thCreatedAt">Created At</th>
+                    <th id="thActions">Actions</th>
                 </tr>
             </thead>
             <tbody id="usersBody">
-                <tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>جارٍ التحميل...</p></td></tr>
+                <tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>Loading...</p></td></tr>
             </tbody>
         </table>
     </div>
@@ -141,70 +141,70 @@
 <!-- View User Modal -->
 <div class="modal-overlay" id="viewModal">
     <div class="modal-content">
-        <div class="modal-header"><h3>👤 بيانات المستخدم</h3><button class="modal-close" onclick="closeModal('viewModal')">✕</button></div>
+        <div class="modal-header"><h3 id="viewModalTitle">👤 User Details</h3><button class="modal-close" onclick="closeModal('viewModal')">✕</button></div>
         <div class="modal-body" id="viewBody"></div>
-        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('viewModal')">إغلاق</button></div>
+        <div class="modal-footer"><button class="btn btn-secondary" id="btnCloseView" onclick="closeModal('viewModal')">Close</button></div>
     </div>
 </div>
 
 <!-- Add/Edit User Modal -->
 <div class="modal-overlay" id="formModal">
     <div class="modal-content">
-        <div class="modal-header"><h3 id="formTitle">إضافة مستخدم</h3><button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
+        <div class="modal-header"><h3 id="formTitle">Add User</h3><button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
         <div class="modal-body">
             <form id="userForm" class="form-grid" onsubmit="return false;">
                 <input type="hidden" id="editUserId" value="">
                 <div class="form-group">
-                    <label>الرقم الوظيفي</label>
+                    <label id="lblEmpId">Employee ID</label>
                     <input type="text" id="fEmpId" placeholder="EMP001">
                 </div>
                 <div class="form-group">
-                    <label>اسم المستخدم *</label>
+                    <label id="lblUsername">Username *</label>
                     <input type="text" id="fUsername" required placeholder="username">
                 </div>
                 <div class="form-group">
-                    <label>البريد الإلكتروني</label>
+                    <label id="lblEmail">Email</label>
                     <input type="email" id="fEmail" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label>الهاتف</label>
+                    <label id="lblPhone">Phone</label>
                     <input type="text" id="fPhone" placeholder="05xxxxxxxx">
                 </div>
                 <div class="form-group">
-                    <label id="fPasswordLabel">كلمة المرور *</label>
+                    <label id="fPasswordLabel">Password *</label>
                     <input type="password" id="fPassword" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label>الدور</label>
+                    <label id="lblRole">Role</label>
                     <select id="fRoleId"></select>
                 </div>
                 <div class="form-group">
-                    <label>الجنس</label>
+                    <label id="lblFormGender">Gender</label>
                     <select id="fGender">
-                        <option value="">-- غير محدد --</option>
-                        <option value="men">ذكر</option>
-                        <option value="women">أنثى</option>
+                        <option value="" id="fOptUnspecified">-- Unspecified --</option>
+                        <option value="men" id="fOptMale">Male</option>
+                        <option value="women" id="fOptFemale">Female</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>اللغة المفضلة</label>
+                    <label id="lblLang">Preferred Language</label>
                     <select id="fLang">
-                        <option value="ar">العربية</option>
-                        <option value="en">English</option>
+                        <option value="ar" id="fOptArabic">Arabic</option>
+                        <option value="en" id="fOptEnglish">English</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>الحالة</label>
+                    <label id="lblFormStatus">Status</label>
                     <select id="fActive">
-                        <option value="1">نشط</option>
-                        <option value="0">غير نشط</option>
+                        <option value="1" id="fOptActive">Active</option>
+                        <option value="0" id="fOptInactive">Inactive</option>
                     </select>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeModal('formModal')">إلغاء</button>
-            <button class="btn btn-primary" id="saveBtn" onclick="saveUser()">💾 حفظ</button>
+            <button class="btn btn-secondary" id="btnCancel" onclick="closeModal('formModal')">Cancel</button>
+            <button class="btn btn-primary" id="saveBtn" onclick="saveUser()">💾 Save</button>
         </div>
     </div>
 </div>
@@ -270,7 +270,7 @@
 
         const tbody = document.getElementById('usersBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>لا يوجد مستخدمون</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>' + i18n.t('no_users') + '</p></td></tr>';
             renderUsersPagination(0, 0);
             return;
         }
@@ -287,22 +287,22 @@
                 '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="UsersPage.toggleActive(' + parseInt(u.id) + ', this.checked)">' +
                 '<span class="toggle-slider"></span></label>';
             const roleBadge = '<span class="badge badge-role">' + (u.role_name || '\u2014') + '</span>';
-            const genderLabel = u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014';
+            const genderLabel = u.gender === 'men' ? i18n.t('male') : u.gender === 'women' ? i18n.t('female') : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
                 '<td data-label="#">' + (start + i + 1) + '</td>' +
-                '<td data-label="الرقم الوظيفي">' + escHtml(u.emp_id || '\u2014') + '</td>' +
-                '<td data-label="اسم المستخدم"><strong>' + escHtml(u.username) + '</strong></td>' +
-                '<td data-label="البريد">' + escHtml(u.email || '\u2014') + '</td>' +
-                '<td data-label="الهاتف">' + escHtml(u.phone || '\u2014') + '</td>' +
-                '<td data-label="الدور">' + roleBadge + '</td>' +
-                '<td data-label="الحالة">' + toggleSwitch + '</td>' +
-                '<td data-label="الجنس">' + genderLabel + '</td>' +
-                '<td data-label="تاريخ الإنشاء">' + created + '</td>' +
-                '<td data-label="الإجراءات" class="table-actions">' +
-                    '<button class="btn-icon btn-view" title="عرض" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
-                    '<button class="btn-icon btn-edit" title="تعديل" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' +
-                    '<button class="btn-icon btn-delete" title="حذف" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' +
+                '<td data-label="' + i18n.t('employee_id') + '">' + escHtml(u.emp_id || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('username') + '"><strong>' + escHtml(u.username) + '</strong></td>' +
+                '<td data-label="' + i18n.t('email') + '">' + escHtml(u.email || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('phone') + '">' + escHtml(u.phone || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('role') + '">' + roleBadge + '</td>' +
+                '<td data-label="' + i18n.t('status') + '">' + toggleSwitch + '</td>' +
+                '<td data-label="' + i18n.t('gender') + '">' + genderLabel + '</td>' +
+                '<td data-label="' + i18n.t('created_at') + '">' + created + '</td>' +
+                '<td data-label="' + i18n.t('actions') + '" class="table-actions">' +
+                    '<button class="btn-icon btn-view" title="' + i18n.t('view') + '" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
+                    '<button class="btn-icon btn-edit" title="' + i18n.t('edit') + '" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' +
+                    '<button class="btn-icon btn-delete" title="' + i18n.t('delete') + '" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' +
                 '</td></tr>';
         }).join('');
         renderUsersPagination(totalItems, totalPg);
@@ -366,8 +366,8 @@
 
     window.openAddUser = function() {
         document.getElementById('editUserId').value = '';
-        document.getElementById('formTitle').textContent = '➕ إضافة مستخدم جديد';
-        document.getElementById('fPasswordLabel').textContent = 'كلمة المرور *';
+        document.getElementById('formTitle').textContent = '➕ ' + i18n.t('add_user');
+        document.getElementById('fPasswordLabel').textContent = i18n.t('password') + ' *';
         document.getElementById('fPassword').required = true;
         document.getElementById('userForm').reset();
         document.getElementById('fActive').value = '1';
@@ -379,8 +379,8 @@
         const u = allUsers.find(x => x.id == id);
         if (!u) return;
         document.getElementById('editUserId').value = u.id;
-        document.getElementById('formTitle').textContent = '✏️ تعديل المستخدم: ' + u.username;
-        document.getElementById('fPasswordLabel').textContent = 'كلمة المرور (اتركها فارغة لعدم التغيير)';
+        document.getElementById('formTitle').textContent = '✏️ ' + i18n.t('edit_user') + ': ' + u.username;
+        document.getElementById('fPasswordLabel').textContent = i18n.t('password_optional');
         document.getElementById('fPassword').required = false;
         document.getElementById('fEmpId').value = u.emp_id || '';
         document.getElementById('fUsername').value = u.username || '';
@@ -397,19 +397,18 @@
     window.viewUser = function(id) {
         const u = allUsers.find(x => x.id == id);
         if (!u) return;
-        const statusText = parseInt(u.is_active) === 1 ? '<span class="badge badge-active">نشط</span>' : '<span class="badge badge-inactive">غير نشط</span>';
+        const statusText = parseInt(u.is_active) === 1 ? '<span class="badge badge-active">' + i18n.t('active') + '</span>' : '<span class="badge badge-inactive">' + i18n.t('inactive') + '</span>';
         document.getElementById('viewBody').innerHTML =
             '<div class="user-detail">' +
-            '<div class="detail-item"><div class="detail-label">الرقم الوظيفي</div><div class="detail-value">' + escHtml(u.emp_id || '\u2014') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">اسم المستخدم</div><div class="detail-value">' + escHtml(u.username) + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">البريد</div><div class="detail-value">' + escHtml(u.email || '\u2014') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">الهاتف</div><div class="detail-value">' + escHtml(u.phone || '\u2014') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">الدور</div><div class="detail-value"><span class="badge badge-role">' + escHtml(u.role_name || '\u2014') + '</span></div></div>' +
-            '<div class="detail-item"><div class="detail-label">الحالة</div><div class="detail-value">' + statusText + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">الجنس</div><div class="detail-value">' + (u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">اللغة</div><div class="detail-value">' + (u.preferred_language === 'ar' ? 'العربية' : 'English') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">تاريخ الإنشاء</div><div class="detail-value">' + escHtml(u.created_at || '\u2014') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">آخر تحديث</div><div class="detail-value">' + escHtml(u.updated_at || '\u2014') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('employee_id') + '</div><div class="detail-value">' + escHtml(u.emp_id || '\u2014') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('username') + '</div><div class="detail-value">' + escHtml(u.username) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('email') + '</div><div class="detail-value">' + escHtml(u.email || '\u2014') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('phone') + '</div><div class="detail-value">' + escHtml(u.phone || '\u2014') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('role') + '</div><div class="detail-value"><span class="badge badge-role">' + escHtml(u.role_name || '\u2014') + '</span></div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('status') + '</div><div class="detail-value">' + statusText + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('gender') + '</div><div class="detail-value">' + (u.gender === 'men' ? i18n.t('male') : u.gender === 'women' ? i18n.t('female') : '\u2014') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('preferred_language') + '</div><div class="detail-value">' + (u.preferred_language === 'ar' ? i18n.t('arabic') : i18n.t('english')) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('created_at') + '</div><div class="detail-value">' + escHtml(u.created_at || '\u2014') + '</div></div>' +
             '</div>';
         document.getElementById('viewModal').classList.add('active');
     };
@@ -431,44 +430,44 @@
         if (pw) payload.password = pw;
 
         if (!payload.username) {
-            UI.showToast('اسم المستخدم مطلوب', 'error');
+            UI.showToast(i18n.t('username_required'), 'error');
             return;
         }
         if (!id && !pw) {
-            UI.showToast('كلمة المرور مطلوبة للمستخدم الجديد', 'error');
+            UI.showToast(i18n.t('password_required'), 'error');
             return;
         }
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
-        btn.textContent = 'جارٍ الحفظ...';
+        btn.textContent = i18n.t('saving') + '...';
 
         try {
             if (id) {
                 await API.put('/users/' + id, payload);
-                UI.showToast('تم تحديث المستخدم بنجاح ✓', 'success');
+                UI.showToast(i18n.t('user_updated'), 'success');
             } else {
                 await API.post('/users', payload);
-                UI.showToast('تم إنشاء المستخدم بنجاح ✓', 'success');
+                UI.showToast(i18n.t('user_created'), 'success');
             }
             closeModal('formModal');
             await loadUsers();
         } catch(e) {
-            UI.showToast(e.message || 'فشل في الحفظ', 'error');
+            UI.showToast(e.message || i18n.t('save_failed'), 'error');
         } finally {
             btn.disabled = false;
-            btn.textContent = '💾 حفظ';
+            btn.textContent = '💾 ' + i18n.t('save');
         }
     };
 
     window.deleteUser = async function(id, name) {
-        if (!confirm('هل أنت متأكد من حذف المستخدم: ' + name + '؟')) return;
+        if (!confirm(i18n.t('confirm_delete_user') + ': ' + name + '?')) return;
         try {
             await API.del('/users/' + id);
-            UI.showToast('تم حذف المستخدم بنجاح', 'success');
+            UI.showToast(i18n.t('user_deleted'), 'success');
             await loadUsers();
         } catch(e) {
-            UI.showToast(e.message || 'فشل في الحذف', 'error');
+            UI.showToast(e.message || i18n.t('delete_failed'), 'error');
         }
     };
 
@@ -486,6 +485,63 @@
         m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
     });
 
+    function translateStatic() {
+        var map = {
+            'pageTitle': 'user_management',
+            'lblTotalUsers': 'total_users',
+            'lblActiveUsers': 'active',
+            'lblInactiveUsers': 'inactive',
+            'optAllRoles': 'all_roles',
+            'optAllStatus': 'all',
+            'optActiveStatus': 'active',
+            'optInactiveStatus': 'inactive',
+            'optAllGenders': 'all_genders',
+            'optMaleGender': 'male',
+            'optFemaleGender': 'female',
+            'thEmpId': 'employee_id',
+            'thUsername': 'username',
+            'thEmail': 'email',
+            'thPhone': 'phone',
+            'thRole': 'role',
+            'thStatus': 'status',
+            'thGender': 'gender',
+            'thCreatedAt': 'created_at',
+            'thActions': 'actions',
+            'viewModalTitle': 'user_details',
+            'btnCloseView': 'close',
+            'formTitle': 'add_user',
+            'lblEmpId': 'emp_id',
+            'lblEmail': 'email',
+            'lblPhone': 'phone',
+            'lblRole': 'role',
+            'lblFormGender': 'gender',
+            'fOptUnspecified': 'unspecified',
+            'fOptMale': 'male',
+            'fOptFemale': 'female',
+            'lblLang': 'preferred_language',
+            'fOptArabic': 'arabic',
+            'fOptEnglish': 'english',
+            'lblFormStatus': 'status',
+            'fOptActive': 'active',
+            'fOptInactive': 'inactive',
+            'btnCancel': 'cancel'
+        };
+        for (var id in map) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = i18n.t(map[id]);
+        }
+        // Elements with special formatting
+        document.getElementById('viewModalTitle').textContent = '👤 ' + i18n.t('user_details');
+        document.getElementById('lblUsername').textContent = i18n.t('username') + ' *';
+        document.getElementById('fPasswordLabel').textContent = i18n.t('password') + ' *';
+        document.getElementById('btnAddUser').textContent = '➕ ' + i18n.t('add_user');
+        document.getElementById('saveBtn').textContent = '💾 ' + i18n.t('save');
+        document.getElementById('fOptUnspecified').textContent = '-- ' + i18n.t('unspecified') + ' --';
+        // Placeholder
+        document.getElementById('userSearch').placeholder = i18n.t('search_user');
+    }
+
+    translateStatic();
     loadRoles().then(() => loadUsers());
 })();
 </script>
