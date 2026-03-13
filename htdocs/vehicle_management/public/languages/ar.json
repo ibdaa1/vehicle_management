@@ -135,5 +135,10 @@
   "selectDept": "اختر الإدارة",
   "selectSection": "اختر القسم",
   "selectDivision": "اختر الشعبة",
-  "selectLanguage": "اختر اللغة"
+  "selectLanguage": "اختر اللغة",
+  "vehicle_status": "حالة المركبة",
+  "all_vehicle_statuses": "حالة المركبة",
+  "return_vehicle": "إرجاع المركبة",
+  "vehicle_returned_success": "تم إرجاع المركبة بنجاح",
+  "all_vehicles": "كل المركبات"
 }

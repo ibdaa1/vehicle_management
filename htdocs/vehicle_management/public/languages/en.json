@@ -135,5 +135,10 @@
   "selectDept": "Select department",
   "selectSection": "Select section",
   "selectDivision": "Select division",
-  "selectLanguage": "Select language"
+  "selectLanguage": "Select language",
+  "vehicle_status": "Vehicle Status",
+  "all_vehicle_statuses": "Vehicle Status",
+  "return_vehicle": "Return Vehicle",
+  "vehicle_returned_success": "Vehicle returned successfully",
+  "all_vehicles": "All Vehicles"
 }

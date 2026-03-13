@@ -99,6 +99,26 @@
         <option value="acceptable">مقبولة</option>
         <option value="damaged">متضررة</option>
     </select>
+    <select id="mvFilterVehicleStatus">
+        <option value="">حالة المركبة</option>
+        <option value="operational">عاملة</option>
+        <option value="maintenance">صيانة</option>
+        <option value="out_of_service">خارج الخدمة</option>
+    </select>
+    <select id="mvFilterDept">
+        <option value="">كل الإدارات</option>
+    </select>
+    <select id="mvFilterSection">
+        <option value="">كل الأقسام</option>
+    </select>
+    <select id="mvFilterGender">
+        <option value="">كل الجنس</option>
+        <option value="men">رجال</option>
+        <option value="women">نساء</option>
+    </select>
+    <select id="mvFilterVehicle">
+        <option value="">كل المركبات</option>
+    </select>
     <div class="mv-date-range">
         <label>من:</label>
         <input type="date" id="mvDateFrom" class="form-control">
@@ -232,6 +252,42 @@
     const $=id=>document.getElementById(id);
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=15, pendingPhotos=[];
+    let vehicleMap={}, latestByVehicle={};
+
+    /* ---- Load vehicles & references for cross-filters ---- */
+    async function loadReferences(){
+        try{
+            const [vRes, rRes]=await Promise.all([API.get('/vehicles'), API.get('/references')]);
+            const vehicles=(vRes.data||vRes)||[];
+            vehicles.forEach(v=>{vehicleMap[v.vehicle_code]=v;});
+            // Populate vehicle code dropdown
+            const sel=$('mvFilterVehicle');
+            vehicles.forEach(v=>{
+                const o=document.createElement('option');o.value=v.vehicle_code;o.textContent=v.vehicle_code;sel.appendChild(o);
+            });
+            // Populate department dropdown
+            const refs=rRes.data||rRes;
+            const dSel=$('mvFilterDept');
+            (refs.departments||[]).forEach(d=>{
+                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;dSel.appendChild(o);
+            });
+            // Populate section dropdown
+            const sSel=$('mvFilterSection');
+            (refs.sections||[]).forEach(s=>{
+                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;sSel.appendChild(o);
+            });
+        }catch(e){console.error('loadReferences',e);}
+    }
+
+    /* ---- Build latest movement per vehicle ---- */
+    function buildLatestMap(){
+        latestByVehicle={};
+        // Sort by datetime desc to find latest per vehicle
+        const sorted=[...allMovements].sort((a,b)=>(b.movement_datetime||'').localeCompare(a.movement_datetime||''));
+        sorted.forEach(m=>{
+            if(!latestByVehicle[m.vehicle_code]) latestByVehicle[m.vehicle_code]=m;
+        });
+    }
 
     /* ---- Load ---- */
     async function loadMovements(){
@@ -239,6 +295,7 @@
             const res=await API.get('/movements');
             allMovements=(res.data||res)||[];
         }catch(e){allMovements=[];}
+        buildLatestMap();
         applyFilters();
         updateStats();
     }
@@ -256,6 +313,11 @@
         const c=$('mvFilterCondition').value;
         const dateFrom=$('mvDateFrom').value;
         const dateTo=$('mvDateTo').value;
+        const vStatus=$('mvFilterVehicleStatus').value;
+        const dept=$('mvFilterDept').value;
+        const section=$('mvFilterSection').value;
+        const gender=$('mvFilterGender').value;
+        const vCode=$('mvFilterVehicle').value;
         filteredMovements=allMovements.filter(m=>{
             if(t && m.operation_type!==t) return false;
             if(c && m.vehicle_condition!==c) return false;
@@ -268,6 +330,13 @@
                 const md=(m.movement_datetime||'').substring(0,10);
                 if(md>dateTo) return false;
             }
+            // Cross-reference vehicle data
+            const v=vehicleMap[m.vehicle_code];
+            if(vStatus && v && v.status!==vStatus) return false;
+            if(dept && v && v.department!==dept) return false;
+            if(section && v && v.section!==section) return false;
+            if(gender && v && v.gender!==gender) return false;
+            if(vCode && m.vehicle_code!==vCode) return false;
             return true;
         });
         currentPage=1;
@@ -289,6 +358,9 @@
         let h='';
         page.forEach((m,i)=>{
             const hasLoc=m.latitude&&m.longitude;
+            // Check if vehicle is currently checked out (latest movement is pickup)
+            const latest=latestByVehicle[m.vehicle_code];
+            const isCheckedOut=latest && latest.operation_type==='pickup';
             h+='<tr>';
             h+='<td data-label="#">'+(start+i+1)+'</td>';
             h+='<td data-label="رقم المركبة"><strong>'+esc(m.vehicle_code)+'</strong></td>';
@@ -299,6 +371,9 @@
             h+='<td data-label="الوقود">'+fuelLabel(m.fuel_level)+'</td>';
             h+='<td data-label="الموقع">'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
             h+='<td data-label="الإجراءات" class="mv-actions">';
+            if(isCheckedOut && m.id===latest.id){
+                h+='<button onclick="MvPage.quickReturn(\''+esc(m.vehicle_code)+'\',\''+esc(m.performed_by)+'\')" title="إرجاع المركبة" style="color:#d63031;font-weight:700">↩️</button>';
+            }
             h+='<button onclick="MvPage.view('+m.id+')" title="عرض">👁</button>';
             h+='<button onclick="MvPage.edit('+m.id+')" title="تعديل">✏️</button>';
             h+='<button onclick="MvPage.del('+m.id+')" title="حذف">🗑️</button>';
@@ -396,6 +471,11 @@
     $('mvFilterCondition').addEventListener('change',applyFilters);
     $('mvDateFrom').addEventListener('change',applyFilters);
     $('mvDateTo').addEventListener('change',applyFilters);
+    $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
+    $('mvFilterDept').addEventListener('change',applyFilters);
+    $('mvFilterSection').addEventListener('change',applyFilters);
+    $('mvFilterGender').addEventListener('change',applyFilters);
+    $('mvFilterVehicle').addEventListener('change',applyFilters);
 
     /* ---- Print Report ---- */
     $('mvBtnPrint').addEventListener('click',function(){
@@ -508,12 +588,25 @@
                 UI.showToast('Movement deleted','success');
                 loadMovements();
             }catch(e){UI.showToast(e.message||'Error','error');}
+        },
+        async quickReturn(vehicleCode, performedBy){
+            if(!confirm('إرجاع المركبة '+vehicleCode+'?'))return;
+            try{
+                await API.post('/movements',{
+                    vehicle_code: vehicleCode,
+                    operation_type: 'return',
+                    performed_by: performedBy
+                });
+                UI.showToast('تم إرجاع المركبة بنجاح','success');
+                loadMovements();
+            }catch(e){UI.showToast(e.message||'Error','error');}
         }
     };
 
     $('mvDetailClose').addEventListener('click',()=>$('mvDetailModal').classList.remove('show'));
 
     // Init
+    loadReferences();
     loadMovements();
 })();
 </script>
