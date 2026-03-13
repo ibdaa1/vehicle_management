@@ -486,7 +486,7 @@ ob_start();
             h+='<div class="st-theme-card'+(isActive?' active':'')+'" data-id="'+t.id+'">';
             if(isActive) h+='<div class="st-active-badge" data-label-ar="مفعّل" data-label-en="Active">مفعّل</div>';
             h+='<div class="st-item-actions" style="top:'+( isActive?'36':'8')+'px">';
-            h+='<button class="btn-crud" onclick="SettingsPage.openItemModal(\'theme\',\'edit\','+esc(JSON.stringify(t))+')" title="تعديل">✏️</button>';
+            h+='<button class="btn-crud" onclick="SettingsPage.editTheme('+t.id+')" title="تعديل">✏️</button>';
             if(!isActive) h+='<button class="btn-crud del" onclick="SettingsPage.deleteTheme('+t.id+')" title="حذف">🗑️</button>';
             h+='</div>';
             h+='<div class="st-theme-name">'+esc(t.name)+'</div>';
@@ -792,6 +792,12 @@ ob_start();
         },
 
         /* ---- Theme Operations ---- */
+        editTheme(id){
+            const t=allThemes.find(th=>th.id===id||th.id===String(id));
+            if(!t){UI.showToast('لم يتم العثور على المظهر','error');return;}
+            this.openItemModal('theme','edit',{id:t.id,name:t.name,slug:t.slug,description:t.description,version:t.version,author:t.author});
+        },
+
         async switchTheme(slug){
             try{
                 await API.put('/settings/theme/'+slug,{});
