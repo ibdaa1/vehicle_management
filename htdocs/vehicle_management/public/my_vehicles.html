@@ -153,7 +153,7 @@
             var isAvailable = v.available !== false && v.available !== 0 && v.available !== '0';
             var isOperational = v.status === 'operational';
             var canPickup = isAvailable && isOperational;
-            var isCheckedByMe = !isAvailable && v.last_holder === currentUser.username;
+            var isCheckedByMe = !isAvailable && (v.last_holder || '') === (currentUser.username || '');
 
             var html = '<div class="v-card">';
             html += '<div class="v-card-head">';
@@ -229,7 +229,7 @@
             }
 
             // Show the next-in-turn vehicle (for pickup)
-            if (nextVehicle && (!myCurrentVehicle || nextVehicle.vehicle_code !== myCurrentVehicle.vehicle_code)) {
+            if (nextVehicle && (!myCurrentVehicle || String(nextVehicle.vehicle_code) != String(myCurrentVehicle.vehicle_code))) {
                 cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
             }
 
