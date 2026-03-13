@@ -88,7 +88,8 @@ abstract class BaseModel
      * Insert a new record.
      *
      * @param array $data ['column' => value, ...]
-     * @return int|false Insert ID on success, false on failure
+     * @return int Insert ID on success
+     * @throws \RuntimeException on database failure
      */
     public function create(array $data)
     {
@@ -122,7 +123,12 @@ abstract class BaseModel
         $sql = "INSERT INTO `{$this->table}` (`{$columnList}`) VALUES ({$placeholderList})";
 
         $result = $this->db->execute($sql, $types, $params);
-        return $result->success ? $result->insert_id : false;
+        if (!$result->success) {
+            $err = $result->error ?? 'Unknown database error';
+            error_log("BaseModel::create [{$this->table}] failed: {$err}");
+            throw new \RuntimeException("Insert into {$this->table} failed: {$err}");
+        }
+        return $result->insert_id;
     }
 
     /**
@@ -130,7 +136,8 @@ abstract class BaseModel
      *
      * @param int   $id   Primary key value
      * @param array $data ['column' => value, ...]
-     * @return bool
+     * @return bool true on success
+     * @throws \RuntimeException on database failure
      */
     public function update(int $id, array $data): bool
     {
@@ -163,7 +170,12 @@ abstract class BaseModel
 
         $sql = "UPDATE `{$this->table}` SET " . implode(', ', $setClauses) . " WHERE `{$this->primaryKey}` = ?";
         $result = $this->db->execute($sql, $types, $params);
-        return $result->success;
+        if (!$result->success) {
+            $err = $result->error ?? 'Unknown database error';
+            error_log("BaseModel::update [{$this->table}] id={$id} failed: {$err}");
+            throw new \RuntimeException("Update {$this->table} id={$id} failed: {$err}");
+        }
+        return true;
     }
 
     /**

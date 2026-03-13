@@ -112,10 +112,6 @@ class MovementController extends BaseController
 
         try {
             $recordId = $this->movementModel->create($data);
-            if ($recordId === false) {
-                Response::error('Failed to create movement record', 500);
-                return;
-            }
 
             $this->logActivity($user, 'vehicle_movement', 'vehicle_movements', $recordId,
                 "Created {$data['operation_type']} movement for vehicle {$data['vehicle_code']}");

@@ -105,18 +105,19 @@ class RoleController extends BaseController
             return;
         }
 
-        $roleId = $this->roleModel->create($data);
-        if ($roleId === false) {
-            Response::error('Failed to create role', 500);
-            return;
-        }
+        try {
+            $roleId = $this->roleModel->create($data);
 
-        $role = $this->roleModel->find($roleId);
-        Response::json([
-            'success' => true,
-            'message' => 'Role created successfully',
-            'data'    => $role,
-        ], 201);
+            $role = $this->roleModel->find($roleId);
+            Response::json([
+                'success' => true,
+                'message' => 'Role created successfully',
+                'data'    => $role,
+            ], 201);
+        } catch (\Throwable $e) {
+            error_log("RoleController::store error: " . $e->getMessage());
+            Response::error('Failed to create role: ' . $e->getMessage(), 500);
+        }
         return;
     }
 
@@ -154,18 +155,19 @@ class RoleController extends BaseController
             return;
         }
 
-        $success = $this->roleModel->update($roleId, $data);
-        if (!$success) {
-            Response::error('Failed to update role', 500);
-            return;
-        }
+        try {
+            $this->roleModel->update($roleId, $data);
 
-        $role = $this->roleModel->find($roleId);
-        Response::json([
-            'success' => true,
-            'message' => 'Role updated successfully',
-            'data'    => $role,
-        ]);
+            $role = $this->roleModel->find($roleId);
+            Response::json([
+                'success' => true,
+                'message' => 'Role updated successfully',
+                'data'    => $role,
+            ]);
+        } catch (\Throwable $e) {
+            error_log("RoleController::update error: " . $e->getMessage());
+            Response::error('Failed to update role: ' . $e->getMessage(), 500);
+        }
         return;
     }
 

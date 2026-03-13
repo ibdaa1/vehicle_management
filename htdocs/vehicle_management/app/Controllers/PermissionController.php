@@ -163,18 +163,19 @@ class PermissionController extends BaseController
         // Default is_active to 1
         $data['is_active'] = 1;
 
-        $id = $this->permissionModel->create($data);
-        if ($id === false) {
-            Response::error('Failed to create permission', 500);
-            return;
-        }
+        try {
+            $id = $this->permissionModel->create($data);
 
-        $permission = $this->permissionModel->find($id);
-        Response::json([
-            'success' => true,
-            'message' => 'Permission created successfully',
-            'data'    => $permission,
-        ], 201);
+            $permission = $this->permissionModel->find($id);
+            Response::json([
+                'success' => true,
+                'message' => 'Permission created successfully',
+                'data'    => $permission,
+            ], 201);
+        } catch (\Throwable $e) {
+            error_log("PermissionController::store error: " . $e->getMessage());
+            Response::error('Failed to create permission: ' . $e->getMessage(), 500);
+        }
         return;
     }
 
@@ -215,18 +216,19 @@ class PermissionController extends BaseController
             $data['is_active'] = (int)(bool)$data['is_active'];
         }
 
-        $success = $this->permissionModel->update($id, $data);
-        if (!$success) {
-            Response::error('Failed to update permission', 500);
-            return;
-        }
+        try {
+            $this->permissionModel->update($id, $data);
 
-        $updated = $this->permissionModel->find($id);
-        Response::json([
-            'success' => true,
-            'message' => 'Permission updated successfully',
-            'data'    => $updated,
-        ]);
+            $updated = $this->permissionModel->find($id);
+            Response::json([
+                'success' => true,
+                'message' => 'Permission updated successfully',
+                'data'    => $updated,
+            ]);
+        } catch (\Throwable $e) {
+            error_log("PermissionController::update error: " . $e->getMessage());
+            Response::error('Failed to update permission: ' . $e->getMessage(), 500);
+        }
         return;
     }
 

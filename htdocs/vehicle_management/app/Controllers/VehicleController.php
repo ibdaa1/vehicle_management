@@ -104,14 +104,15 @@ class VehicleController extends BaseController
         }
 
         $data['created_by'] = $user['id'];
-        $id = $this->vehicleModel->create($data);
-        if ($id === false) {
-            Response::error('Failed to create vehicle', 500);
-            return;
-        }
+        try {
+            $id = $this->vehicleModel->create($data);
 
-        $vehicle = $this->vehicleModel->find($id);
-        Response::json(['success' => true, 'message' => 'Vehicle created', 'data' => $vehicle], 201);
+            $vehicle = $this->vehicleModel->find($id);
+            Response::json(['success' => true, 'message' => 'Vehicle created', 'data' => $vehicle], 201);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::store error: " . $e->getMessage());
+            Response::error('Failed to create vehicle: ' . $e->getMessage(), 500);
+        }
         return;
     }
 
@@ -148,14 +149,15 @@ class VehicleController extends BaseController
             return;
         }
 
-        $success = $this->vehicleModel->update($id, $data);
-        if (!$success) {
-            Response::error('Failed to update vehicle', 500);
-            return;
-        }
+        try {
+            $this->vehicleModel->update($id, $data);
 
-        $vehicle = $this->vehicleModel->find($id);
-        Response::json(['success' => true, 'message' => 'Vehicle updated', 'data' => $vehicle]);
+            $vehicle = $this->vehicleModel->find($id);
+            Response::json(['success' => true, 'message' => 'Vehicle updated', 'data' => $vehicle]);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::update error: " . $e->getMessage());
+            Response::error('Failed to update vehicle: ' . $e->getMessage(), 500);
+        }
         return;
     }
 

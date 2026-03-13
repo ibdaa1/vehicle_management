@@ -128,10 +128,6 @@ class ViolationController extends BaseController
 
         try {
             $recordId = $this->violationModel->create($data);
-            if ($recordId === false) {
-                Response::error('Failed to create violation', 500);
-                return;
-            }
 
             $this->logActivity($user, 'vehicle_violation', 'vehicle_violations', $recordId,
                 "Created violation for vehicle {$data['vehicle_code']}");
