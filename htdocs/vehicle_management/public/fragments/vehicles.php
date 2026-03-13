@@ -99,8 +99,8 @@
     </div>
     <div class="toolbar-end">
         <div class="view-toggle">
-            <button class="btn btn-ghost btn-icon active" id="viewCards" title="بطاقات">🗂️</button>
-            <button class="btn btn-ghost btn-icon" id="viewTable" title="جدول">📋</button>
+            <button class="btn btn-ghost btn-icon" id="viewCards" title="بطاقات">🗂️</button>
+            <button class="btn btn-ghost btn-icon active" id="viewTable" title="جدول">📋</button>
         </div>
         <button class="btn btn-outline btn-sm" id="btnPrintReport" title="طباعة التقرير">🖨️ طباعة</button>
         <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
@@ -109,10 +109,10 @@
 </div>
 
 <!-- Card View -->
-<div id="vehicleCards"><div class="loading-placeholder"><div class="spinner spinner-sm"></div><span>جارٍ التحميل...</span></div></div>
+<div id="vehicleCards" style="display:none"></div>
 
 <!-- Table View -->
-<div id="vehicleTable" style="display:none">
+<div id="vehicleTable">
     <div class="table-wrapper table-responsive">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
@@ -253,7 +253,7 @@ $pageScripts = <<<'SCRIPT'
 (function(){
     'use strict';
     const $=id=>document.getElementById(id);
-    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=12, viewMode='cards', refs={departments:[],sections:[],divisions:[]};
+    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=12, viewMode='table', refs={departments:[],sections:[],divisions:[]};
 
     const STATUS={operational:{ar:'تعمل',cls:'badge-success'},maintenance:{ar:'صيانة',cls:'badge-warning'},out_of_service:{ar:'خارج الخدمة',cls:'badge-danger'}};
     function badge(s){const m=STATUS[s]||{ar:'—',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+m.ar+'</span>';}
