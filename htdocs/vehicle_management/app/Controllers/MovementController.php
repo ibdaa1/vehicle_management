@@ -94,6 +94,20 @@ class MovementController extends BaseController
             return;
         }
 
+        // Validate performed_by exists in users table (FK: users.emp_id)
+        $performedBy = trim($data['performed_by']);
+        $data['performed_by'] = $performedBy;
+        $db = Database::getInstance();
+        $existingUser = $db->fetchOne(
+            "SELECT emp_id FROM users WHERE emp_id = ? LIMIT 1",
+            's',
+            [$performedBy]
+        );
+        if (!$existingUser) {
+            Response::error('Invalid performed_by: employee ID "' . $performedBy . '" does not exist', 400);
+            return;
+        }
+
         $data['created_by'] = $user['emp_id'] ?? (string)$user['id'];
         if (empty($data['movement_datetime'])) {
             $data['movement_datetime'] = date('Y-m-d H:i:s');

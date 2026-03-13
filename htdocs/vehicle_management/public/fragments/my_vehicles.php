@@ -76,6 +76,7 @@
     </div>
 </div>
 
+<?php ob_start(); ?>
 <script>
 /* ============================================
    My Vehicles Fragment — Employee Self-Service
@@ -86,8 +87,9 @@
 (function () {
     'use strict';
 
-    var currentUser = null;
-    var hasMovementPermission = false;
+    var currentUser = Auth.getUser();
+    var perms = (currentUser && currentUser.permissions) || [];
+    var hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
 
     /* ---------- Helpers ---------- */
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -288,26 +290,20 @@
     window.MyVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle };
 
     /* ---------- Init ---------- */
-    document.addEventListener('DOMContentLoaded', async function() {
-        /* Wait for app.js to finish auth */
-        await new Promise(function(r) { setTimeout(r, 200); });
-
-        currentUser = (typeof Auth !== 'undefined' && Auth.getUser) ? Auth.getUser() : null;
-        if (!currentUser) {
-            var mainEl = document.querySelector('.app-main');
-            if (mainEl) {
-                mainEl.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔒</div><p>' +
-                    t('يرجى تسجيل الدخول', 'Please log in') + '</p></div>';
-            }
-            return;
+    if (!currentUser) {
+        var container = document.getElementById('mvPrivateGrid');
+        if (container) {
+            container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔒</div><p>' +
+                t('يرجى تسجيل الدخول', 'Please log in') + '</p></div>';
         }
-
-        // Check if user has movements_create permission for pickup/return
-        var perms = currentUser.permissions || [];
-        hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
-
+        var sContainer = document.getElementById('mvShiftGrid');
+        if (sContainer) {
+            sContainer.innerHTML = '';
+        }
+    } else {
         applyFragmentLang();
         loadMyVehicles();
-    });
+    }
 })();
 </script>
+<?php $pageScripts = ob_get_clean(); ?>
