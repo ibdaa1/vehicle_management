@@ -123,6 +123,9 @@
                     <th id="thEmail">Email</th>
                     <th id="thPhone">Phone</th>
                     <th id="thRole">Role</th>
+                    <th id="thDept">Department</th>
+                    <th id="thSection">Section</th>
+                    <th id="thDivision">Division</th>
                     <th id="thStatus">Status</th>
                     <th id="thGender">Gender</th>
                     <th id="thCreatedAt">Created At</th>
@@ -312,7 +315,7 @@
 
         const tbody = document.getElementById('usersBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>' + i18n.t('no_users') + '</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="13" class="empty-state"><div class="empty-icon">👥</div><p>' + i18n.t('no_users') + '</p></td></tr>';
             renderUsersPagination(0, 0);
             return;
         }
@@ -329,6 +332,10 @@
                 '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="UsersPage.toggleActive(' + parseInt(u.id) + ', this.checked)">' +
                 '<span class="toggle-slider"></span></label>';
             const roleBadge = '<span class="badge badge-role">' + (u.role_name || '\u2014') + '</span>';
+            var deptName = '\u2014', sectName = '\u2014', divName = '\u2014';
+            if (u.department_id) { var dd = (uRefs.departments||[]).find(function(d){ return d.department_id == u.department_id; }); if (dd) deptName = dd.name_ar || dd.name_en; }
+            if (u.section_id) { var ss = (uRefs.sections||[]).find(function(s){ return s.section_id == u.section_id; }); if (ss) sectName = ss.name_ar || ss.name_en; }
+            if (u.division_id) { var dv = (uRefs.divisions||[]).find(function(d){ return d.division_id == u.division_id; }); if (dv) divName = dv.name_ar || dv.name_en; }
             const genderLabel = u.gender === 'men' ? i18n.t('male') : u.gender === 'women' ? i18n.t('female') : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
@@ -338,6 +345,9 @@
                 '<td data-label="' + i18n.t('email') + '">' + escHtml(u.email || '\u2014') + '</td>' +
                 '<td data-label="' + i18n.t('phone') + '">' + escHtml(u.phone || '\u2014') + '</td>' +
                 '<td data-label="' + i18n.t('role') + '">' + roleBadge + '</td>' +
+                '<td data-label="' + i18n.t('department') + '">' + escHtml(deptName) + '</td>' +
+                '<td data-label="' + i18n.t('section') + '">' + escHtml(sectName) + '</td>' +
+                '<td data-label="' + i18n.t('division') + '">' + escHtml(divName) + '</td>' +
                 '<td data-label="' + i18n.t('status') + '">' + toggleSwitch + '</td>' +
                 '<td data-label="' + i18n.t('gender') + '">' + genderLabel + '</td>' +
                 '<td data-label="' + i18n.t('created_at') + '">' + created + '</td>' +
@@ -560,6 +570,9 @@
             'thEmail': 'email',
             'thPhone': 'phone',
             'thRole': 'role',
+            'thDept': 'department',
+            'thSection': 'section',
+            'thDivision': 'division',
             'thStatus': 'status',
             'thGender': 'gender',
             'thCreatedAt': 'created_at',
