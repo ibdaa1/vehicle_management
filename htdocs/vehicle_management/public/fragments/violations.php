@@ -59,28 +59,28 @@
 .vl-holder .holder-icon{font-size:1rem}
 </style>
 
-<div class="page-header"><h2>المخالفات</h2></div>
+<div class="page-header"><h2 id="vlPageTitle">Violations</h2></div>
 
 <!-- Stats -->
 <div class="vl-stats">
-    <div class="vl-stat"><div class="num" id="vlStatTotal">0</div><div class="lbl">إجمالي المخالفات</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatAmount">0</div><div class="lbl">إجمالي المبالغ</div><div class="amt">AED</div></div>
-    <div class="vl-stat paid"><div class="num" id="vlStatPaid">0</div><div class="lbl">المدفوعة</div><div class="amt" id="vlStatPaidAmt">0 AED</div></div>
-    <div class="vl-stat unpaid"><div class="num" id="vlStatUnpaid">0</div><div class="lbl">غير المدفوعة</div><div class="amt" id="vlStatUnpaidAmt">0 AED</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatTotal">0</div><div class="lbl" id="vlLblTotal">Total Violations</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatAmount">0</div><div class="lbl" id="vlLblAmount">Total Amount</div><div class="amt">AED</div></div>
+    <div class="vl-stat paid"><div class="num" id="vlStatPaid">0</div><div class="lbl" id="vlLblPaid">Paid Amount</div><div class="amt" id="vlStatPaidAmt">0 AED</div></div>
+    <div class="vl-stat unpaid"><div class="num" id="vlStatUnpaid">0</div><div class="lbl" id="vlLblUnpaid">Unpaid Amount</div><div class="amt" id="vlStatUnpaidAmt">0 AED</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="vl-toolbar">
     <div class="search-box">
         <span class="ico">🔍</span>
-        <input type="text" id="vlSearch" placeholder="بحث برقم المركبة أو المستلم...">
+        <input type="text" id="vlSearch" placeholder="Search violation...">
     </div>
     <select id="vlFilterStatus">
-        <option value="">جميع الحالات</option>
-        <option value="paid">مدفوعة</option>
-        <option value="unpaid">غير مدفوعة</option>
+        <option value="" id="vlOptAll">All Statuses</option>
+        <option value="paid" id="vlOptPaid">Paid</option>
+        <option value="unpaid" id="vlOptUnpaid">Unpaid</option>
     </select>
-    <button class="btn btn-primary btn-sm btn-add" id="vlBtnAdd">➕ إضافة مخالفة</button>
+    <button class="btn btn-primary btn-sm btn-add" id="vlBtnAdd">➕ Add Violation</button>
 </div>
 
 <!-- Table -->
@@ -88,15 +88,15 @@
 <table class="vl-table data-table">
     <thead><tr>
         <th>#</th>
-        <th>رقم المركبة</th>
-        <th>تاريخ المخالفة</th>
-        <th>المبلغ</th>
-        <th>الحالة</th>
-        <th>مستلم المركبة</th>
-        <th>وقت الاستلام</th>
-        <th>أضيف بواسطة</th>
-        <th>ملاحظات</th>
-        <th>إجراءات</th>
+        <th id="vlThVehicle">Vehicle Code</th>
+        <th id="vlThDate">Violation Date</th>
+        <th id="vlThAmount">Amount</th>
+        <th id="vlThStatus">Payment Status</th>
+        <th id="vlThHolder">Violation Holder</th>
+        <th id="vlThReceived">Received At</th>
+        <th id="vlThAddedBy">Added By</th>
+        <th id="vlThNotes">Notes</th>
+        <th id="vlThActions">Actions</th>
     </tr></thead>
     <tbody id="vlTableBody"></tbody>
 </table>
@@ -108,7 +108,7 @@
 <div class="vl-modal-bg" id="vlModal">
     <div class="vl-modal">
         <div class="modal-hd">
-            <h3 id="vlModalTitle">➕ إضافة مخالفة</h3>
+            <h3 id="vlModalTitle">➕ Add Violation</h3>
             <button class="close" id="vlModalClose">&times;</button>
         </div>
         <div class="modal-bd">
@@ -116,36 +116,36 @@
                 <input type="hidden" id="vlId">
                 <div class="row2">
                     <div class="fg">
-                        <label>رقم المركبة *</label>
-                        <input type="text" id="vlVehicleCode" required placeholder="مثال: SHJ-1234">
+                        <label id="vlLblVehicleCode">Vehicle Code *</label>
+                        <input type="text" id="vlVehicleCode" required placeholder="e.g.: SHJ-1234">
                     </div>
                     <div class="fg">
-                        <label>تاريخ ووقت المخالفة *</label>
+                        <label id="vlLblDatetime">Violation Date *</label>
                         <input type="datetime-local" id="vlDatetime" required>
                     </div>
                 </div>
                 <div class="row2">
                     <div class="fg">
-                        <label>قيمة المخالفة (AED) *</label>
+                        <label id="vlLblAmountField">Amount (AED) *</label>
                         <input type="number" id="vlAmount" min="0" step="0.01" required placeholder="0.00">
                     </div>
                     <div class="fg">
-                        <label>حالة الدفع</label>
+                        <label id="vlLblPayStatus">Payment Status</label>
                         <select id="vlStatus">
-                            <option value="unpaid">غير مدفوعة</option>
-                            <option value="paid">مدفوعة</option>
+                            <option value="unpaid" id="vlFormOptUnpaid">Unpaid</option>
+                            <option value="paid" id="vlFormOptPaid">Paid</option>
                         </select>
                     </div>
                 </div>
                 <div class="fg">
-                    <label>ملاحظات</label>
-                    <textarea id="vlNotes" rows="3" placeholder="أضف ملاحظات إضافية هنا..."></textarea>
+                    <label id="vlLblNotes">Notes</label>
+                    <textarea id="vlNotes" rows="3" placeholder="Add additional notes here..."></textarea>
                 </div>
             </form>
         </div>
         <div class="modal-ft">
-            <button class="btn btn-ghost" id="vlCancelBtn">إلغاء</button>
-            <button class="btn btn-primary" id="vlSaveBtn">💾 حفظ</button>
+            <button class="btn btn-ghost" id="vlCancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="vlSaveBtn">💾 Save</button>
         </div>
     </div>
 </div>
@@ -154,7 +154,7 @@
 <div class="vl-modal-bg" id="vlDetailModal">
     <div class="vl-modal">
         <div class="modal-hd">
-            <h3 id="vlDetailTitle">تفاصيل المخالفة</h3>
+            <h3 id="vlDetailTitle">Violation Details</h3>
             <button class="close" id="vlDetailClose">&times;</button>
         </div>
         <div class="modal-bd vl-detail" id="vlDetailBody"></div>
@@ -208,13 +208,13 @@
         const page=filteredViolations.slice(start,start+perPage);
         const tbody=$('vlTableBody');
         if(!page.length){
-            tbody.innerHTML='<tr><td colspan="10"><div class="vl-empty"><div class="ico">⚠️</div><p>لا توجد مخالفات مسجلة بعد</p></div></td></tr>';
+            tbody.innerHTML='<tr><td colspan="10"><div class="vl-empty"><div class="ico">⚠️</div><p>'+i18n.t('no_violations')+'</p></div></td></tr>';
             $('vlPagination').innerHTML='';
             return;
         }
         let h='';
         page.forEach((v,i)=>{
-            const statusLabel=v.violation_status==='paid'?'مدفوعة':'غير مدفوعة';
+            const statusLabel=v.violation_status==='paid'?i18n.t('paid'):i18n.t('unpaid');
             const holderInfo=v.holder_name?'<span class="vl-holder"><span class="holder-icon">👤</span>'+esc(v.holder_name)+'</span>':'—';
             const pickupDt=v.pickup_datetime?esc((v.pickup_datetime||'').replace('T',' ').substring(0,16)):'—';
             h+='<tr>';
@@ -228,9 +228,9 @@
             h+='<td>'+esc(v.issued_by_emp_id||'—')+'</td>';
             h+='<td>'+esc(v.notes||'—')+'</td>';
             h+='<td class="vl-actions">';
-            h+='<button onclick="VlPage.view('+v.id+')" title="عرض">👁</button>';
-            h+='<button onclick="VlPage.edit('+v.id+')" title="تعديل">✏️</button>';
-            h+='<button onclick="VlPage.del('+v.id+')" title="حذف">🗑️</button>';
+            h+='<button onclick="VlPage.view('+v.id+')" title="'+i18n.t('view')+'">👁</button>';
+            h+='<button onclick="VlPage.edit('+v.id+')" title="'+i18n.t('edit_violation')+'">✏️</button>';
+            h+='<button onclick="VlPage.del('+v.id+')" title="'+i18n.t('delete')+'">🗑️</button>';
             h+='</td></tr>';
         });
         tbody.innerHTML=h;
@@ -257,14 +257,14 @@
 
     /* ---- Modal ---- */
     function openModal(title){
-        $('vlModalTitle').textContent=title||'إضافة مخالفة';
+        $('vlModalTitle').textContent=title||i18n.t('add_violation');
         $('vlModal').classList.add('show');
     }
     function closeModal(){$('vlModal').classList.remove('show');}
 
     $('vlBtnAdd').addEventListener('click',()=>{
         $('vlForm').reset();$('vlId').value='';
-        openModal('➕ إضافة مخالفة');
+        openModal('➕ '+i18n.t('add_violation'));
     });
     $('vlModalClose').addEventListener('click',closeModal);
     $('vlCancelBtn').addEventListener('click',closeModal);
@@ -284,19 +284,19 @@
             notes:$('vlNotes').value.trim(),
         };
         if(!data.vehicle_code||!data.violation_datetime||!data.violation_amount){
-            UI.showToast('يرجى ملء الحقول المطلوبة','error');return;
+            UI.showToast(i18n.t('required_fields'),'error');return;
         }
         try{
             if(id){
                 await API.put('/violations/'+id,data);
-                UI.showToast('تم تحديث المخالفة','success');
+                UI.showToast(i18n.t('violation_updated'),'success');
             }else{
                 await API.post('/violations',data);
-                UI.showToast('تم إضافة المخالفة','success');
+                UI.showToast(i18n.t('violation_added'),'success');
             }
             closeModal();
             loadViolations();
-        }catch(e){UI.showToast(e.message||'خطأ','error');}
+        }catch(e){UI.showToast(e.message||i18n.t('error'),'error');}
     });
 
     /* ---- Global methods ---- */
@@ -307,28 +307,28 @@
             try{
                 const res=await API.get('/violations/'+id);
                 const v=res.data||res;
-                const statusLabel=v.violation_status==='paid'?'مدفوعة':'غير مدفوعة';
+                const statusLabel=v.violation_status==='paid'?i18n.t('paid'):i18n.t('unpaid');
                 let h='';
-                h+='<div class="d-row"><span class="d-lbl">رقم المركبة</span><span class="d-val">'+esc(v.vehicle_code)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">تاريخ المخالفة</span><span class="d-val">'+esc(v.violation_datetime)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">المبلغ</span><span class="d-val">'+Number(v.violation_amount||0).toLocaleString()+' AED</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">الحالة</span><span class="d-val"><span class="vl-badge '+v.violation_status+'">'+statusLabel+'</span></span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('vehicle_code')+'</span><span class="d-val">'+esc(v.vehicle_code)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('violation_date')+'</span><span class="d-val">'+esc(v.violation_datetime)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('amount')+'</span><span class="d-val">'+Number(v.violation_amount||0).toLocaleString()+' AED</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('payment_status')+'</span><span class="d-val"><span class="vl-badge '+v.violation_status+'">'+statusLabel+'</span></span></div>';
                 if(v.holder_name){
-                    h+='<div class="d-row"><span class="d-lbl">مستلم المركبة</span><span class="d-val"><span class="vl-holder"><span class="holder-icon">👤</span>'+esc(v.holder_name)+' ('+esc(v.holder_emp_id)+')</span></span></div>';
-                    h+='<div class="d-row"><span class="d-lbl">وقت الاستلام</span><span class="d-val">'+esc(v.pickup_datetime||'—')+'</span></div>';
+                    h+='<div class="d-row"><span class="d-lbl">'+i18n.t('violation_holder')+'</span><span class="d-val"><span class="vl-holder"><span class="holder-icon">👤</span>'+esc(v.holder_name)+' ('+esc(v.holder_emp_id)+')</span></span></div>';
+                    h+='<div class="d-row"><span class="d-lbl">'+i18n.t('received_at')+'</span><span class="d-val">'+esc(v.pickup_datetime||'—')+'</span></div>';
                 }
-                h+='<div class="d-row"><span class="d-lbl">أضيف بواسطة</span><span class="d-val">'+esc(v.issued_by_emp_id||'—')+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">ملاحظات</span><span class="d-val">'+esc(v.notes||'—')+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(v.issued_by_emp_id||'—')+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(v.notes||'—')+'</span></div>';
                 if(v.paid_by_emp_id){
-                    h+='<div class="d-row"><span class="d-lbl">دفع بواسطة</span><span class="d-val">'+esc(v.paid_by_emp_id)+'</span></div>';
+                    h+='<div class="d-row"><span class="d-lbl">'+i18n.t('paid_by')+'</span><span class="d-val">'+esc(v.paid_by_emp_id)+'</span></div>';
                 }
                 if(v.payment_datetime){
-                    h+='<div class="d-row"><span class="d-lbl">تاريخ الدفع</span><span class="d-val">'+esc(v.payment_datetime)+'</span></div>';
+                    h+='<div class="d-row"><span class="d-lbl">'+i18n.t('payment_date')+'</span><span class="d-val">'+esc(v.payment_datetime)+'</span></div>';
                 }
                 $('vlDetailBody').innerHTML=h;
-                $('vlDetailTitle').textContent='المخالفة #'+id;
+                $('vlDetailTitle').textContent=i18n.t('violations')+' #'+id;
                 $('vlDetailModal').classList.add('show');
-            }catch(e){UI.showToast('فشل تحميل التفاصيل','error');}
+            }catch(e){UI.showToast(i18n.t('load_failed'),'error');}
         },
         async edit(id){
             try{
@@ -340,22 +340,55 @@
                 $('vlAmount').value=v.violation_amount||'';
                 $('vlStatus').value=v.violation_status||'unpaid';
                 $('vlNotes').value=v.notes||'';
-                openModal('✏️ تعديل المخالفة #'+id);
-            }catch(e){UI.showToast('فشل التحميل','error');}
+                openModal('✏️ '+i18n.t('edit_violation')+' #'+id);
+            }catch(e){UI.showToast(i18n.t('load_failed'),'error');}
         },
         async del(id){
-            if(!confirm('هل أنت متأكد من حذف هذه المخالفة؟'))return;
+            if(!confirm(i18n.t('confirm_delete')))return;
             try{
                 await API.del('/violations/'+id);
-                UI.showToast('تم حذف المخالفة','success');
+                UI.showToast(i18n.t('violation_deleted'),'success');
                 loadViolations();
-            }catch(e){UI.showToast(e.message||'خطأ','error');}
+            }catch(e){UI.showToast(e.message||i18n.t('error'),'error');}
         }
     };
 
     $('vlDetailClose').addEventListener('click',()=>$('vlDetailModal').classList.remove('show'));
 
+    // Translate static HTML elements
+    function translateStatic(){
+        $('vlPageTitle').textContent=i18n.t('violations');
+        $('vlLblTotal').textContent=i18n.t('total_violations');
+        $('vlLblAmount').textContent=i18n.t('total_amount');
+        $('vlLblPaid').textContent=i18n.t('paid_amount');
+        $('vlLblUnpaid').textContent=i18n.t('unpaid_amount');
+        $('vlSearch').placeholder=i18n.t('search_violation');
+        $('vlOptAll').textContent=i18n.t('all_statuses');
+        $('vlOptPaid').textContent=i18n.t('paid');
+        $('vlOptUnpaid').textContent=i18n.t('unpaid');
+        $('vlBtnAdd').textContent='➕ '+i18n.t('add_violation');
+        $('vlThVehicle').textContent=i18n.t('vehicle_code');
+        $('vlThDate').textContent=i18n.t('violation_date');
+        $('vlThAmount').textContent=i18n.t('amount');
+        $('vlThStatus').textContent=i18n.t('payment_status');
+        $('vlThHolder').textContent=i18n.t('violation_holder');
+        $('vlThReceived').textContent=i18n.t('received_at');
+        $('vlThAddedBy').textContent=i18n.t('added_by');
+        $('vlThNotes').textContent=i18n.t('notes');
+        $('vlThActions').textContent=i18n.t('actions');
+        $('vlLblVehicleCode').textContent=i18n.t('vehicle_code')+' *';
+        $('vlLblDatetime').textContent=i18n.t('violation_date')+' *';
+        $('vlLblAmountField').textContent=i18n.t('amount')+' (AED) *';
+        $('vlLblPayStatus').textContent=i18n.t('payment_status');
+        $('vlFormOptUnpaid').textContent=i18n.t('unpaid');
+        $('vlFormOptPaid').textContent=i18n.t('paid');
+        $('vlLblNotes').textContent=i18n.t('notes');
+        $('vlCancelBtn').textContent=i18n.t('cancel');
+        $('vlSaveBtn').textContent='💾 '+i18n.t('save');
+    }
+
     // Init
+    translateStatic();
     loadViolations();
 })();
 </script>
