@@ -224,9 +224,11 @@
   "my_vehicles": "مركباتي",
   "my_private_vehicles": "مركباتي الخاصة",
   "available_shift_vehicles": "مركبات الورديات المتاحة",
-  "my_vehicles_info": "يمكنك استلام المركبات المتاحة لك من هذه الصفحة",
+  "next_shift_vehicle": "مركبة الوردية التالية (حسب الدور)",
+  "my_vehicles_info": "يتم عرض المركبة الخاصة بك فقط، وللورديات يظهر المركبة التي عليها الدور بحسب الجنس",
   "no_private_vehicles": "لا توجد مركبات خاصة مسجلة لك",
   "no_shift_vehicles": "لا توجد مركبات ورديات متاحة",
+  "all_shift_checked_out": "جميع مركبات الورديات مستلمة حالياً",
   "confirm_pickup": "هل تريد استلام المركبة",
   "pickup_success": "تم استلام المركبة بنجاح",
   "current_holder": "المستلم الحالي"

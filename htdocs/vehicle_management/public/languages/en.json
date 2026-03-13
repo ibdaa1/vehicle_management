@@ -224,9 +224,11 @@
   "my_vehicles": "My Vehicles",
   "my_private_vehicles": "My Private Vehicles",
   "available_shift_vehicles": "Available Shift Vehicles",
-  "my_vehicles_info": "You can pick up vehicles available to you from this page",
+  "next_shift_vehicle": "Next Shift Vehicle (Round-Robin)",
+  "my_vehicles_info": "Shows only your private vehicle, and for shifts shows the next vehicle in turn based on gender",
   "no_private_vehicles": "No private vehicles assigned to you",
   "no_shift_vehicles": "No shift vehicles available",
+  "all_shift_checked_out": "All shift vehicles are currently checked out",
   "confirm_pickup": "Do you want to pick up vehicle",
   "pickup_success": "Vehicle picked up successfully",
   "current_holder": "Current Holder"

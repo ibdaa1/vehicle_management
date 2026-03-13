@@ -63,6 +63,27 @@ class VehicleMovement extends BaseModel
     }
 
     /**
+     * Get the vehicle_code of the last pickup among the given shift vehicle codes.
+     * Used for round-robin rotation to determine which vehicle was last picked up.
+     */
+    public function getLastPickupForShiftVehicles(array $vehicleCodes): ?string
+    {
+        if (empty($vehicleCodes)) return null;
+
+        $placeholders = implode(',', array_fill(0, count($vehicleCodes), '?'));
+        $types = str_repeat('s', count($vehicleCodes));
+
+        $sql = "SELECT vehicle_code FROM `{$this->table}`
+                WHERE vehicle_code IN ({$placeholders})
+                AND operation_type = 'pickup'
+                ORDER BY movement_datetime DESC
+                LIMIT 1";
+
+        $row = $this->db->fetchOne($sql, $types, $vehicleCodes);
+        return $row ? $row['vehicle_code'] : null;
+    }
+
+    /**
      * Get the latest movement for each vehicle code.
      * Returns an associative array keyed by vehicle_code with the latest operation_type.
      */

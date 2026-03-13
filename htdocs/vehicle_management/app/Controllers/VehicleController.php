@@ -190,6 +190,132 @@ class VehicleController extends BaseController
     }
 
     /**
+     * GET /api/v1/vehicles/my-vehicles
+     * Returns vehicles the current employee is allowed to see/pickup:
+     * - Private: only their own vehicle (emp_id + gender match)
+     * - Shift: only the next-in-turn vehicle based on round-robin rotation for their gender
+     */
+    public function myVehicles(Request $request, array $params = []): void
+    {
+        $user = $this->requireAuth($request);
+        if (Response::isSent()) return;
+
+        $userEmpId = $user['emp_id'] ?? '';
+        $userGender = $user['gender'] ?? null;
+        $username = $user['username'] ?? '';
+
+        try {
+            $allVehicles = $this->vehicleModel->allWithRelations([]);
+            $latestMovements = $this->movementModel->getLatestByVehicle();
+
+            foreach ($allVehicles as &$v) {
+                $code = $v['vehicle_code'] ?? '';
+                if (isset($latestMovements[$code])) {
+                    $v['last_operation'] = $latestMovements[$code]['operation_type'];
+                    $v['last_holder'] = $latestMovements[$code]['performed_by'] ?? null;
+                } else {
+                    $v['last_operation'] = null;
+                    $v['last_holder'] = null;
+                }
+                $v['available'] = ($v['last_operation'] === null || $v['last_operation'] === 'return');
+            }
+            unset($v);
+
+            // --- Private vehicles: emp_id match AND gender match ---
+            $privateVehicles = array_values(array_filter($allVehicles, function ($v) use ($userEmpId, $userGender) {
+                return ($v['vehicle_mode'] ?? '') === 'private'
+                    && ($v['emp_id'] ?? '') === $userEmpId
+                    && ($v['status'] ?? '') === 'operational'
+                    && (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
+            }));
+
+            // --- Shift vehicles for this gender ---
+            $shiftVehicles = array_values(array_filter($allVehicles, function ($v) use ($userGender) {
+                return ($v['vehicle_mode'] ?? '') === 'shift'
+                    && ($v['status'] ?? '') === 'operational'
+                    && (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
+            }));
+
+            // Sort by vehicle_code for consistent round-robin order
+            usort($shiftVehicles, function ($a, $b) {
+                return strcmp($a['vehicle_code'] ?? '', $b['vehicle_code'] ?? '');
+            });
+
+            // Determine next-in-turn vehicle using round-robin
+            $nextShiftVehicle = null;
+            $myCheckedOutShift = null;
+
+            if (!empty($shiftVehicles)) {
+                // Check if user currently holds a shift vehicle
+                foreach ($shiftVehicles as $v) {
+                    if (!$v['available'] && ($v['last_holder'] ?? '') === $username) {
+                        $myCheckedOutShift = $v;
+                        break;
+                    }
+                }
+
+                // Find the last pickup for a shift vehicle of this gender (round-robin pivot)
+                $shiftCodes = array_column($shiftVehicles, 'vehicle_code');
+                $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($shiftCodes);
+
+                if ($lastPickupCode) {
+                    // Find position of last picked-up vehicle in sorted list
+                    $lastIdx = -1;
+                    foreach ($shiftVehicles as $i => $v) {
+                        if ($v['vehicle_code'] === $lastPickupCode) {
+                            $lastIdx = $i;
+                            break;
+                        }
+                    }
+
+                    // Find next available vehicle starting after lastIdx (circular)
+                    $count = count($shiftVehicles);
+                    for ($j = 1; $j <= $count; $j++) {
+                        $idx = ($lastIdx + $j) % $count;
+                        if ($shiftVehicles[$idx]['available']) {
+                            $nextShiftVehicle = $shiftVehicles[$idx];
+                            $nextShiftVehicle['turn_order'] = $idx + 1;
+                            break;
+                        }
+                    }
+                }
+
+                // If no next found (all checked out or no history), pick first available
+                if (!$nextShiftVehicle) {
+                    foreach ($shiftVehicles as $i => $v) {
+                        if ($v['available']) {
+                            $nextShiftVehicle = $v;
+                            $nextShiftVehicle['turn_order'] = $i + 1;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            Response::json([
+                'success' => true,
+                'data' => [
+                    'private' => $privateVehicles,
+                    'shift_next' => $nextShiftVehicle,
+                    'shift_my_current' => $myCheckedOutShift,
+                    'shift_total' => count($shiftVehicles),
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::myVehicles error: " . $e->getMessage());
+            Response::json([
+                'success' => true,
+                'data' => [
+                    'private' => [],
+                    'shift_next' => null,
+                    'shift_my_current' => null,
+                    'shift_total' => 0,
+                ],
+            ]);
+        }
+    }
+
+    /**
      * GET /api/v1/vehicles/stats
      */
     public function stats(Request $request, array $params = []): void
