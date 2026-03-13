@@ -249,7 +249,7 @@
     async function loadUserRefs() {
         try {
             const res = await API.get('/references');
-            uRefs = res || {departments:[],sections:[],divisions:[]};
+            uRefs = (res && res.data) || res || {departments:[],sections:[],divisions:[]};
         } catch(e) { uRefs = {departments:[],sections:[],divisions:[]}; }
         var dd = document.getElementById('fDeptId');
         dd.innerHTML = '<option value="">--</option>';
