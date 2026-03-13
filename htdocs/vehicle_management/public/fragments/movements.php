@@ -253,6 +253,11 @@
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
     let vehicleMap={}, latestByVehicle={};
+    var mvUser=Auth.getUser();
+    var mvPerms=(mvUser&&mvUser.permissions)||[];
+    var mvCanCreate=mvPerms.includes('movements_create')||mvPerms.includes('*');
+    var mvCanEdit=mvPerms.includes('movements_edit')||mvPerms.includes('*');
+    var mvCanDelete=mvPerms.includes('movements_edit')||mvPerms.includes('*');
 
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
@@ -371,12 +376,12 @@
             h+='<td data-label="'+i18n.t('fuel_level')+'">'+fuelLabel(m.fuel_level)+'</td>';
             h+='<td data-label="'+i18n.t('location')+'">'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
             h+='<td data-label="'+i18n.t('actions')+'" class="mv-actions">';
-            if(isCheckedOut && m.id===latest.id){
+            if(isCheckedOut && m.id===latest.id && mvCanCreate){
                 h+='<button onclick="MvPage.quickReturn(\''+esc(m.vehicle_code)+'\',\''+esc(m.performed_by)+'\')" title="'+i18n.t('return_vehicle')+'" style="color:#d63031;font-weight:700">↩️</button>';
             }
             h+='<button onclick="MvPage.view('+m.id+')" title="View">👁</button>';
-            h+='<button onclick="MvPage.edit('+m.id+')" title="Edit">✏️</button>';
-            h+='<button onclick="MvPage.del('+m.id+')" title="Delete">🗑️</button>';
+            if(mvCanEdit) h+='<button onclick="MvPage.edit('+m.id+')" title="Edit">✏️</button>';
+            if(mvCanDelete) h+='<button onclick="MvPage.del('+m.id+')" title="Delete">🗑️</button>';
             h+='</td></tr>';
         });
         tbody.innerHTML=h;
@@ -626,6 +631,7 @@
     }
 
     // Init
+    if(!mvCanCreate){var addBtn=$('mvBtnAdd');if(addBtn)addBtn.style.display='none';}
     translateStatic();
     loadReferences();
     loadMovements();

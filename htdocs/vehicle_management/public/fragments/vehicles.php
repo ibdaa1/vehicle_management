@@ -233,6 +233,7 @@ $pageScripts = <<<'SCRIPT'
     'use strict';
     const $=id=>document.getElementById(id);
     let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=100, refs={departments:[],sections:[],divisions:[]};
+    let canCreate=false, canEdit=false, canDelete=false;
 
     const STATUS={operational:{key:'operational',cls:'badge-success'},maintenance:{key:'under_maintenance',cls:'badge-warning'},out_of_service:{key:'out_of_service',cls:'badge-danger'}};
     function badge(s){const m=STATUS[s]||{key:'operational',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+i18n.t(m.key)+'</span>';}
@@ -414,8 +415,8 @@ $pageScripts = <<<'SCRIPT'
             h+='<td>'+(v.manufacture_year||'—')+'</td>';
             h+='<td class="table-actions">';
             h+='<button class="btn btn-ghost btn-icon" onclick="VPage.view('+v.id+')" title="'+i18n.t('view')+'">👁️</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.edit('+v.id+')" title="'+i18n.t('edit')+'">✏️</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.del('+v.id+')" title="'+i18n.t('delete')+'" style="color:var(--status-danger)">🗑️</button>';
+            if(canEdit) h+='<button class="btn btn-ghost btn-icon" onclick="VPage.edit('+v.id+')" title="'+i18n.t('edit')+'">✏️</button>';
+            if(canDelete) h+='<button class="btn btn-ghost btn-icon" onclick="VPage.del('+v.id+')" title="'+i18n.t('delete')+'" style="color:var(--status-danger)">🗑️</button>';
             h+='</td></tr>';
         });
         tb.innerHTML=h;
@@ -618,11 +619,18 @@ $pageScripts = <<<'SCRIPT'
     /* --- Init --- */
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,150));
+        // Load user permissions
+        var user=Auth.getUser();
+        var perms=(user&&user.permissions)||[];
+        canCreate=perms.includes('vehicles_create')||perms.includes('*');
+        canEdit=perms.includes('vehicles_edit')||perms.includes('*');
+        canDelete=perms.includes('vehicles_delete')||perms.includes('*');
+        if(!canCreate) $('btnAddVehicle').style.display='none';
         translateStatic();
         await loadRefs();
         loadStats();
         loadVehicles();
-        if(new URLSearchParams(location.search).get('action')==='add'){
+        if(new URLSearchParams(location.search).get('action')==='add'&&canCreate){
             $('btnAddVehicle').click();
         }
     });

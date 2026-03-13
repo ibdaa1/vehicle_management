@@ -302,9 +302,9 @@
             return;
         }
 
-        // Check if user has manage_movements permission
+        // Check if user has movements_create permission for pickup/return
         var perms = currentUser.permissions || [];
-        hasMovementPermission = perms.includes('manage_movements') || perms.includes('*');
+        hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
 
         applyFragmentLang();
         loadMyVehicles();

@@ -29,7 +29,7 @@ class MovementController extends BaseController
      */
     public function index(Request $request, array $params = []): void
     {
-        $this->requireAuth($request);
+        $this->requirePermission($request, 'movements_read');
         if (Response::isSent()) return;
 
         $filters = $request->only(['vehicle_code', 'operation_type', 'performed_by']);
@@ -49,7 +49,7 @@ class MovementController extends BaseController
      */
     public function show(Request $request, array $params = []): void
     {
-        $this->requireAuth($request);
+        $this->requirePermission($request, 'movements_read');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -79,7 +79,7 @@ class MovementController extends BaseController
      */
     public function store(Request $request, array $params = []): void
     {
-        $user = $this->requireAuth($request);
+        $user = $this->requirePermission($request, 'movements_create');
         if (Response::isSent()) return;
 
         $data = $request->only([
@@ -133,7 +133,7 @@ class MovementController extends BaseController
      */
     public function update(Request $request, array $params = []): void
     {
-        $user = $this->requireAuth($request);
+        $user = $this->requirePermission($request, 'movements_edit');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -197,8 +197,13 @@ class MovementController extends BaseController
      */
     public function destroy(Request $request, array $params = []): void
     {
-        $user = $this->requireAdmin($request);
+        $user = $this->requirePermission($request, 'movements_edit');
         if (Response::isSent()) return;
+        // Additionally require admin role for delete operations
+        if (!in_array((int)$user['role_id'], [1, 2], true)) {
+            Response::error('Forbidden: admin access required', 403);
+            return;
+        }
 
         $id = (int)($params['id'] ?? 0);
         if ($id <= 0) {
@@ -234,7 +239,7 @@ class MovementController extends BaseController
      */
     public function photos(Request $request, array $params = []): void
     {
-        $this->requireAuth($request);
+        $this->requirePermission($request, 'movements_read');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -259,7 +264,7 @@ class MovementController extends BaseController
      */
     public function uploadPhotos(Request $request, array $params = []): void
     {
-        $user = $this->requireAuth($request);
+        $user = $this->requirePermission($request, 'movements_create');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);

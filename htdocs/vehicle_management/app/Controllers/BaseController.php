@@ -127,6 +127,23 @@ abstract class BaseController
     }
 
     /**
+     * Require the user to have a specific permission.
+     * Sends 403 error if the user's role does not have the permission.
+     */
+    protected function requirePermission(Request $request, string $permissionKey): array
+    {
+        $user = $this->requireAuth($request);
+        if (Response::isSent()) {
+            return [];
+        }
+        if (!\App\Middleware\PermissionMiddleware::hasPermission((int)$user['role_id'], $permissionKey)) {
+            Response::error('Forbidden: missing permission ' . $permissionKey, 403);
+            return [];
+        }
+        return $user;
+    }
+
+    /**
      * Validate that required fields are present in input.
      *
      * @param array $data   Input data
