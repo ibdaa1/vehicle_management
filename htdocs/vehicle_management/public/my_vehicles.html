@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="my_vehicles">مركباتي</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <style>
+    /* === Page-Specific Styles === */
+    .section-title{font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .section-card{background:var(--bg-card);border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);padding:20px;margin-bottom:28px}
+    .vehicles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+    .v-card{background:var(--bg-card);border-radius:12px;padding:18px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);transition:transform .25s,box-shadow .25s}
+    .v-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+    .v-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .v-code{font-size:1.1rem;font-weight:700;color:var(--text-primary)}
+    .v-badge{padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600;color:#fff}
+    .v-badge.available{background:var(--status-success)}
+    .v-badge.checked_out{background:var(--status-danger)}
+    .v-badge.operational{background:var(--status-success)}
+    .v-badge.maintenance{background:var(--status-warning);color:#1a1a2e}
+    .v-badge.out_of_service{background:var(--status-danger)}
+    .v-type{font-size:.9rem;color:var(--text-primary);margin-bottom:8px;font-weight:500}
+    .v-detail{font-size:.8rem;color:var(--text-secondary);display:flex;align-items:center;gap:6px;margin-top:4px}
+    .v-detail .icon{font-size:.9rem}
+    .v-mode-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:500;margin-top:8px}
+    .v-mode-badge.private{background:rgba(212,175,55,.15);color:#a88a1e}
+    .v-mode-badge.shift{background:rgba(23,162,184,.12);color:#17a2b8}
+    .v-actions{margin-top:14px;display:flex;gap:8px}
+    .v-actions .btn{padding:8px 16px;font-size:.85rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+    .btn-pickup{background:var(--primary-main);color:var(--text-light)}
+    .btn-pickup:hover{opacity:.9}
+    .btn-pickup:disabled{opacity:.5;cursor:not-allowed}
+    .btn-return{background:var(--status-warning);color:#1a1a2e}
+    .btn-return:hover{opacity:.9}
+    .empty-state{text-align:center;padding:40px 24px;color:var(--text-secondary)}
+    .empty-state .empty-icon{font-size:2.5rem;margin-bottom:10px;opacity:.5}
+    .info-banner{background:rgba(23,162,184,.08);border:1px solid rgba(23,162,184,.2);border-radius:10px;padding:14px 20px;margin-bottom:20px;color:var(--text-primary);font-size:.9rem;display:flex;align-items:center;gap:10px}
+    .info-banner .icon{font-size:1.3rem}
+    .order-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--primary-main);color:var(--text-light);font-weight:700;font-size:.85rem;margin-inline-end:8px}
+    @media(max-width:768px){
+        .vehicles-grid{grid-template-columns:1fr}
+    }
+    </style>
+</head>
+<body>
+    <!-- ========== HEADER ========== -->
+    <header class="app-header">
+        <div class="logo-area">
+            <button class="btn btn-ghost btn-icon" data-action="toggle-sidebar-mobile" style="color:var(--text-light)">&#9776;</button>
+            <img src="logo/logo.png" alt="Logo" id="headerLogo" onerror="this.style.display='none'">
+            <h1 id="headerTitle" data-lang-key="system_name">نظام إدارة المركبات</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-icon" data-action="toggle-theme" title="Toggle theme" id="themeBtn">&#9728;&#65039;</button>
+            <button class="btn btn-ghost btn-sm" data-action="toggle-lang" id="langBtn">EN</button>
+            <div class="user-info"></div>
+            <button class="btn btn-ghost btn-sm" data-action="logout" data-lang-key="logout">خروج</button>
+        </div>
+    </header>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="app-sidebar">
+        <nav class="menu-list"></nav>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="app-main">
+        <div class="page-header">
+            <h2 id="pageTitle" data-lang-key="my_vehicles">مركباتي</h2>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="info-banner" id="infoBanner">
+            <span class="icon">ℹ️</span>
+            <span id="infoBannerText" data-lang-key="my_vehicles_info">يمكنك استلام المركبات المتاحة لك من هذه الصفحة</span>
+        </div>
+
+        <!-- ===== PRIVATE VEHICLES SECTION ===== -->
+        <div class="section-card" id="privateSection">
+            <div class="section-title">
+                <span>🔒</span>
+                <span id="privateSectionTitle" data-lang-key="my_private_vehicles">مركباتي الخاصة</span>
+            </div>
+            <div id="privateVehiclesGrid" class="vehicles-grid">
+                <div class="empty-state"><div class="spinner spinner-sm"></div><span data-lang-key="loading">جاري التحميل...</span></div>
+            </div>
+        </div>
+
+        <!-- ===== SHIFT VEHICLES SECTION ===== -->
+        <div class="section-card" id="shiftSection">
+            <div class="section-title">
+                <span>🔄</span>
+                <span id="shiftSectionTitle" data-lang-key="available_shift_vehicles">مركبات الورديات المتاحة</span>
+            </div>
+            <div id="shiftVehiclesGrid" class="vehicles-grid">
+                <div class="empty-state"><div class="spinner spinner-sm"></div><span data-lang-key="loading">جاري التحميل...</span></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="app-footer">
+        <span id="footerText" data-lang-key="footer_text">نظام إدارة المركبات &copy; 2024</span>
+    </footer>
+
+    <script src="js/app.js"></script>
+    <script>
+    /* ============================================
+       My Vehicles – Employee Self-Service
+       ============================================ */
+    (function () {
+        'use strict';
+
+        let currentUser = null;
+        let allVehicles = [];
+        let latestMovements = {};
+
+        /* ---------- Helpers ---------- */
+        function esc(s) { return UI._escapeHtml(String(s || '')); }
+
+        function statusBadge(status) {
+            const map = {
+                operational:    { cls: 'operational',    ar: 'تعمل',       en: 'Operational' },
+                maintenance:    { cls: 'maintenance',    ar: 'صيانة',       en: 'Maintenance' },
+                out_of_service: { cls: 'out_of_service', ar: 'خارج الخدمة', en: 'Out of Service' }
+            };
+            const s = map[status] || map.operational;
+            var label = i18n.lang === 'ar' ? s.ar : s.en;
+            return '<span class="v-badge ' + s.cls + '">' + esc(label) + '</span>';
+        }
+
+        function availBadge(available) {
+            if (available) {
+                var label = i18n.t('available') || (i18n.lang === 'ar' ? 'متاحة' : 'Available');
+                return '<span class="v-badge available">' + esc(label) + '</span>';
+            }
+            var label2 = i18n.t('checked_out') || (i18n.lang === 'ar' ? 'مستلمة' : 'Checked Out');
+            return '<span class="v-badge checked_out">' + esc(label2) + '</span>';
+        }
+
+        function modeBadge(mode) {
+            if (mode === 'private') {
+                return '<span class="v-mode-badge private">' + (i18n.t('private') || 'خاصة') + '</span>';
+            }
+            return '<span class="v-mode-badge shift">' + (i18n.t('shift') || 'ورديات') + '</span>';
+        }
+
+        /* ---------- Build a vehicle card ---------- */
+        function buildCard(v, index) {
+            var isAvailable = v.available !== false && v.available !== 0 && v.available !== '0';
+            var isOperational = v.status === 'operational';
+            var canPickup = isAvailable && isOperational;
+            var isCheckedByMe = !isAvailable && v.last_holder === currentUser.username;
+
+            var html = '<div class="v-card">';
+            html += '<div class="v-card-head">';
+            if (typeof index === 'number') {
+                html += '<span><span class="order-badge">' + (index + 1) + '</span><span class="v-code">' + esc(v.vehicle_code) + '</span></span>';
+            } else {
+                html += '<span class="v-code">' + esc(v.vehicle_code) + '</span>';
+            }
+            html += availBadge(isAvailable);
+            html += '</div>';
+
+            html += '<div class="v-type">' + esc(v.type || v.vehicle_type || '—') + '</div>';
+            html += statusBadge(v.status);
+            html += modeBadge(v.vehicle_mode);
+
+            html += '<div class="v-detail"><span class="icon">👤</span> ' + (i18n.t('driver') || 'السائق') + ': ' + esc(v.driver_name || '—') + '</div>';
+            if (v.vehicle_category) {
+                html += '<div class="v-detail"><span class="icon">🚗</span> ' + (i18n.t('vehicle_category') || 'الفئة') + ': ' + esc(v.vehicle_category) + '</div>';
+            }
+            if (!isAvailable && v.last_holder) {
+                html += '<div class="v-detail"><span class="icon">📋</span> ' + (i18n.t('current_holder') || 'المستلم الحالي') + ': ' + esc(v.last_holder) + '</div>';
+            }
+
+            html += '<div class="v-actions">';
+            if (canPickup) {
+                html += '<button class="btn btn-pickup" onclick="MyVehicles.pickup(\'' + esc(v.vehicle_code) + '\')">';
+                html += '<span>🚗</span> ' + (i18n.t('pickup') || 'استلام');
+                html += '</button>';
+            } else if (isCheckedByMe) {
+                html += '<button class="btn btn-return" onclick="MyVehicles.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
+                html += '<span>↩️</span> ' + (i18n.t('return') || 'إرجاع');
+                html += '</button>';
+            }
+            html += '</div>';
+
+            html += '</div>';
+            return html;
+        }
+
+        /* ---------- Load all vehicles ---------- */
+        async function loadVehicles() {
+            try {
+                var res = await API.get('/vehicles');
+                allVehicles = (res && res.data) || (Array.isArray(res) ? res : []);
+            } catch (e) {
+                allVehicles = [];
+                console.error('Failed to load vehicles:', e);
+            }
+            renderSections();
+        }
+
+        /* ---------- Render sections ---------- */
+        function renderSections() {
+            if (!currentUser) return;
+
+            var userEmpId = currentUser.emp_id;
+            var userGender = currentUser.gender;
+
+            /* --- Private vehicles: emp_id match AND gender match --- */
+            var privateVehicles = allVehicles.filter(function(v) {
+                return v.vehicle_mode === 'private'
+                    && v.emp_id === userEmpId
+                    && v.status === 'operational'
+                    && (!userGender || !v.gender || v.gender === userGender);
+            });
+
+            /* --- Shift vehicles: gender match, available, ordered --- */
+            var shiftVehicles = allVehicles.filter(function(v) {
+                return v.vehicle_mode === 'shift'
+                    && v.status === 'operational'
+                    && (!userGender || !v.gender || v.gender === userGender);
+            });
+
+            /* Sort shift vehicles: available first, then by vehicle_code for consistent order */
+            shiftVehicles.sort(function(a, b) {
+                var aAvail = a.available !== false && a.available !== 0 && a.available !== '0' ? 0 : 1;
+                var bAvail = b.available !== false && b.available !== 0 && b.available !== '0' ? 0 : 1;
+                if (aAvail !== bAvail) return aAvail - bAvail;
+                return (a.vehicle_code || '').localeCompare(b.vehicle_code || '');
+            });
+
+            renderPrivate(privateVehicles);
+            renderShift(shiftVehicles);
+        }
+
+        function renderPrivate(vehicles) {
+            var container = document.getElementById('privateVehiclesGrid');
+            if (!vehicles.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔒</div><p>' +
+                    (i18n.t('no_private_vehicles') || (i18n.lang === 'ar' ? 'لا توجد مركبات خاصة مسجلة لك' : 'No private vehicles assigned to you')) + '</p></div>';
+                return;
+            }
+            container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
+        }
+
+        function renderShift(vehicles) {
+            var container = document.getElementById('shiftVehiclesGrid');
+            if (!vehicles.length) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">🔄</div><p>' +
+                    (i18n.t('no_shift_vehicles') || (i18n.lang === 'ar' ? 'لا توجد مركبات ورديات متاحة' : 'No shift vehicles available')) + '</p></div>';
+                return;
+            }
+            container.innerHTML = vehicles.map(function(v, i) { return buildCard(v, i); }).join('');
+        }
+
+        /* ---------- Pickup action ---------- */
+        async function pickup(vehicleCode) {
+            var msg = (i18n.t('confirm_pickup') || (i18n.lang === 'ar' ? 'هل تريد استلام المركبة' : 'Do you want to pick up vehicle')) + ' ' + vehicleCode + '?';
+            if (!confirm(msg)) return;
+
+            try {
+                await API.post('/movements', {
+                    vehicle_code: vehicleCode,
+                    operation_type: 'pickup',
+                    performed_by: currentUser.username
+                });
+                UI.showToast(
+                    (i18n.t('pickup_success') || (i18n.lang === 'ar' ? 'تم استلام المركبة بنجاح' : 'Vehicle picked up successfully')),
+                    'success'
+                );
+                loadVehicles();
+            } catch (e) {
+                UI.showToast(e.message || (i18n.t('error') || 'Error'), 'error');
+            }
+        }
+
+        /* ---------- Return action ---------- */
+        async function returnVehicle(vehicleCode) {
+            var msg = (i18n.t('return_vehicle') || (i18n.lang === 'ar' ? 'إرجاع المركبة' : 'Return Vehicle')) + ' ' + vehicleCode + '?';
+            if (!confirm(msg)) return;
+
+            try {
+                await API.post('/movements', {
+                    vehicle_code: vehicleCode,
+                    operation_type: 'return',
+                    performed_by: currentUser.username
+                });
+                UI.showToast(
+                    (i18n.t('vehicle_returned_success') || (i18n.lang === 'ar' ? 'تم إرجاع المركبة بنجاح' : 'Vehicle returned successfully')),
+                    'success'
+                );
+                loadVehicles();
+            } catch (e) {
+                UI.showToast(e.message || (i18n.t('error') || 'Error'), 'error');
+            }
+        }
+
+        /* ---------- Expose globally ---------- */
+        window.MyVehicles = { pickup: pickup, returnVehicle: returnVehicle };
+
+        /* ---------- Mark active in sidebar ---------- */
+        function activateSidebarItem() {
+            document.querySelectorAll('.app-sidebar .menu-item').forEach(function(el) {
+                var href = el.getAttribute('href');
+                if (href && href.includes('my_vehicles.html')) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        /* ---------- Init ---------- */
+        document.addEventListener('DOMContentLoaded', async function() {
+            /* Wait for app.js to finish auth, sidebar, theme, i18n */
+            await new Promise(function(r) { setTimeout(r, 150); });
+            activateSidebarItem();
+
+            currentUser = Auth.getUser();
+            if (!currentUser) {
+                document.querySelector('.app-main').innerHTML =
+                    '<div class="empty-state"><div class="empty-icon">🔒</div><p>' +
+                    (i18n.lang === 'ar' ? 'يرجى تسجيل الدخول' : 'Please log in') + '</p></div>';
+                return;
+            }
+
+            loadVehicles();
+        });
+    })();
+    </script>
+</body>
+</html>

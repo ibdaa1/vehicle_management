@@ -220,5 +220,14 @@
   "to": "إلى:",
   "vehicle_details": "بيانات المركبة",
   "movement_details": "بيانات الحركة",
-  "print_button": "طباعة"
+  "print_button": "طباعة",
+  "my_vehicles": "مركباتي",
+  "my_private_vehicles": "مركباتي الخاصة",
+  "available_shift_vehicles": "مركبات الورديات المتاحة",
+  "my_vehicles_info": "يمكنك استلام المركبات المتاحة لك من هذه الصفحة",
+  "no_private_vehicles": "لا توجد مركبات خاصة مسجلة لك",
+  "no_shift_vehicles": "لا توجد مركبات ورديات متاحة",
+  "confirm_pickup": "هل تريد استلام المركبة",
+  "pickup_success": "تم استلام المركبة بنجاح",
+  "current_holder": "المستلم الحالي"
 }

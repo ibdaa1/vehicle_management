@@ -220,5 +220,14 @@
   "to": "To:",
   "vehicle_details": "Vehicle Details",
   "movement_details": "Movement Details",
-  "print_button": "Print"
+  "print_button": "Print",
+  "my_vehicles": "My Vehicles",
+  "my_private_vehicles": "My Private Vehicles",
+  "available_shift_vehicles": "Available Shift Vehicles",
+  "my_vehicles_info": "You can pick up vehicles available to you from this page",
+  "no_private_vehicles": "No private vehicles assigned to you",
+  "no_shift_vehicles": "No shift vehicles available",
+  "confirm_pickup": "Do you want to pick up vehicle",
+  "pickup_success": "Vehicle picked up successfully",
+  "current_holder": "Current Holder"
 }
