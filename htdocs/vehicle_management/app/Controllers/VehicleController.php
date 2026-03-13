@@ -224,7 +224,8 @@ class VehicleController extends BaseController
             // --- Private vehicles: emp_id match AND gender match ---
             $privateVehicles = array_values(array_filter($allVehicles, function ($v) use ($userEmpId, $userGender) {
                 return ($v['vehicle_mode'] ?? '') === 'private'
-                    && ($v['emp_id'] ?? '') === $userEmpId
+                    && trim($v['emp_id'] ?? '') != '' && trim($userEmpId) != ''
+                    && trim($v['emp_id'] ?? '') == trim($userEmpId)
                     && ($v['status'] ?? '') === 'operational'
                     && (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
             }));

@@ -116,6 +116,7 @@
         'use strict';
 
         let currentUser = null;
+        let hasMovementPermission = false;
 
         /* ---------- Helpers ---------- */
         function esc(s) { return UI._escapeHtml(String(s || '')); }
@@ -178,11 +179,11 @@
             }
 
             html += '<div class="v-actions">';
-            if (canPickup) {
+            if (hasMovementPermission && canPickup) {
                 html += '<button class="btn btn-pickup" onclick="MyVehicles.pickup(\'' + esc(v.vehicle_code) + '\')">';
                 html += '<span>🚗</span> ' + (i18n.t('pickup_operation') || (i18n.lang === 'ar' ? 'استلام' : 'Pickup'));
                 html += '</button>';
-            } else if (isCheckedByMe) {
+            } else if (hasMovementPermission && isCheckedByMe) {
                 html += '<button class="btn btn-return" onclick="MyVehicles.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
                 html += '<span>↩️</span> ' + (i18n.t('return') || 'إرجاع');
                 html += '</button>';
@@ -316,6 +317,10 @@
                     (i18n.lang === 'ar' ? 'يرجى تسجيل الدخول' : 'Please log in') + '</p></div>';
                 return;
             }
+
+            // Check if user has manage_movements permission for pickup/return buttons
+            var perms = currentUser.permissions || [];
+            hasMovementPermission = perms.includes('manage_movements') || perms.includes('*');
 
             loadMyVehicles();
         });

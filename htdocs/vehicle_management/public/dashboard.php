@@ -18,6 +18,7 @@ $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page'])
 // Page metadata per fragment (also serves as allowlist)
 $pageMeta = [
     'dashboard'   => ['title' => 'لوحة التحكم',           'active' => 'dashboard'],
+    'my_vehicles' => ['title' => 'مركباتي',               'active' => 'my_vehicles'],
     'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles'],
     'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles'],
     'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements'],

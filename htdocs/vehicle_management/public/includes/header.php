@@ -86,8 +86,9 @@ if ($theme && !empty($theme['colors'])) {
 
 // Menu items with permissions
 $menuItems = [
-    ['key' => 'dashboard',   'icon' => '📊', 'page' => 'dashboard',           'label_ar' => 'لوحة التحكم',    'label_en' => 'Dashboard',   'perm' => null],
-    ['key' => 'vehicles',    'icon' => '🚗', 'page' => 'vehicles',            'label_ar' => 'المركبات',       'label_en' => 'Vehicles',    'perm' => 'manage_vehicles'],
+    ['key' => 'dashboard',    'icon' => '📊', 'page' => 'dashboard',           'label_ar' => 'لوحة التحكم',    'label_en' => 'Dashboard',      'perm' => null],
+    ['key' => 'my_vehicles',  'icon' => '🚙', 'page' => 'my_vehicles',         'label_ar' => 'مركباتي',        'label_en' => 'My Vehicles',    'perm' => null],
+    ['key' => 'vehicles',     'icon' => '🚗', 'page' => 'vehicles',            'label_ar' => 'المركبات',       'label_en' => 'Vehicles',       'perm' => 'manage_vehicles'],
     ['key' => 'movements',   'icon' => '🔄', 'page' => 'movements',           'label_ar' => 'الحركات',        'label_en' => 'Movements',   'perm' => 'manage_movements'],
     ['key' => 'maintenance', 'icon' => '🔧', 'page' => 'maintenance',         'label_ar' => 'الصيانة',        'label_en' => 'Maintenance', 'perm' => 'manage_maintenance'],
     ['key' => 'violations',  'icon' => '⚠️', 'page' => 'violations',          'label_ar' => 'المخالفات',      'label_en' => 'Violations',  'perm' => 'manage_violations'],
