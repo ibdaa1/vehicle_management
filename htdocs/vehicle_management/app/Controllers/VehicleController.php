@@ -8,14 +8,17 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Vehicle;
+use App\Models\VehicleMovement;
 
 class VehicleController extends BaseController
 {
     private Vehicle $vehicleModel;
+    private VehicleMovement $movementModel;
 
     public function __construct()
     {
         $this->vehicleModel = new Vehicle();
+        $this->movementModel = new VehicleMovement();
     }
 
     /**
@@ -29,6 +32,21 @@ class VehicleController extends BaseController
         $filters = $request->only(['status', 'vehicle_mode', 'department_id', 'gender']);
         try {
             $vehicles = $this->vehicleModel->allWithRelations($filters);
+            // Add availability info based on latest movement
+            $latestMovements = $this->movementModel->getLatestByVehicle();
+            foreach ($vehicles as &$v) {
+                $code = $v['vehicle_code'] ?? '';
+                if (isset($latestMovements[$code])) {
+                    $v['last_operation'] = $latestMovements[$code]['operation_type'];
+                    $v['last_holder'] = $latestMovements[$code]['performed_by'] ?? null;
+                } else {
+                    $v['last_operation'] = null;
+                    $v['last_holder'] = null;
+                }
+                // available = no movement or last was return
+                $v['available'] = ($v['last_operation'] === null || $v['last_operation'] === 'return');
+            }
+            unset($v);
         } catch (\Throwable $e) {
             error_log("VehicleController::index error: " . $e->getMessage());
             $vehicles = [];

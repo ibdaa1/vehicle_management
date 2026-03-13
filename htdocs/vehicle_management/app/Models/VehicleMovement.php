@@ -61,4 +61,25 @@ class VehicleMovement extends BaseModel
             'i', [$limit]
         );
     }
+
+    /**
+     * Get the latest movement for each vehicle code.
+     * Returns an associative array keyed by vehicle_code with the latest operation_type.
+     */
+    public function getLatestByVehicle(): array
+    {
+        $sql = "SELECT m.vehicle_code, m.operation_type, m.performed_by, m.movement_datetime
+                FROM `{$this->table}` m
+                INNER JOIN (
+                    SELECT vehicle_code, MAX(movement_datetime) as max_dt
+                    FROM `{$this->table}`
+                    GROUP BY vehicle_code
+                ) latest ON m.vehicle_code = latest.vehicle_code AND m.movement_datetime = latest.max_dt";
+        $rows = $this->db->fetchAll($sql);
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['vehicle_code']] = $row;
+        }
+        return $result;
+    }
 }

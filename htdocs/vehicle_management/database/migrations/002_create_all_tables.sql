@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `vehicles` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `vehicle_code` VARCHAR(50) NOT NULL,
     `type` VARCHAR(200) NOT NULL,
-    `vehicle_category` ENUM('pickup','bus','sedan','suv','van','truck','other') DEFAULT 'sedan',
+    `vehicle_category` ENUM('pickup','bus','sedan') DEFAULT 'sedan',
     `manufacture_year` INT(11) NOT NULL,
     `emp_id` VARCHAR(50) DEFAULT NULL,
     `driver_name` VARCHAR(150) DEFAULT NULL,

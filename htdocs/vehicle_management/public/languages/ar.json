@@ -88,10 +88,11 @@
   "pickup": "بيك أب",
   "bus": "حافلة",
   "sedan": "سيدان",
-  "suv": "دفع رباعي",
-  "van": "فان",
-  "truck": "شاحنة",
-  "other": "أخرى",
+  "available": "متاحة",
+  "checked_out": "مُستلمة",
+  "available_for_handover": "متاحة للتسليم",
+  "currently_checked_out": "مُستلمة حالياً",
+  "availability": "التوفر",
   "created_at": "تاريخ الإنشاء",
   "updated_at": "تاريخ التحديث"
 }

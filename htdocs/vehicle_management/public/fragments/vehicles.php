@@ -30,6 +30,8 @@
 .v-card-body .v-row .v-val{font-weight:600;color:var(--text-primary)}
 .v-card-actions{display:flex;gap:8px;padding:12px 20px;border-top:1px solid var(--border-default);background:var(--bg-main)}
 .v-card-actions .btn{flex:1}
+.badge-available{background:#d4edda;color:#155724;display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-checked-out{background:#fff3cd;color:#856404;display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
 #vehicleTable{display:none}
 .data-table .table-actions .btn-icon{width:30px;height:30px;font-size:.8rem}
 .view-toggle .btn.active{background:var(--primary-main);color:var(--text-light)}
@@ -108,7 +110,7 @@
     <div class="table-wrapper">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
-                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
+                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>التوفر</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
             </tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -145,10 +147,6 @@
                             <option value="sedan">سيدان</option>
                             <option value="pickup">بيك أب</option>
                             <option value="bus">باص</option>
-                            <option value="suv">دفع رباعي</option>
-                            <option value="van">فان</option>
-                            <option value="truck">شاحنة</option>
-                            <option value="other">أخرى</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -254,7 +252,7 @@ $pageScripts = <<<'SCRIPT'
     const STATUS={operational:{ar:'تعمل',cls:'badge-success'},maintenance:{ar:'صيانة',cls:'badge-warning'},out_of_service:{ar:'خارج الخدمة',cls:'badge-danger'}};
     function badge(s){const m=STATUS[s]||{ar:'—',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+m.ar+'</span>';}
     function esc(s){return UI._escapeHtml(s||'—');}
-    function categoryLabel(c){const m={pickup:'بيك أب',bus:'باص',sedan:'سيدان',suv:'دفع رباعي',van:'فان',truck:'شاحنة',other:'أخرى'};return m[c]||'—';}
+    function categoryLabel(c){const m={pickup:'بيك أب',bus:'باص',sedan:'سيدان'};return m[c]||'—';}
 
     /* --- Load references for dropdowns --- */
     async function loadRefs(){
@@ -331,6 +329,8 @@ $pageScripts = <<<'SCRIPT'
         renderPagination();
     }
 
+    function availBadge(v){return v.available?'<span class="badge-available">متاحة للتسليم ✅</span>':'<span class="badge-checked-out">مُستلمة 🔒</span>';}
+
     function renderCards(list){
         const c=$('vehicleCards');
         if(!list.length){c.innerHTML='<div class="empty-state"><div class="empty-icon">🚗</div><p>لا توجد مركبات</p></div>';return;}
@@ -339,6 +339,7 @@ $pageScripts = <<<'SCRIPT'
             h+='<div class="v-card">';
             h+='<div class="v-card-head"><span class="v-code">'+esc(v.vehicle_code)+'</span>'+badge(v.status)+'</div>';
             h+='<div class="v-card-body">';
+            h+='<div class="v-row"><span class="v-label">التوفر</span><span class="v-val">'+availBadge(v)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">الفئة</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
@@ -358,7 +359,7 @@ $pageScripts = <<<'SCRIPT'
 
     function renderTable(list){
         const tb=$('tableBody');
-        if(!list.length){tb.innerHTML='<tr><td colspan="12" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
+        if(!list.length){tb.innerHTML='<tr><td colspan="13" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
         const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'—';
         const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'—';
         let h='';
@@ -368,6 +369,7 @@ $pageScripts = <<<'SCRIPT'
             h+='<td><strong>'+esc(v.vehicle_code)+'</strong></td>';
             h+='<td>'+esc(v.type)+'</td>';
             h+='<td>'+categoryLabel(v.vehicle_category)+'</td>';
+            h+='<td>'+availBadge(v)+'</td>';
             h+='<td>'+esc(v.driver_name)+'</td>';
             h+='<td>'+esc(v.driver_phone)+'</td>';
             h+='<td>'+esc(v.department_name_ar)+'</td>';
@@ -425,7 +427,7 @@ $pageScripts = <<<'SCRIPT'
         const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'';
         const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'';
         const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
-        const headers=['#','رقم المركبة','النوع','الفئة','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
+        const headers=['#','رقم المركبة','النوع','الفئة','التوفر','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
         let csv='\uFEFF'+headers.join(',')+'\n';
         data.forEach((v,i)=>{
             const row=[
@@ -433,6 +435,7 @@ $pageScripts = <<<'SCRIPT'
                 '"'+(v.vehicle_code||'').replace(/"/g,'""')+'"',
                 '"'+(v.type||'').replace(/"/g,'""')+'"',
                 '"'+categoryLabel(v.vehicle_category)+'"',
+                '"'+(v.available?'متاحة':'مُستلمة')+'"',
                 '"'+(v.driver_name||'').replace(/"/g,'""')+'"',
                 '"'+(v.driver_phone||'').replace(/"/g,'""')+'"',
                 '"'+(v.department_name_ar||'').replace(/"/g,'""')+'"',

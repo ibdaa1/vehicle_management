@@ -292,7 +292,9 @@ const i18n = {
             localStorage.setItem('lang', userLang);
         }
         try {
-            const res = await fetch(API.baseUrl + '/public/languages/' + this.lang + '.json');
+            const langDir = document.querySelector('link[rel="stylesheet"][href*="css/theme.css"]');
+            const basePath = langDir ? langDir.getAttribute('href').replace(/css\/theme\.css.*$/, '') : './';
+            const res = await fetch(basePath + 'languages/' + this.lang + '.json');
             if (res.ok) {
                 this.strings = await res.json();
             }

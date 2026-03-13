@@ -88,10 +88,11 @@
   "pickup": "Pickup",
   "bus": "Bus",
   "sedan": "Sedan",
-  "suv": "SUV",
-  "van": "Van",
-  "truck": "Truck",
-  "other": "Other",
+  "available": "Available",
+  "checked_out": "Checked Out",
+  "available_for_handover": "Available for handover",
+  "currently_checked_out": "Currently checked out",
+  "availability": "Availability",
   "created_at": "Created At",
   "updated_at": "Updated At"
 }
