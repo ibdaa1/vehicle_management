@@ -256,7 +256,7 @@
                 await API.post('/movements', {
                     vehicle_code: vehicleCode,
                     operation_type: 'pickup',
-                    performed_by: currentUser.username
+                    performed_by: currentUser.emp_id
                 });
                 UI.showToast(
                     (i18n.t('pickup_success') || (i18n.lang === 'ar' ? 'تم استلام المركبة بنجاح' : 'Vehicle picked up successfully')),
@@ -277,7 +277,7 @@
                 await API.post('/movements', {
                     vehicle_code: vehicleCode,
                     operation_type: 'return',
-                    performed_by: currentUser.username
+                    performed_by: currentUser.emp_id
                 });
                 UI.showToast(
                     (i18n.t('vehicle_returned_success') || (i18n.lang === 'ar' ? 'تم إرجاع المركبة بنجاح' : 'Vehicle returned successfully')),

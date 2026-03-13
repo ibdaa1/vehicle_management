@@ -175,7 +175,9 @@
                 </div>
                 <div class="fg">
                     <label data-lang-key="performed_by_label">Performed By *</label>
-                    <input type="text" id="mvPerformedBy" required>
+                    <select id="mvPerformedBy" required>
+                        <option value="">-- Select --</option>
+                    </select>
                 </div>
                 <div class="row2">
                     <div class="fg">
@@ -262,7 +264,7 @@
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
         try{
-            const [vRes, rRes]=await Promise.all([API.get('/vehicles'), API.get('/references')]);
+            const [vRes, rRes, uRes]=await Promise.all([API.get('/vehicles'), API.get('/references'), API.get('/users')]);
             const vehicles=(vRes.data||vRes)||[];
             vehicles.forEach(v=>{vehicleMap[v.vehicle_code]=v;});
             // Populate vehicle code dropdown
@@ -281,6 +283,18 @@
             (refs.sections||[]).forEach(s=>{
                 const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;sSel.appendChild(o);
             });
+            // Populate performed_by user dropdown
+            const users=(uRes.data||uRes)||[];
+            const pbSel=$('mvPerformedBy');
+            users.forEach(u=>{
+                if(!u.emp_id) return;
+                const o=document.createElement('option');
+                o.value=u.emp_id;
+                o.textContent=u.emp_id+' - '+(u.username||u.email||'');
+                pbSel.appendChild(o);
+            });
+            // Default to current user's emp_id
+            if(mvUser&&mvUser.emp_id) pbSel.value=mvUser.emp_id;
         }catch(e){console.error('loadReferences',e);}
     }
 
@@ -417,6 +431,7 @@
 
     $('mvBtnAdd').addEventListener('click',()=>{
         $('mvForm').reset();$('mvId').value='';
+        if(mvUser&&mvUser.emp_id) $('mvPerformedBy').value=mvUser.emp_id;
         openModal('➕ Add Movement');
     });
     $('mvModalClose').addEventListener('click',closeModal);
@@ -600,7 +615,7 @@
                 await API.post('/movements',{
                     vehicle_code: vehicleCode,
                     operation_type: 'return',
-                    performed_by: performedBy
+                    performed_by: (mvUser&&mvUser.emp_id)||performedBy
                 });
                 UI.showToast(i18n.t('vehicle_returned_success'),'success');
                 loadMovements();

@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS `vehicle_movements` (
     `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_vehicle_code` (`vehicle_code`),
-    KEY `idx_performed_by` (`performed_by`)
+    KEY `idx_performed_by` (`performed_by`),
+    CONSTRAINT `fk_vehicle_movements_performed_by` FOREIGN KEY (`performed_by`) REFERENCES `users` (`emp_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `vehicle_movement_photos` (

@@ -239,7 +239,7 @@
             await API.post('/movements', {
                 vehicle_code: vehicleCode,
                 operation_type: 'pickup',
-                performed_by: currentUser.username
+                performed_by: currentUser.emp_id
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
                 UI.showToast(t('تم استلام المركبة بنجاح', 'Vehicle picked up successfully'), 'success');
@@ -262,7 +262,7 @@
             await API.post('/movements', {
                 vehicle_code: vehicleCode,
                 operation_type: 'return',
-                performed_by: currentUser.username
+                performed_by: currentUser.emp_id
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
                 UI.showToast(t('تم إرجاع المركبة بنجاح', 'Vehicle returned successfully'), 'success');
