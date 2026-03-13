@@ -66,8 +66,9 @@ INSERT IGNORE INTO `design_settings` (`theme_id`, `setting_key`, `setting_name`,
     (2, 'layout_padding', 'Layout Padding', '24px', 'text', 'layout');
 
 -- -------------------------------------------
--- 2. Vehicle handovers table
+-- 2. Vehicle handovers table (DEPRECATED: replaced by vehicle_movements in migration 004)
 -- -------------------------------------------
+-- NOTE: This table is no longer used. Use vehicle_movements instead.
 CREATE TABLE IF NOT EXISTS `vehicle_handovers` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `vehicle_id` INT(11) NOT NULL,

@@ -102,7 +102,7 @@
     <div class="table-wrapper">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
-                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
+                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
             </tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -130,6 +130,19 @@
                     <div class="form-group">
                         <label class="form-label">نوع المركبة *</label>
                         <input type="text" class="form-control" id="fType" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">فئة المركبة</label>
+                        <select class="form-select" id="fCategory">
+                            <option value="">— اختر —</option>
+                            <option value="sedan">سيدان</option>
+                            <option value="pickup">بيك أب</option>
+                            <option value="bus">باص</option>
+                            <option value="suv">دفع رباعي</option>
+                            <option value="van">فان</option>
+                            <option value="truck">شاحنة</option>
+                            <option value="other">أخرى</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">سنة الصنع *</label>
@@ -234,6 +247,7 @@ $pageScripts = <<<'SCRIPT'
     const STATUS={operational:{ar:'تعمل',cls:'badge-success'},maintenance:{ar:'صيانة',cls:'badge-warning'},out_of_service:{ar:'خارج الخدمة',cls:'badge-danger'}};
     function badge(s){const m=STATUS[s]||{ar:'—',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+m.ar+'</span>';}
     function esc(s){return UI._escapeHtml(s||'—');}
+    function categoryLabel(c){const m={pickup:'بيك أب',bus:'باص',sedan:'سيدان',suv:'دفع رباعي',van:'فان',truck:'شاحنة',other:'أخرى'};return m[c]||'—';}
 
     /* --- Load references for dropdowns --- */
     async function loadRefs(){
@@ -316,6 +330,7 @@ $pageScripts = <<<'SCRIPT'
             h+='<div class="v-card-head"><span class="v-code">'+esc(v.vehicle_code)+'</span>'+badge(v.status)+'</div>';
             h+='<div class="v-card-body">';
             h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
+            h+='<div class="v-row"><span class="v-label">الفئة</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">الهاتف</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
             h+='<div class="v-row"><span class="v-label">الإدارة</span><span class="v-val">'+esc(v.department_name_ar)+'</span></div>';
@@ -333,7 +348,7 @@ $pageScripts = <<<'SCRIPT'
 
     function renderTable(list){
         const tb=$('tableBody');
-        if(!list.length){tb.innerHTML='<tr><td colspan="11" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
+        if(!list.length){tb.innerHTML='<tr><td colspan="12" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
         const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'—';
         const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'—';
         let h='';
@@ -342,6 +357,7 @@ $pageScripts = <<<'SCRIPT'
             h+='<td>'+((currentPage-1)*perPage+i+1)+'</td>';
             h+='<td><strong>'+esc(v.vehicle_code)+'</strong></td>';
             h+='<td>'+esc(v.type)+'</td>';
+            h+='<td>'+categoryLabel(v.vehicle_category)+'</td>';
             h+='<td>'+esc(v.driver_name)+'</td>';
             h+='<td>'+esc(v.driver_phone)+'</td>';
             h+='<td>'+esc(v.department_name_ar)+'</td>';
@@ -389,13 +405,14 @@ $pageScripts = <<<'SCRIPT'
         const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'';
         const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'';
         const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
-        const headers=['#','رقم المركبة','النوع','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
+        const headers=['#','رقم المركبة','النوع','الفئة','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
         let csv='\uFEFF'+headers.join(',')+'\n';
         data.forEach((v,i)=>{
             const row=[
                 i+1,
                 '"'+(v.vehicle_code||'').replace(/"/g,'""')+'"',
                 '"'+(v.type||'').replace(/"/g,'""')+'"',
+                '"'+categoryLabel(v.vehicle_category)+'"',
                 '"'+(v.driver_name||'').replace(/"/g,'""')+'"',
                 '"'+(v.driver_phone||'').replace(/"/g,'""')+'"',
                 '"'+(v.department_name_ar||'').replace(/"/g,'""')+'"',
@@ -429,6 +446,7 @@ $pageScripts = <<<'SCRIPT'
         const data={
             vehicle_code:$('fCode').value.trim(),
             type:$('fType').value.trim(),
+            vehicle_category:$('fCategory').value||null,
             manufacture_year:parseInt($('fYear').value)||null,
             vehicle_mode:$('fMode').value,
             gender:$('fGender').value||null,
@@ -461,6 +479,7 @@ $pageScripts = <<<'SCRIPT'
                 let h='<div class="form-grid">';
                 h+='<div class="v-row"><span class="v-label">رقم المركبة</span><span class="v-val">'+esc(v.vehicle_code)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">الفئة</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">السنة</span><span class="v-val">'+(v.manufacture_year||'—')+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الحالة</span><span class="v-val">'+badge(v.status)+'</span></div>';
                 const genderLabel=v.gender==='men'?'رجال':v.gender==='women'?'نساء':'—';
@@ -470,7 +489,12 @@ $pageScripts = <<<'SCRIPT'
                 h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الهاتف</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">الموظف</span><span class="v-val">'+esc(v.emp_id)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">الإدارة</span><span class="v-val">'+esc(v.department_name_ar)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">القسم</span><span class="v-val">'+esc(v.section_name_ar)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">الشعبة</span><span class="v-val">'+esc(v.division_name_ar)+'</span></div>';
                 h+='<div class="v-row"><span class="v-label">ملاحظات</span><span class="v-val">'+esc(v.notes)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">تاريخ الإنشاء</span><span class="v-val">'+esc(v.created_at)+'</span></div>';
+                if(v.updated_at) h+='<div class="v-row"><span class="v-label">آخر تحديث</span><span class="v-val">'+esc(v.updated_at)+'</span></div>';
                 h+='</div>';
                 $('detailsBody').innerHTML=h;
                 UI.showModal('detailsModal');
@@ -485,6 +509,7 @@ $pageScripts = <<<'SCRIPT'
                 $('fId').value=v.id;
                 $('fCode').value=v.vehicle_code||'';
                 $('fType').value=v.type||'';
+                $('fCategory').value=v.vehicle_category||'';
                 $('fYear').value=v.manufacture_year||'';
                 $('fMode').value=v.vehicle_mode||'';
                 $('fGender').value=v.gender||'';

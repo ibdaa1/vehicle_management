@@ -117,12 +117,16 @@
 
 <!-- Tabs -->
 <div class="st-tabs">
-    <div class="st-tab active" data-tab="themes" data-label-ar="المظاهر والألوان" data-label-en="Themes & Colors">المظاهر والألوان</div>
-    <div class="st-tab" data-tab="design" data-label-ar="تصميم الواجهة" data-label-en="Interface Design">تصميم الواجهة</div>
+    <div class="st-tab active" data-tab="themes" data-label-ar="المظاهر" data-label-en="Themes">المظاهر</div>
+    <div class="st-tab" data-tab="colors" data-label-ar="الألوان" data-label-en="Colors">الألوان</div>
+    <div class="st-tab" data-tab="fonts" data-label-ar="الخطوط" data-label-en="Fonts">الخطوط</div>
+    <div class="st-tab" data-tab="design" data-label-ar="إعدادات التصميم" data-label-en="Design Settings">إعدادات التصميم</div>
+    <div class="st-tab" data-tab="buttons" data-label-ar="أنماط الأزرار" data-label-en="Button Styles">أنماط الأزرار</div>
+    <div class="st-tab" data-tab="cards" data-label-ar="أنماط البطاقات" data-label-en="Card Styles">أنماط البطاقات</div>
     <div class="st-tab" data-tab="system" data-label-ar="إعدادات النظام" data-label-en="System Settings">إعدادات النظام</div>
 </div>
 
-<!-- Panel: Themes & Colors -->
+<!-- Panel 1: Themes -->
 <div class="st-panel active" id="panelThemes">
     <div class="st-section-header">
         <div class="st-section-title" data-label-ar="اختيار المظهر" data-label-en="Theme Selection">اختيار المظهر</div>
@@ -133,34 +137,55 @@
     </div>
 </div>
 
-<!-- Panel: Design -->
+<!-- Panel 2: Colors -->
+<div class="st-panel" id="panelColors">
+    <div class="st-section-header">
+        <div class="st-section-title" data-label-ar="ألوان المظهر النشط" data-label-en="Active Theme Colors">ألوان المظهر النشط</div>
+        <button class="btn-add" onclick="SettingsPage.addColorForActive()" data-label-ar="➕ إضافة لون" data-label-en="➕ Add Color">➕ إضافة لون</button>
+    </div>
+    <div id="colorsTabGrid" class="st-color-grid"><div class="st-empty">جارٍ التحميل...</div></div>
+    <div style="margin-top:16px;text-align:center">
+        <button class="btn-save" onclick="SettingsPage.saveColorsTab()" data-label-ar="💾 حفظ جميع الألوان" data-label-en="💾 Save All Colors">💾 حفظ جميع الألوان</button>
+    </div>
+</div>
+
+<!-- Panel 3: Fonts -->
+<div class="st-panel" id="panelFonts">
+    <div class="st-section-header">
+        <div class="st-section-title" data-label-ar="الخطوط" data-label-en="Fonts">الخطوط</div>
+        <button class="btn-add" onclick="SettingsPage.openItemModal('font','add')" data-label-ar="➕ إضافة" data-label-en="➕ Add">➕ إضافة</button>
+    </div>
+    <div id="fontsGrid" class="st-font-grid"><div class="st-empty">جارٍ التحميل...</div></div>
+</div>
+
+<!-- Panel 4: Design Settings -->
 <div class="st-panel" id="panelDesign">
     <div class="st-section-header">
         <div class="st-section-title" data-label-ar="إعدادات التصميم" data-label-en="Design Settings">إعدادات التصميم</div>
         <button class="btn-add" onclick="SettingsPage.openItemModal('design','add')" data-label-ar="➕ إضافة" data-label-en="➕ Add">➕ إضافة</button>
     </div>
     <div id="designGrid" class="st-design-grid"><div class="st-empty">جارٍ التحميل...</div></div>
+</div>
 
-    <div class="st-section-header" style="margin-top:24px">
-        <div class="st-section-title" data-label-ar="الخطوط" data-label-en="Fonts">الخطوط</div>
-        <button class="btn-add" onclick="SettingsPage.openItemModal('font','add')" data-label-ar="➕ إضافة" data-label-en="➕ Add">➕ إضافة</button>
-    </div>
-    <div id="fontsGrid" class="st-font-grid"><div class="st-empty">جارٍ التحميل...</div></div>
-
-    <div class="st-section-header" style="margin-top:24px">
+<!-- Panel 5: Button Styles -->
+<div class="st-panel" id="panelButtons">
+    <div class="st-section-header">
         <div class="st-section-title" data-label-ar="أنماط الأزرار" data-label-en="Button Styles">أنماط الأزرار</div>
         <button class="btn-add" onclick="SettingsPage.openItemModal('button','add')" data-label-ar="➕ إضافة" data-label-en="➕ Add">➕ إضافة</button>
     </div>
     <div id="buttonsGrid" class="st-btn-grid"><div class="st-empty">جارٍ التحميل...</div></div>
+</div>
 
-    <div class="st-section-header" style="margin-top:24px">
+<!-- Panel 6: Card Styles -->
+<div class="st-panel" id="panelCards">
+    <div class="st-section-header">
         <div class="st-section-title" data-label-ar="أنماط البطاقات" data-label-en="Card Styles">أنماط البطاقات</div>
         <button class="btn-add" onclick="SettingsPage.openItemModal('card','add')" data-label-ar="➕ إضافة" data-label-en="➕ Add">➕ إضافة</button>
     </div>
     <div id="cardsGrid" class="st-design-grid"><div class="st-empty">جارٍ التحميل...</div></div>
 </div>
 
-<!-- Panel: System Settings -->
+<!-- Panel 7: System Settings -->
 <div class="st-panel" id="panelSystem">
     <div class="st-section-header">
         <div class="st-section-title" data-label-ar="إعدادات النظام" data-label-en="System Settings">إعدادات النظام</div>
@@ -256,6 +281,8 @@ ob_start();
        GENERIC ITEM MODAL — single modal for all types
        ================================================================ */
     function buildField(name, label, type, value, required, opts){
+        /* If required is an array, caller passed options without required flag */
+        if(Array.isArray(required)){opts=required;required=false;}
         let h='<div class="fg">';
         h+='<label>'+esc(label)+(required?' <span class="req">*</span>':'')+'</label>';
         if(type==='select'&&opts){
@@ -491,6 +518,32 @@ ob_start();
     }
 
     /* ================================================================
+       LOAD COLORS TAB (standalone panel for active theme colors)
+       ================================================================ */
+    async function loadColorsTab(){
+        const activeTheme=allThemes.find(t=>t.is_active);
+        const grid=$('colorsTabGrid');
+        if(!activeTheme){grid.innerHTML='<div class="st-empty">لا يوجد مظهر نشط</div>';return;}
+        grid.innerHTML='<div class="st-empty">جارٍ التحميل...</div>';
+        try{
+            const res=await API.get('/settings/themes/'+activeTheme.id);
+            const colors=res.data?.colors||[];
+            if(!colors.length){grid.innerHTML='<div class="st-empty">لا توجد ألوان</div>';return;}
+            let h='';
+            colors.forEach(c=>{
+                h+='<div class="st-color-item" data-id="'+c.id+'">';
+                h+='<input type="color" value="'+esc(c.color_value)+'" onchange="this.closest(\'.st-color-item\').querySelector(\'.st-color-hex\').textContent=this.value">';
+                h+='<label><span class="st-color-name">'+esc(c.setting_name)+'</span><span class="st-color-hex">'+esc(c.color_value)+'</span></label>';
+                h+='<div style="display:flex;gap:4px;flex-shrink:0">';
+                h+='<button class="btn-crud" onclick="SettingsPage.openItemModal(\'color\',\'edit\','+esc(JSON.stringify(c))+','+activeTheme.id+')" title="تعديل">✏️</button>';
+                h+='<button class="btn-crud del" onclick="SettingsPage.deleteColor('+c.id+','+activeTheme.id+')" title="حذف">🗑️</button>';
+                h+='</div></div>';
+            });
+            grid.innerHTML=h;
+        }catch(e){grid.innerHTML='<div class="st-empty" style="color:var(--status-danger)">تعذر تحميل الألوان</div>';}
+    }
+
+    /* ================================================================
        LOAD ACTIVE THEME DESIGN DETAILS
        ================================================================ */
     async function loadActiveDesign(){
@@ -685,6 +738,7 @@ ob_start();
                     if($('colorModal').classList.contains('active')){
                         this.editColors(themeId);
                     }
+                    loadColorsTab();
                     loadThemes();
                 }else if(type==='font'){
                     if(mode==='add'){
@@ -807,12 +861,37 @@ ob_start();
             }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
         },
 
+        /* Colors Tab helpers */
+        addColorForActive(){
+            const active=allThemes.find(t=>t.is_active);
+            if(!active){UI.showToast('لا يوجد مظهر نشط','error');return;}
+            this.openItemModal('color','add',null,active.id);
+        },
+
+        async saveColorsTab(){
+            const active=allThemes.find(t=>t.is_active);
+            if(!active) return;
+            const items=$('colorsTabGrid').querySelectorAll('.st-color-item');
+            const colors=[];
+            items.forEach(item=>{
+                const id=parseInt(item.dataset.id);
+                const val=item.querySelector('input[type=color]').value;
+                if(id) colors.push({id,color_value:val});
+            });
+            try{
+                await API.put('/settings/themes/'+active.id+'/colors',{colors});
+                UI.showToast('تم حفظ الألوان بنجاح','success');
+                setTimeout(()=>location.reload(),600);
+            }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
+        },
+
         async deleteColor(colorId, themeId){
             if(!confirm('هل أنت متأكد من الحذف؟')) return;
             try{
                 await API.del('/settings/colors/'+colorId);
                 UI.showToast('تم حذف اللون بنجاح','success');
                 this.editColors(themeId);
+                loadColorsTab();
                 loadThemes();
             }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
         },
@@ -928,6 +1007,7 @@ ob_start();
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,200));
         await loadThemes();
+        loadColorsTab();
         loadActiveDesign();
         loadSettings();
     });

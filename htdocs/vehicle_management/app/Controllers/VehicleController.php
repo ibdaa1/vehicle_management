@@ -74,7 +74,7 @@ class VehicleController extends BaseController
         if (Response::isSent()) return;
 
         $data = $request->only([
-            'vehicle_code', 'type', 'manufacture_year', 'emp_id',
+            'vehicle_code', 'type', 'vehicle_category', 'manufacture_year', 'emp_id',
             'driver_name', 'driver_phone', 'status', 'department_id',
             'section_id', 'division_id', 'vehicle_mode', 'gender', 'notes',
         ]);
@@ -118,7 +118,7 @@ class VehicleController extends BaseController
         }
 
         $data = $request->only([
-            'vehicle_code', 'type', 'manufacture_year', 'emp_id',
+            'vehicle_code', 'type', 'vehicle_category', 'manufacture_year', 'emp_id',
             'driver_name', 'driver_phone', 'status', 'department_id',
             'section_id', 'division_id', 'vehicle_mode', 'gender', 'notes',
         ]);
