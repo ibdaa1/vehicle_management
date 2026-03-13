@@ -1,6 +1,6 @@
 <?php
 /**
- * Vehicles Fragment — Card + Table view, CRUD, Handover/Receive
+ * Vehicles Fragment — Table view, CRUD, Handover/Receive
  * Loaded inside dashboard.php shell.
  */
 ?>
@@ -18,23 +18,9 @@
 .v-stat{background:var(--bg-card);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);text-align:center}
 .v-stat .v-stat-val{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
 .v-stat .v-stat-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
-.v-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
-.v-card{background:var(--bg-card);border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);overflow:hidden;transition:transform .3s,box-shadow .3s}
-.v-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
-.v-card-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,var(--primary-dark),var(--primary-main));color:var(--text-light)}
-.v-card-head .v-code{font-size:1.1rem;font-weight:700}
-.v-card-body{padding:16px 20px}
-.v-card-body .v-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border-default);font-size:.875rem}
-.v-card-body .v-row:last-child{border-bottom:none}
-.v-card-body .v-row .v-label{color:var(--text-secondary)}
-.v-card-body .v-row .v-val{font-weight:600;color:var(--text-primary)}
-.v-card-actions{display:flex;gap:8px;padding:12px 20px;border-top:1px solid var(--border-default);background:var(--bg-main)}
-.v-card-actions .btn{flex:1}
 .badge-available{background:#d4edda;color:#155724;display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
 .badge-checked-out{background:#fff3cd;color:#856404;display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
-#vehicleTable{display:none}
 .data-table .table-actions .btn-icon{width:30px;height:30px;font-size:.8rem}
-.view-toggle .btn.active{background:var(--primary-main);color:var(--text-light)}
 .pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:24px;flex-wrap:wrap}
 .pagination button{min-width:36px;height:36px;border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-primary);border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .3s}
 .pagination button:hover:not(:disabled){background:var(--primary-main);color:var(--text-light)}
@@ -51,72 +37,65 @@
 .form-grid .full-width{grid-column:1/-1}
 .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
-@media(max-width:768px){.toolbar{flex-direction:column;align-items:stretch}.toolbar-end{margin-inline-start:0;justify-content:space-between}.toolbar .search-box{max-width:100%}.v-cards{grid-template-columns:1fr}}
+@media(max-width:768px){.toolbar{flex-direction:column;align-items:stretch}.toolbar-end{margin-inline-start:0;justify-content:space-between}.toolbar .search-box{max-width:100%}}
 </style>
 
 <div class="page-header">
-    <h2>إدارة المركبات</h2>
+    <h2 id="pageTitle">Vehicle Management</h2>
 </div>
 
 <!-- Stats -->
 <div class="v-stats">
-    <div class="v-stat"><div class="v-stat-val" id="sTotal">—</div><div class="v-stat-lbl">الإجمالي</div></div>
-    <div class="v-stat"><div class="v-stat-val" id="sOp" style="color:var(--status-success)">—</div><div class="v-stat-lbl">تعمل</div></div>
-    <div class="v-stat"><div class="v-stat-val" id="sMaint" style="color:var(--status-warning)">—</div><div class="v-stat-lbl">صيانة</div></div>
-    <div class="v-stat"><div class="v-stat-val" id="sOos" style="color:var(--status-danger)">—</div><div class="v-stat-lbl">خارج الخدمة</div></div>
+    <div class="v-stat"><div class="v-stat-val" id="sTotal">—</div><div class="v-stat-lbl" id="lblTotal">Total</div></div>
+    <div class="v-stat"><div class="v-stat-val" id="sOp" style="color:var(--status-success)">—</div><div class="v-stat-lbl" id="lblOp">Operational</div></div>
+    <div class="v-stat"><div class="v-stat-val" id="sMaint" style="color:var(--status-warning)">—</div><div class="v-stat-lbl" id="lblMaint">Maintenance</div></div>
+    <div class="v-stat"><div class="v-stat-val" id="sOos" style="color:var(--status-danger)">—</div><div class="v-stat-lbl" id="lblOos">Out of Service</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="searchInput" placeholder="بحث برقم المركبة أو اسم السائق...">
+        <input type="text" class="form-control" id="searchInput" placeholder="Search vehicle...">
         <span class="search-icon">🔍</span>
     </div>
     <div class="filters">
         <select class="form-select" id="filterStatus">
-            <option value="">كل الحالات</option>
-            <option value="operational">تعمل</option>
-            <option value="maintenance">صيانة</option>
-            <option value="out_of_service">خارج الخدمة</option>
+            <option value="">All Statuses</option>
+            <option value="operational">Operational</option>
+            <option value="maintenance">Maintenance</option>
+            <option value="out_of_service">Out of Service</option>
         </select>
         <select class="form-select" id="filterAvailability">
-            <option value="">كل التوفر</option>
-            <option value="available">متاحة للتسليم</option>
-            <option value="checked_out">مُستلمة</option>
+            <option value="">All Availability</option>
+            <option value="available">Available Only</option>
+            <option value="checked_out">Checked Out Only</option>
         </select>
-        <select class="form-select" id="filterDept"><option value="">كل الإدارات</option></select>
-        <select class="form-select" id="filterSection"><option value="">كل الأقسام</option></select>
+        <select class="form-select" id="filterDept"><option value="">All Departments</option></select>
+        <select class="form-select" id="filterSection"><option value="">All Sections</option></select>
         <select class="form-select" id="filterMode">
-            <option value="">كل الأنماط</option>
-            <option value="private">خاصة</option>
-            <option value="shift">وردية</option>
+            <option value="">All Modes</option>
+            <option value="private">Private</option>
+            <option value="shift">Shift</option>
         </select>
         <select class="form-select" id="filterGender">
-            <option value="">كل الجنس</option>
-            <option value="men">رجال</option>
-            <option value="women">نساء</option>
+            <option value="">All Genders</option>
+            <option value="men">Men</option>
+            <option value="women">Women</option>
         </select>
     </div>
     <div class="toolbar-end">
-        <div class="view-toggle">
-            <button class="btn btn-ghost btn-icon" id="viewCards" title="بطاقات">🗂️</button>
-            <button class="btn btn-ghost btn-icon active" id="viewTable" title="جدول">📋</button>
-        </div>
-        <button class="btn btn-outline btn-sm" id="btnPrintReport" title="طباعة التقرير">🖨️ طباعة</button>
-        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
-        <button class="btn btn-primary" id="btnAddVehicle">➕ إضافة مركبة</button>
+        <button class="btn btn-outline btn-sm" id="btnPrintReport" title="Print Report">🖨️ <span id="lblPrint">Print Report</span></button>
+        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="Export Excel">📥 <span id="lblExport">Export Excel</span></button>
+        <button class="btn btn-primary" id="btnAddVehicle">➕ <span id="lblAddVehicle">Add Vehicle</span></button>
     </div>
 </div>
-
-<!-- Card View -->
-<div id="vehicleCards" style="display:none"></div>
 
 <!-- Table View -->
 <div id="vehicleTable">
     <div class="table-wrapper table-responsive">
         <table class="data-table" id="vehiclesDataTable">
             <thead><tr>
-                <th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>التوفر</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>النمط</th><th>الجنس</th><th>السنة</th><th>الإجراءات</th>
+                <th>#</th><th id="thCode">Vehicle Code</th><th id="thType">Type</th><th id="thCategory">Category</th><th id="thAvail">Availability</th><th id="thDriver">Driver</th><th id="thPhone">Phone</th><th id="thDept">Department</th><th id="thStatus">Status</th><th id="thMode">Mode</th><th id="thGender">Gender</th><th id="thYear">Year</th><th id="thActions">Actions</th>
             </tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
@@ -131,7 +110,7 @@
 <div class="modal" id="vehicleModal">
     <div class="modal-content modal-lg">
         <div class="modal-header">
-            <h3 id="modalTitle">إضافة مركبة</h3>
+            <h3 id="modalTitle">Add Vehicle</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body">
@@ -139,84 +118,84 @@
                 <input type="hidden" id="fId">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">رقم المركبة *</label>
+                        <label class="form-label" id="lblFCode">Vehicle Code *</label>
                         <input type="text" class="form-control" id="fCode" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">نوع المركبة *</label>
+                        <label class="form-label" id="lblFType">Vehicle Type *</label>
                         <input type="text" class="form-control" id="fType" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">فئة المركبة</label>
+                        <label class="form-label" id="lblFCategory">Vehicle Category</label>
                         <select class="form-select" id="fCategory">
-                            <option value="">— اختر —</option>
-                            <option value="sedan">سيدان</option>
-                            <option value="pickup">بيك أب</option>
-                            <option value="bus">باص</option>
+                            <option value="">— Choose —</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="pickup">Pickup</option>
+                            <option value="bus">Bus</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">سنة الصنع *</label>
+                        <label class="form-label" id="lblFYear">Manufacture Year *</label>
                         <input type="number" class="form-control" id="fYear" min="1990" max="2030" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">نمط المركبة</label>
+                        <label class="form-label" id="lblFMode">Vehicle Mode</label>
                         <select class="form-select" id="fMode">
-                            <option value="">— اختر —</option>
-                            <option value="private">خاصة</option>
-                            <option value="shift">وردية</option>
+                            <option value="">— Choose —</option>
+                            <option value="private">Private</option>
+                            <option value="shift">Shift</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">الجنس</label>
+                        <label class="form-label" id="lblFGender">Gender</label>
                         <select class="form-select" id="fGender">
-                            <option value="">— غير محدد —</option>
-                            <option value="men">رجال</option>
-                            <option value="women">نساء</option>
+                            <option value="">— Unspecified —</option>
+                            <option value="men">Men</option>
+                            <option value="women">Women</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">رقم الموظف (السائق)</label>
+                        <label class="form-label" id="lblFEmpId">Driver Employee ID</label>
                         <input type="text" class="form-control" id="fEmpId">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">اسم السائق</label>
+                        <label class="form-label" id="lblFDriverName">Driver Name</label>
                         <input type="text" class="form-control" id="fDriverName">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">هاتف السائق</label>
+                        <label class="form-label" id="lblFDriverPhone">Driver Phone</label>
                         <input type="text" class="form-control" id="fDriverPhone">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">الحالة</label>
+                        <label class="form-label" id="lblFStatus">Status</label>
                         <select class="form-select" id="fStatus">
-                            <option value="operational">تعمل</option>
-                            <option value="maintenance">صيانة</option>
-                            <option value="out_of_service">خارج الخدمة</option>
+                            <option value="operational">Operational</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="out_of_service">Out of Service</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">الإدارة</label>
-                        <select class="form-select" id="fDept"><option value="">— اختر —</option></select>
+                        <label class="form-label" id="lblFDept">Department</label>
+                        <select class="form-select" id="fDept"><option value="">— Choose —</option></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">القسم</label>
-                        <select class="form-select" id="fSection"><option value="">— اختر —</option></select>
+                        <label class="form-label" id="lblFSection">Section</label>
+                        <select class="form-select" id="fSection"><option value="">— Choose —</option></select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">الشعبة</label>
-                        <select class="form-select" id="fDivision"><option value="">— اختر —</option></select>
+                        <label class="form-label" id="lblFDivision">Division</label>
+                        <select class="form-select" id="fDivision"><option value="">— Choose —</option></select>
                     </div>
                     <div class="form-group full-width">
-                        <label class="form-label">ملاحظات</label>
+                        <label class="form-label" id="lblFNotes">Notes</label>
                         <textarea class="form-control" id="fNotes" rows="2"></textarea>
                     </div>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-ghost" data-action="close-modal">إلغاء</button>
-            <button class="btn btn-primary" id="btnSaveVehicle">حفظ</button>
+            <button class="btn btn-ghost" data-action="close-modal" id="btnCancelVehicle">Cancel</button>
+            <button class="btn btn-primary" id="btnSaveVehicle">Save</button>
         </div>
     </div>
 </div>
@@ -225,7 +204,7 @@
 <div class="modal" id="detailsModal">
     <div class="modal-content modal-lg">
         <div class="modal-header">
-            <h3>تفاصيل المركبة</h3>
+            <h3 id="detailsModalTitle">Vehicle Details</h3>
             <button class="modal-close" data-action="close-modal">&times;</button>
         </div>
         <div class="modal-body" id="detailsBody"></div>
@@ -237,11 +216,11 @@
     <div class="modal-content" style="max-width:400px">
         <div class="modal-body" style="padding:32px;text-align:center">
             <div style="font-size:2.5rem;margin-bottom:16px">⚠️</div>
-            <p style="margin-bottom:24px;font-size:1rem">هل أنت متأكد من حذف هذه المركبة؟</p>
+            <p style="margin-bottom:24px;font-size:1rem" id="deleteConfirmText">Are you sure you want to delete this vehicle?</p>
             <input type="hidden" id="deleteVehicleId">
             <div style="display:flex;gap:12px;justify-content:center">
-                <button class="btn btn-danger" id="btnConfirmDelete">حذف</button>
-                <button class="btn btn-ghost" data-action="close-modal">إلغاء</button>
+                <button class="btn btn-danger" id="btnConfirmDelete">Delete</button>
+                <button class="btn btn-ghost" data-action="close-modal" id="btnCancelDelete">Cancel</button>
             </div>
         </div>
     </div>
@@ -253,12 +232,82 @@ $pageScripts = <<<'SCRIPT'
 (function(){
     'use strict';
     const $=id=>document.getElementById(id);
-    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=12, viewMode='table', refs={departments:[],sections:[],divisions:[]};
+    let allVehicles=[], filteredVehicles=[], currentPage=1, perPage=12, refs={departments:[],sections:[],divisions:[]};
 
-    const STATUS={operational:{ar:'تعمل',cls:'badge-success'},maintenance:{ar:'صيانة',cls:'badge-warning'},out_of_service:{ar:'خارج الخدمة',cls:'badge-danger'}};
-    function badge(s){const m=STATUS[s]||{ar:'—',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+m.ar+'</span>';}
+    const STATUS={operational:{key:'operational',cls:'badge-success'},maintenance:{key:'under_maintenance',cls:'badge-warning'},out_of_service:{key:'out_of_service',cls:'badge-danger'}};
+    function badge(s){const m=STATUS[s]||{key:'operational',cls:'badge-info'};return '<span class="badge '+m.cls+'">'+i18n.t(m.key)+'</span>';}
     function esc(s){return UI._escapeHtml(s||'—');}
-    function categoryLabel(c){const m={pickup:'بيك أب',bus:'باص',sedan:'سيدان'};return m[c]||'—';}
+    function categoryLabel(c){const m={pickup:'pickup',bus:'bus',sedan:'sedan'};return m[c]?i18n.t(m[c]):'—';}
+
+    /* --- Translate all static HTML text --- */
+    function translateStatic(){
+        const t=k=>i18n.t(k);
+        // Page header
+        $('pageTitle').textContent=t('vehicle_management');
+        // Stats labels
+        $('lblTotal').textContent=t('total');
+        $('lblOp').textContent=t('operational');
+        $('lblMaint').textContent=t('under_maintenance');
+        $('lblOos').textContent=t('out_of_service');
+        // Search
+        $('searchInput').placeholder=t('search_vehicle');
+        // Filter dropdowns
+        const fs=$('filterStatus');fs.options[0].text=t('all_statuses');fs.options[1].text=t('operational');fs.options[2].text=t('under_maintenance');fs.options[3].text=t('out_of_service');
+        const fa=$('filterAvailability');fa.options[0].text=t('all_availability');fa.options[1].text=t('available_only');fa.options[2].text=t('checked_out_only');
+        $('filterDept').options[0].text=t('all_departments');
+        $('filterSection').options[0].text=t('all_sections');
+        const fm=$('filterMode');fm.options[0].text=t('all_modes');fm.options[1].text=t('private');fm.options[2].text=t('shift');
+        const fg=$('filterGender');fg.options[0].text=t('all_genders');fg.options[1].text=t('men');fg.options[2].text=t('women');
+        // Toolbar buttons
+        $('lblPrint').textContent=t('print_report');
+        $('lblExport').textContent=t('export_excel');
+        $('lblAddVehicle').textContent=t('add_vehicle');
+        // Table headers
+        $('thCode').textContent=t('vehicle_code');
+        $('thType').textContent=t('vehicle_type');
+        $('thCategory').textContent=t('vehicle_category');
+        $('thAvail').textContent=t('availability');
+        $('thDriver').textContent=t('driver');
+        $('thPhone').textContent=t('phone');
+        $('thDept').textContent=t('department');
+        $('thStatus').textContent=t('status');
+        $('thMode').textContent=t('vehicle_mode');
+        $('thGender').textContent=t('gender');
+        $('thYear').textContent=t('manufacture_year');
+        $('thActions').textContent=t('actions');
+        // Modal form labels
+        $('lblFCode').textContent=t('vehicle_code')+' *';
+        $('lblFType').textContent=t('vehicle_type')+' *';
+        $('lblFCategory').textContent=t('vehicle_category');
+        $('lblFYear').textContent=t('manufacture_year')+' *';
+        $('lblFMode').textContent=t('vehicle_mode');
+        $('lblFGender').textContent=t('gender');
+        $('lblFEmpId').textContent=t('emp_id');
+        $('lblFDriverName').textContent=t('driver_name');
+        $('lblFDriverPhone').textContent=t('driver_phone');
+        $('lblFStatus').textContent=t('status');
+        $('lblFDept').textContent=t('department');
+        $('lblFSection').textContent=t('section');
+        $('lblFDivision').textContent=t('division');
+        $('lblFNotes').textContent=t('notes');
+        // Modal form selects
+        const fCat=$('fCategory');fCat.options[0].text='— '+t('choose')+' —';fCat.options[1].text=t('sedan');fCat.options[2].text=t('pickup');fCat.options[3].text=t('bus');
+        const fMd=$('fMode');fMd.options[0].text='— '+t('choose')+' —';fMd.options[1].text=t('private');fMd.options[2].text=t('shift');
+        const fGn=$('fGender');fGn.options[0].text='— '+t('unspecified')+' —';fGn.options[1].text=t('men');fGn.options[2].text=t('women');
+        const fSt=$('fStatus');fSt.options[0].text=t('operational');fSt.options[1].text=t('under_maintenance');fSt.options[2].text=t('out_of_service');
+        $('fDept').options[0].text='— '+t('choose')+' —';
+        $('fSection').options[0].text='— '+t('choose')+' —';
+        $('fDivision').options[0].text='— '+t('choose')+' —';
+        // Modal buttons
+        $('btnCancelVehicle').textContent=t('cancel');
+        $('btnSaveVehicle').textContent=t('save');
+        // Details modal
+        $('detailsModalTitle').textContent=t('vehicle_details');
+        // Delete modal
+        $('deleteConfirmText').textContent=t('confirm_delete');
+        $('btnConfirmDelete').textContent=t('delete');
+        $('btnCancelDelete').textContent=t('cancel');
+    }
 
     /* --- Load references for dropdowns --- */
     async function loadRefs(){
@@ -280,15 +329,15 @@ $pageScripts = <<<'SCRIPT'
     /* Cascading department -> section -> division */
     $('fDept').addEventListener('change',()=>{
         const did=parseInt($('fDept').value);
-        const s=$('fSection');s.innerHTML='<option value="">— اختر —</option>';
-        $('fDivision').innerHTML='<option value="">— اختر —</option>';
+        const s=$('fSection');s.innerHTML='<option value="">— '+i18n.t('choose')+' —</option>';
+        $('fDivision').innerHTML='<option value="">— '+i18n.t('choose')+' —</option>';
         (refs.sections||[]).filter(sc=>sc.department_id==did).forEach(sc=>{
             s.appendChild(new Option(sc.name_ar||sc.name_en,sc.section_id));
         });
     });
     $('fSection').addEventListener('change',()=>{
         const sid=parseInt($('fSection').value);
-        const d=$('fDivision');d.innerHTML='<option value="">— اختر —</option>';
+        const d=$('fDivision');d.innerHTML='<option value="">— '+i18n.t('choose')+' —</option>';
         (refs.divisions||[]).filter(dv=>dv.section_id==sid).forEach(dv=>{
             d.appendChild(new Option(dv.name_ar||dv.name_en,dv.division_id));
         });
@@ -337,43 +386,17 @@ $pageScripts = <<<'SCRIPT'
     function render(){
         const start=(currentPage-1)*perPage, end=start+perPage;
         const page=filteredVehicles.slice(start,end);
-        if(viewMode==='cards')renderCards(page);else renderTable(page);
+        renderTable(page);
         renderPagination();
     }
 
-    function availBadge(v){return v.available?'<span class="badge-available">متاحة للتسليم ✅</span>':'<span class="badge-checked-out">مُستلمة 🔒</span>';}
-
-    function renderCards(list){
-        const c=$('vehicleCards');
-        if(!list.length){c.innerHTML='<div class="empty-state"><div class="empty-icon">🚗</div><p>لا توجد مركبات</p></div>';return;}
-        let h='<div class="v-cards">';
-        list.forEach(v=>{
-            h+='<div class="v-card">';
-            h+='<div class="v-card-head"><span class="v-code">'+esc(v.vehicle_code)+'</span>'+badge(v.status)+'</div>';
-            h+='<div class="v-card-body">';
-            h+='<div class="v-row"><span class="v-label">التوفر</span><span class="v-val">'+availBadge(v)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">الفئة</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">الهاتف</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">الإدارة</span><span class="v-val">'+esc(v.department_name_ar)+'</span></div>';
-            h+='<div class="v-row"><span class="v-label">السنة</span><span class="v-val">'+(v.manufacture_year||'—')+'</span></div>';
-            h+='</div>';
-            h+='<div class="v-card-actions">';
-            h+='<button class="btn btn-outline btn-sm" onclick="VPage.view('+v.id+')">👁️ عرض</button>';
-            h+='<button class="btn btn-outline btn-sm" onclick="VPage.edit('+v.id+')">✏️ تعديل</button>';
-            h+='<button class="btn btn-danger btn-sm" onclick="VPage.del('+v.id+')">🗑️</button>';
-            h+='</div></div>';
-        });
-        h+='</div>';
-        c.innerHTML=h;
-    }
+    function availBadge(v){return v.available?'<span class="badge-available">'+i18n.t('available_for_handover')+' ✅</span>':'<span class="badge-checked-out">'+i18n.t('currently_checked_out')+' 🔒</span>';}
 
     function renderTable(list){
         const tb=$('tableBody');
-        if(!list.length){tb.innerHTML='<tr><td colspan="13" class="text-center" style="padding:32px;color:var(--text-secondary)">لا توجد مركبات</td></tr>';return;}
-        const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'—';
-        const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'—';
+        if(!list.length){tb.innerHTML='<tr><td colspan="13" class="text-center" style="padding:32px;color:var(--text-secondary)">'+i18n.t('no_vehicles')+'</td></tr>';return;}
+        const genderLabel=g=>g==='men'?i18n.t('men'):g==='women'?i18n.t('women'):'—';
+        const modeLabel=m=>m==='private'?i18n.t('private'):m==='shift'?i18n.t('shift'):'—';
         let h='';
         list.forEach((v,i)=>{
             h+='<tr>';
@@ -390,9 +413,9 @@ $pageScripts = <<<'SCRIPT'
             h+='<td>'+genderLabel(v.gender)+'</td>';
             h+='<td>'+(v.manufacture_year||'—')+'</td>';
             h+='<td class="table-actions">';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.view('+v.id+')" title="عرض">👁️</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.edit('+v.id+')" title="تعديل">✏️</button>';
-            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.del('+v.id+')" title="حذف" style="color:var(--status-danger)">🗑️</button>';
+            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.view('+v.id+')" title="'+i18n.t('view')+'">👁️</button>';
+            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.edit('+v.id+')" title="'+i18n.t('edit')+'">✏️</button>';
+            h+='<button class="btn btn-ghost btn-icon" onclick="VPage.del('+v.id+')" title="'+i18n.t('delete')+'" style="color:var(--status-danger)">🗑️</button>';
             h+='</td></tr>';
         });
         tb.innerHTML=h;
@@ -405,7 +428,6 @@ $pageScripts = <<<'SCRIPT'
         const info=$('paginationInfo');
         if(totalPg<=1){pg.innerHTML='';info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+'</span>';return;}
         let h='<button class="pg-prev" '+(currentPage<=1?'disabled':'')+' onclick="VPage.goPage('+(currentPage-1)+')">'+i18n.t('previous')+'</button>';
-        // Show max 7 page buttons with ellipsis
         let start=Math.max(1,currentPage-3), end=Math.min(totalPg,currentPage+3);
         if(start>1){h+='<button onclick="VPage.goPage(1)">1</button>';if(start>2)h+='<span style="padding:0 4px">…</span>';}
         for(let i=start;i<=end;i++){
@@ -414,14 +436,9 @@ $pageScripts = <<<'SCRIPT'
         if(end<totalPg){if(end<totalPg-1)h+='<span style="padding:0 4px">…</span>';h+='<button onclick="VPage.goPage('+totalPg+')">'+totalPg+'</button>';}
         h+='<button class="pg-next" '+(currentPage>=totalPg?'disabled':'')+' onclick="VPage.goPage('+(currentPage+1)+')">'+i18n.t('next')+'</button>';
         pg.innerHTML=h;
-        // Pagination info with go-to-page
         info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+' | '+i18n.t('page')+' '+currentPage+' '+i18n.t('of')+' '+totalPg+'</span>'+
             '<div class="pg-goto"><label>'+i18n.t('go_to_page')+':</label><input type="number" min="1" max="'+totalPg+'" id="gotoPageInput" value="'+currentPage+'"><button onclick="VPage.gotoPage()">↵</button></div>';
     }
-
-    /* --- View toggle --- */
-    $('viewCards').addEventListener('click',()=>{viewMode='cards';$('viewCards').classList.add('active');$('viewTable').classList.remove('active');$('vehicleCards').style.display='';$('vehicleTable').style.display='none';render();});
-    $('viewTable').addEventListener('click',()=>{viewMode='table';$('viewTable').classList.add('active');$('viewCards').classList.remove('active');$('vehicleTable').style.display='';$('vehicleCards').style.display='none';render();});
 
     /* --- Filters --- */
     $('filterStatus').addEventListener('change',loadVehicles);
@@ -436,14 +453,14 @@ $pageScripts = <<<'SCRIPT'
     /* --- Print Report --- */
     $('btnPrintReport').addEventListener('click',function(){
         const data=filteredVehicles;
-        if(!data.length){UI.showToast('لا توجد بيانات للطباعة','error');return;}
-        const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
-        let html='<html dir="rtl"><head><meta charset="utf-8"><title>تقرير المركبات</title><style>body{font-family:Arial,sans-serif;direction:rtl}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center}.avail{color:green}.noavail{color:#b8860b}@media print{body{margin:0}}</style></head><body>';
-        html+='<h2>تقرير المركبات</h2><p>العدد: '+data.length+'</p>';
-        html+='<table><thead><tr><th>#</th><th>رقم المركبة</th><th>النوع</th><th>الفئة</th><th>التوفر</th><th>السائق</th><th>الهاتف</th><th>الإدارة</th><th>الحالة</th><th>السنة</th></tr></thead><tbody>';
+        if(!data.length){UI.showToast(i18n.t('no_data_for_print'),'error');return;}
+        const statusLabel=s=>s==='operational'?i18n.t('operational'):s==='maintenance'?i18n.t('under_maintenance'):s==='out_of_service'?i18n.t('out_of_service'):'';
+        let html='<html dir="rtl"><head><meta charset="utf-8"><title>'+i18n.t('vehicles_report')+'</title><style>body{font-family:Arial,sans-serif;direction:rtl}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center}.avail{color:green}.noavail{color:#b8860b}@media print{body{margin:0}}</style></head><body>';
+        html+='<h2>'+i18n.t('vehicles_report')+'</h2><p>'+i18n.t('total')+': '+data.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('availability')+'</th><th>'+i18n.t('driver')+'</th><th>'+i18n.t('phone')+'</th><th>'+i18n.t('department')+'</th><th>'+i18n.t('status')+'</th><th>'+i18n.t('manufacture_year')+'</th></tr></thead><tbody>';
         data.forEach((v,i)=>{
             html+='<tr><td>'+(i+1)+'</td><td>'+esc(v.vehicle_code)+'</td><td>'+esc(v.type)+'</td><td>'+categoryLabel(v.vehicle_category)+'</td>';
-            html+='<td class="'+(v.available?'avail':'noavail')+'">'+(v.available?'متاحة للتسليم':'مُستلمة')+'</td>';
+            html+='<td class="'+(v.available?'avail':'noavail')+'">'+(v.available?i18n.t('available_for_handover'):i18n.t('currently_checked_out'))+'</td>';
             html+='<td>'+esc(v.driver_name)+'</td><td>'+esc(v.driver_phone)+'</td><td>'+esc(v.department_name_ar)+'</td>';
             html+='<td>'+statusLabel(v.status)+'</td><td>'+(v.manufacture_year||'—')+'</td></tr>';
         });
@@ -454,11 +471,11 @@ $pageScripts = <<<'SCRIPT'
     /* --- Export Excel --- */
     $('btnExportExcel').addEventListener('click',function(){
         const data=filteredVehicles;
-        if(!data.length){UI.showToast('لا توجد بيانات للتصدير','error');return;}
-        const genderLabel=g=>g==='men'?'رجال':g==='women'?'نساء':'';
-        const modeLabel=m=>m==='private'?'خاصة':m==='shift'?'وردية':'';
-        const statusLabel=s=>s==='operational'?'تعمل':s==='maintenance'?'صيانة':s==='out_of_service'?'خارج الخدمة':'';
-        const headers=['#','رقم المركبة','النوع','الفئة','التوفر','اسم السائق','هاتف السائق','الإدارة','الحالة','النمط','الجنس','سنة الصنع','رقم الموظف','ملاحظات'];
+        if(!data.length){UI.showToast(i18n.t('no_data_for_export'),'error');return;}
+        const genderLabel=g=>g==='men'?i18n.t('men'):g==='women'?i18n.t('women'):'';
+        const modeLabel=m=>m==='private'?i18n.t('private'):m==='shift'?i18n.t('shift'):'';
+        const statusLabel=s=>s==='operational'?i18n.t('operational'):s==='maintenance'?i18n.t('under_maintenance'):s==='out_of_service'?i18n.t('out_of_service'):'';
+        const headers=['#',i18n.t('vehicle_code'),i18n.t('vehicle_type'),i18n.t('vehicle_category'),i18n.t('availability'),i18n.t('driver_name'),i18n.t('driver_phone'),i18n.t('department'),i18n.t('status'),i18n.t('vehicle_mode'),i18n.t('gender'),i18n.t('manufacture_year'),i18n.t('emp_id'),i18n.t('notes')];
         let csv='\uFEFF'+headers.join(',')+'\n';
         data.forEach((v,i)=>{
             const row=[
@@ -466,7 +483,7 @@ $pageScripts = <<<'SCRIPT'
                 '"'+(v.vehicle_code||'').replace(/"/g,'""')+'"',
                 '"'+(v.type||'').replace(/"/g,'""')+'"',
                 '"'+categoryLabel(v.vehicle_category)+'"',
-                '"'+(v.available?'متاحة':'مُستلمة')+'"',
+                '"'+(v.available?i18n.t('available_for_handover'):i18n.t('currently_checked_out'))+'"',
                 '"'+(v.driver_name||'').replace(/"/g,'""')+'"',
                 '"'+(v.driver_phone||'').replace(/"/g,'""')+'"',
                 '"'+(v.department_name_ar||'').replace(/"/g,'""')+'"',
@@ -484,12 +501,12 @@ $pageScripts = <<<'SCRIPT'
         link.href=URL.createObjectURL(blob);
         link.download='vehicles_export_'+new Date().toISOString().slice(0,10)+'.csv';
         link.click();
-        UI.showToast('تم التصدير بنجاح','success');
+        UI.showToast(i18n.t('export_success'),'success');
     });
 
     /* --- Add Vehicle --- */
     $('btnAddVehicle').addEventListener('click',()=>{
-        $('modalTitle').textContent='إضافة مركبة';
+        $('modalTitle').textContent=i18n.t('add_vehicle');
         $('vehicleForm').reset();$('fId').value='';
         UI.showModal('vehicleModal');
     });
@@ -513,13 +530,13 @@ $pageScripts = <<<'SCRIPT'
             division_id:$('fDivision').value?parseInt($('fDivision').value):null,
             notes:$('fNotes').value.trim()
         };
-        if(!data.vehicle_code||!data.type||!data.manufacture_year){UI.showToast('يرجى ملء الحقول المطلوبة','error');return;}
+        if(!data.vehicle_code||!data.type||!data.manufacture_year){UI.showToast(i18n.t('required_fields'),'error');return;}
         try{
-            if(id){await API.put('/vehicles/'+id,data);UI.showToast('تم تحديث المركبة','success');}
-            else{await API.post('/vehicles',data);UI.showToast('تم إضافة المركبة','success');}
+            if(id){await API.put('/vehicles/'+id,data);UI.showToast(i18n.t('vehicle_updated'),'success');}
+            else{await API.post('/vehicles',data);UI.showToast(i18n.t('vehicle_added'),'success');}
             UI.hideModal('vehicleModal');
             loadVehicles();loadStats();
-        }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
+        }catch(e){UI.showToast(e.message||i18n.t('error'),'error');}
     });
 
     /* --- Global methods for onclick --- */
@@ -533,35 +550,35 @@ $pageScripts = <<<'SCRIPT'
                 const res=await API.get('/vehicles/'+id);
                 const v=res.data||res;
                 let h='<div class="form-grid">';
-                h+='<div class="v-row"><span class="v-label">رقم المركبة</span><span class="v-val">'+esc(v.vehicle_code)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">النوع</span><span class="v-val">'+esc(v.type)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الفئة</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">السنة</span><span class="v-val">'+(v.manufacture_year||'—')+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الحالة</span><span class="v-val">'+badge(v.status)+'</span></div>';
-                const genderLabel=v.gender==='men'?'رجال':v.gender==='women'?'نساء':'—';
-                const modeLabel=v.vehicle_mode==='private'?'خاصة':v.vehicle_mode==='shift'?'وردية':'—';
-                h+='<div class="v-row"><span class="v-label">النمط</span><span class="v-val">'+modeLabel+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الجنس</span><span class="v-val">'+genderLabel+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">السائق</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الهاتف</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الموظف</span><span class="v-val">'+esc(v.emp_id)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الإدارة</span><span class="v-val">'+esc(v.department_name_ar)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">القسم</span><span class="v-val">'+esc(v.section_name_ar)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">الشعبة</span><span class="v-val">'+esc(v.division_name_ar)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">ملاحظات</span><span class="v-val">'+esc(v.notes)+'</span></div>';
-                h+='<div class="v-row"><span class="v-label">تاريخ الإنشاء</span><span class="v-val">'+esc(v.created_at)+'</span></div>';
-                if(v.updated_at) h+='<div class="v-row"><span class="v-label">آخر تحديث</span><span class="v-val">'+esc(v.updated_at)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('vehicle_code')+'</span><span class="v-val">'+esc(v.vehicle_code)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('vehicle_type')+'</span><span class="v-val">'+esc(v.type)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('vehicle_category')+'</span><span class="v-val">'+categoryLabel(v.vehicle_category)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('manufacture_year')+'</span><span class="v-val">'+(v.manufacture_year||'—')+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('status')+'</span><span class="v-val">'+badge(v.status)+'</span></div>';
+                const gl=v.gender==='men'?i18n.t('men'):v.gender==='women'?i18n.t('women'):'—';
+                const ml=v.vehicle_mode==='private'?i18n.t('private'):v.vehicle_mode==='shift'?i18n.t('shift'):'—';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('vehicle_mode')+'</span><span class="v-val">'+ml+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('gender')+'</span><span class="v-val">'+gl+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('driver')+'</span><span class="v-val">'+esc(v.driver_name)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('phone')+'</span><span class="v-val">'+esc(v.driver_phone)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('emp_id')+'</span><span class="v-val">'+esc(v.emp_id)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('department')+'</span><span class="v-val">'+esc(v.department_name_ar)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('section')+'</span><span class="v-val">'+esc(v.section_name_ar)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('division')+'</span><span class="v-val">'+esc(v.division_name_ar)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('notes')+'</span><span class="v-val">'+esc(v.notes)+'</span></div>';
+                h+='<div class="v-row"><span class="v-label">'+i18n.t('created_at')+'</span><span class="v-val">'+esc(v.created_at)+'</span></div>';
+                if(v.updated_at) h+='<div class="v-row"><span class="v-label">'+i18n.t('updated_at')+'</span><span class="v-val">'+esc(v.updated_at)+'</span></div>';
                 h+='</div>';
                 $('detailsBody').innerHTML=h;
                 UI.showModal('detailsModal');
-            }catch(e){UI.showToast('تعذر تحميل البيانات','error');}
+            }catch(e){UI.showToast(i18n.t('load_failed'),'error');}
         },
 
         async edit(id){
             try{
                 const res=await API.get('/vehicles/'+id);
                 const v=res.data||res;
-                $('modalTitle').textContent='تعديل مركبة';
+                $('modalTitle').textContent=i18n.t('edit')+' '+i18n.t('vehicle_management');
                 $('fId').value=v.id;
                 $('fCode').value=v.vehicle_code||'';
                 $('fType').value=v.type||'';
@@ -578,7 +595,7 @@ $pageScripts = <<<'SCRIPT'
                 setTimeout(()=>{$('fSection').value=v.section_id||'';$('fSection').dispatchEvent(new Event('change'));setTimeout(()=>{$('fDivision').value=v.division_id||'';},50);},50);
                 $('fNotes').value=v.notes||'';
                 UI.showModal('vehicleModal');
-            }catch(e){UI.showToast('تعذر تحميل البيانات','error');}
+            }catch(e){UI.showToast(i18n.t('load_failed'),'error');}
         },
 
         del(id){
@@ -592,39 +609,19 @@ $pageScripts = <<<'SCRIPT'
         const id=$('deleteVehicleId').value;
         try{
             await API.del('/vehicles/'+id);
-            UI.showToast('تم حذف المركبة','success');
+            UI.showToast(i18n.t('vehicle_deleted'),'success');
             UI.hideModal('deleteModal');
             loadVehicles();loadStats();
-        }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
+        }catch(e){UI.showToast(e.message||i18n.t('error'),'error');}
     });
-
-    /* --- Apply i18n labels to dynamic elements --- */
-    function applyI18nLabels(){
-        if(!i18n.strings || !Object.keys(i18n.strings).length) return;
-        const t=i18n.t.bind(i18n);
-        $('searchInput').placeholder=t('search_vehicle');
-        // Filter dropdowns
-        const fs=$('filterStatus');fs.options[0].text=t('all_statuses');fs.options[1].text=t('operational');fs.options[2].text=t('under_maintenance');fs.options[3].text=t('out_of_service');
-        const fa=$('filterAvailability');fa.options[0].text=t('all_availability');fa.options[1].text=t('available_only');fa.options[2].text=t('checked_out_only');
-        $('filterDept').options[0].text=t('all_departments');
-        $('filterSection').options[0].text=t('all_sections');
-        const fm=$('filterMode');fm.options[0].text=t('all_modes');fm.options[1].text=t('private');fm.options[2].text=t('shift');
-        const fg=$('filterGender');fg.options[0].text=t('all_genders');fg.options[1].text=t('men');fg.options[2].text=t('women');
-        // Buttons and titles
-        $('viewCards').title=t('card_view');$('viewTable').title=t('table_view');
-        $('btnPrintReport').innerHTML='🖨️ '+t('print');
-        $('btnExportExcel').innerHTML='📥 '+t('export');
-        $('btnAddVehicle').innerHTML='➕ '+t('add_vehicle');
-    }
 
     /* --- Init --- */
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,150));
-        applyI18nLabels();
+        translateStatic();
         await loadRefs();
         loadStats();
         loadVehicles();
-        // Check if action=add in URL
         if(new URLSearchParams(location.search).get('action')==='add'){
             $('btnAddVehicle').click();
         }
