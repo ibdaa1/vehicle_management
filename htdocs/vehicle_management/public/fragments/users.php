@@ -52,6 +52,15 @@
 .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
 .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border-default)}
+.u-page{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.u-page button{padding:6px 14px;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-card);cursor:pointer;transition:all .3s;color:var(--text-primary);font-size:.85rem}
+.u-page button:hover:not(:disabled){background:var(--primary-main);color:var(--text-light)}
+.u-page button.active{background:var(--primary-main);color:var(--text-light);border-color:var(--primary-main)}
+.u-page button:disabled{opacity:.4;cursor:not-allowed}
+.u-page-info{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.85rem;color:var(--text-secondary)}
+.u-page-info .pg-goto{display:flex;align-items:center;gap:6px}
+.u-page-info .pg-goto input{width:60px;height:30px;text-align:center;border:1px solid var(--border-default);border-radius:6px;font-size:.85rem}
+.u-page-info .pg-goto button{height:30px;padding:0 10px;border:1px solid var(--primary-main);background:var(--primary-main);color:var(--text-light);border-radius:6px;cursor:pointer;font-size:.8rem}
 @media(max-width:768px){.u-toolbar{flex-direction:column;align-items:stretch}.u-toolbar-end{margin-inline-start:0;justify-content:space-between}.u-toolbar .search-box{max-width:100%}}
 .user-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .user-detail .detail-item{padding:8px 0}
@@ -119,6 +128,8 @@
         </table>
     </div>
 </div>
+<div class="u-page" id="uPagination"></div>
+<div class="u-page-info" id="uPaginationInfo"></div>
 
 <!-- View User Modal -->
 <div class="modal-overlay" id="viewModal">
@@ -231,13 +242,15 @@
         document.getElementById('uInactive').textContent = total - active;
     }
 
+    var uCurrentPage = 1, uPerPage = 15;
+
     function renderTable() {
         const search = (document.getElementById('userSearch').value || '').toLowerCase();
         const roleFilter = document.getElementById('filterRole').value;
         const activeFilter = document.getElementById('filterActive').value;
         const genderFilter = document.getElementById('filterGender').value;
 
-        let filtered = allUsers.filter(u => {
+        var filtered = allUsers.filter(u => {
             if (search) {
                 const haystack = [u.username, u.email, u.emp_id, u.phone].join(' ').toLowerCase();
                 if (!haystack.includes(search)) return false;
@@ -251,10 +264,17 @@
         const tbody = document.getElementById('usersBody');
         if (filtered.length === 0) {
             tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>لا يوجد مستخدمون</p></td></tr>';
+            renderUsersPagination(0, 0);
             return;
         }
 
-        tbody.innerHTML = filtered.map((u, i) => {
+        var totalItems = filtered.length;
+        var totalPg = Math.ceil(totalItems / uPerPage);
+        if (uCurrentPage > totalPg) uCurrentPage = totalPg;
+        var start = (uCurrentPage - 1) * uPerPage;
+        var pageData = filtered.slice(start, start + uPerPage);
+
+        tbody.innerHTML = pageData.map((u, i) => {
             const statusBadge = parseInt(u.is_active) === 1
                 ? '<span class="badge badge-active">نشط</span>'
                 : '<span class="badge badge-inactive">غير نشط</span>';
@@ -262,7 +282,7 @@
             const genderLabel = u.gender === 'men' ? 'ذكر' : u.gender === 'women' ? 'أنثى' : '\u2014';
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
-                '<td>' + (i + 1) + '</td>' +
+                '<td>' + (start + i + 1) + '</td>' +
                 '<td>' + escHtml(u.emp_id || '\u2014') + '</td>' +
                 '<td><strong>' + escHtml(u.username) + '</strong></td>' +
                 '<td>' + escHtml(u.email || '\u2014') + '</td>' +
@@ -277,7 +297,30 @@
                     '<button class="btn-icon btn-delete" title="حذف" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' +
                 '</td></tr>';
         }).join('');
+        renderUsersPagination(totalItems, totalPg);
     }
+
+    function renderUsersPagination(totalItems, totalPg) {
+        var pg = document.getElementById('uPagination');
+        var info = document.getElementById('uPaginationInfo');
+        if (totalPg <= 1) { pg.innerHTML = ''; info.innerHTML = totalItems ? '<span>' + i18n.t('total_records') + ': ' + totalItems + '</span>' : ''; return; }
+        var h = '<button ' + (uCurrentPage <= 1 ? 'disabled' : '') + ' onclick="UsersPage.goPage(' + (uCurrentPage - 1) + ')">' + i18n.t('previous') + '</button>';
+        var start = Math.max(1, uCurrentPage - 3), end = Math.min(totalPg, uCurrentPage + 3);
+        if (start > 1) { h += '<button onclick="UsersPage.goPage(1)">1</button>'; if (start > 2) h += '<span style="padding:0 4px">…</span>'; }
+        for (var i = start; i <= end; i++) {
+            h += '<button class="' + (i === uCurrentPage ? 'active' : '') + '" onclick="UsersPage.goPage(' + i + ')">' + i + '</button>';
+        }
+        if (end < totalPg) { if (end < totalPg - 1) h += '<span style="padding:0 4px">…</span>'; h += '<button onclick="UsersPage.goPage(' + totalPg + ')">' + totalPg + '</button>'; }
+        h += '<button ' + (uCurrentPage >= totalPg ? 'disabled' : '') + ' onclick="UsersPage.goPage(' + (uCurrentPage + 1) + ')">' + i18n.t('next') + '</button>';
+        pg.innerHTML = h;
+        info.innerHTML = '<span>' + i18n.t('total_records') + ': ' + totalItems + ' | ' + i18n.t('page') + ' ' + uCurrentPage + ' ' + i18n.t('of') + ' ' + totalPg + '</span>' +
+            '<div class="pg-goto"><label>' + i18n.t('go_to_page') + ':</label><input type="number" min="1" max="' + totalPg + '" id="uGotoInput" value="' + uCurrentPage + '"><button onclick="UsersPage.gotoPage()">↵</button></div>';
+    }
+
+    window.UsersPage = {
+        goPage: function(p) { var totalPg = Math.ceil(allUsers.length / uPerPage); if (p < 1) p = 1; if (p > totalPg) p = totalPg; uCurrentPage = p; renderTable(); window.scrollTo({top: 0, behavior: 'smooth'}); },
+        gotoPage: function() { var inp = document.getElementById('uGotoInput'); if (inp) { var p = parseInt(inp.value); if (p && p >= 1) this.goPage(p); } }
+    };
 
     // Event delegation for table action buttons
     document.getElementById('usersBody').addEventListener('click', function(e) {
@@ -411,10 +454,11 @@
         document.getElementById(modalId).classList.remove('active');
     };
 
-    document.getElementById('userSearch').addEventListener('input', renderTable);
-    document.getElementById('filterRole').addEventListener('change', renderTable);
-    document.getElementById('filterActive').addEventListener('change', renderTable);
-    document.getElementById('filterGender').addEventListener('change', renderTable);
+    function resetPageAndRender() { uCurrentPage = 1; renderTable(); }
+    document.getElementById('userSearch').addEventListener('input', resetPageAndRender);
+    document.getElementById('filterRole').addEventListener('change', resetPageAndRender);
+    document.getElementById('filterActive').addEventListener('change', resetPageAndRender);
+    document.getElementById('filterGender').addEventListener('change', resetPageAndRender);
 
     document.querySelectorAll('.modal-overlay').forEach(m => {
         m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });

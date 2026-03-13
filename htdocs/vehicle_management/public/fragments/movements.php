@@ -58,9 +58,15 @@
 .mv-detail .d-row .d-val{font-weight:600}
 .mv-detail .d-photos{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .mv-detail .d-photos img{width:100px;height:80px;border-radius:8px;object-fit:cover;cursor:pointer}
-.mv-page{display:flex;justify-content:center;gap:8px;margin-top:16px}
-.mv-page button{padding:6px 14px;border:1px solid var(--border-default,#ddd);border-radius:6px;background:#fff;cursor:pointer}
+.mv-page{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.mv-page button{padding:6px 14px;border:1px solid var(--border-default,#ddd);border-radius:6px;background:#fff;cursor:pointer;transition:all .3s}
+.mv-page button:hover:not(:disabled){background:var(--primary-main,#1a5276);color:#fff}
 .mv-page button.active{background:var(--primary-main,#1a5276);color:#fff;border-color:var(--primary-main)}
+.mv-page button:disabled{opacity:.4;cursor:not-allowed}
+.mv-page-info{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.85rem;color:var(--text-secondary,#666)}
+.mv-page-info .pg-goto{display:flex;align-items:center;gap:6px}
+.mv-page-info .pg-goto input{width:60px;height:30px;text-align:center;border:1px solid var(--border-default,#ddd);border-radius:6px;font-size:.85rem}
+.mv-page-info .pg-goto button{height:30px;padding:0 10px;border:1px solid var(--primary-main,#1a5276);background:var(--primary-main,#1a5276);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem}
 .loc-status{font-size:.8rem;color:var(--text-secondary,#777);margin-top:4px}
 </style>
 
@@ -111,6 +117,7 @@
 </table>
 </div>
 <div class="mv-page" id="mvPagination"></div>
+<div class="mv-page-info" id="mvPaginationInfo"></div>
 
 <!-- Add/Edit Modal -->
 <div class="mv-modal-bg" id="mvModal">
@@ -282,13 +289,21 @@
     }
 
     function renderPagination(){
-        const total=Math.ceil(filteredMovements.length/perPage);
-        if(total<=1){$('mvPagination').innerHTML='';return;}
-        let h='';
-        for(let i=1;i<=total;i++){
+        const totalItems=filteredMovements.length;
+        const totalPg=Math.ceil(totalItems/perPage);
+        const pg=$('mvPagination'),info=$('mvPaginationInfo');
+        if(totalPg<=1){pg.innerHTML='';info.innerHTML=totalItems?'<span>'+i18n.t('total_records')+': '+totalItems+'</span>':'';return;}
+        let h='<button '+(currentPage<=1?'disabled':'')+' onclick="MvPage.goPage('+(currentPage-1)+')">'+i18n.t('previous')+'</button>';
+        let start=Math.max(1,currentPage-3),end=Math.min(totalPg,currentPage+3);
+        if(start>1){h+='<button onclick="MvPage.goPage(1)">1</button>';if(start>2)h+='<span style="padding:0 4px">…</span>';}
+        for(let i=start;i<=end;i++){
             h+='<button class="'+(i===currentPage?'active':'')+'" onclick="MvPage.goPage('+i+')">'+i+'</button>';
         }
-        $('mvPagination').innerHTML=h;
+        if(end<totalPg){if(end<totalPg-1)h+='<span style="padding:0 4px">…</span>';h+='<button onclick="MvPage.goPage('+totalPg+')">'+totalPg+'</button>';}
+        h+='<button '+(currentPage>=totalPg?'disabled':'')+' onclick="MvPage.goPage('+(currentPage+1)+')">'+i18n.t('next')+'</button>';
+        pg.innerHTML=h;
+        info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+' | '+i18n.t('page')+' '+currentPage+' '+i18n.t('of')+' '+totalPg+'</span>'+
+            '<div class="pg-goto"><label>'+i18n.t('go_to_page')+':</label><input type="number" min="1" max="'+totalPg+'" id="mvGotoInput" value="'+currentPage+'"><button onclick="MvPage.gotoPage()">↵</button></div>';
     }
 
     /* ---- Modal ---- */
@@ -397,7 +412,8 @@
 
     /* ---- Global methods ---- */
     window.MvPage={
-        goPage(p){currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+        goPage(p){const totalPg=Math.ceil(filteredMovements.length/perPage);if(p<1)p=1;if(p>totalPg)p=totalPg;currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+        gotoPage(){const inp=$('mvGotoInput');if(inp){const p=parseInt(inp.value);if(p&&p>=1)this.goPage(p);}},
         removePhoto(i){pendingPhotos.splice(i,1);renderPhotosPrev();},
         async view(id){
             try{

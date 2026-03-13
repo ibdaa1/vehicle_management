@@ -46,9 +46,15 @@
 .vl-detail .d-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-default,#f0f0f0)}
 .vl-detail .d-row .d-lbl{color:var(--text-secondary,#777);font-size:.85rem}
 .vl-detail .d-row .d-val{font-weight:600}
-.vl-page{display:flex;justify-content:center;gap:8px;margin-top:16px}
-.vl-page button{padding:6px 14px;border:1px solid var(--border-default,#ddd);border-radius:6px;background:#fff;cursor:pointer}
+.vl-page{display:flex;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.vl-page button{padding:6px 14px;border:1px solid var(--border-default,#ddd);border-radius:6px;background:#fff;cursor:pointer;transition:all .3s}
+.vl-page button:hover:not(:disabled){background:var(--primary-main,#1a5276);color:#fff}
 .vl-page button.active{background:var(--primary-main,#1a5276);color:#fff;border-color:var(--primary-main)}
+.vl-page button:disabled{opacity:.4;cursor:not-allowed}
+.vl-page-info{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:8px;font-size:.85rem;color:var(--text-secondary,#666)}
+.vl-page-info .pg-goto{display:flex;align-items:center;gap:6px}
+.vl-page-info .pg-goto input{width:60px;height:30px;text-align:center;border:1px solid var(--border-default,#ddd);border-radius:6px;font-size:.85rem}
+.vl-page-info .pg-goto button{height:30px;padding:0 10px;border:1px solid var(--primary-main,#1a5276);background:var(--primary-main,#1a5276);color:#fff;border-radius:6px;cursor:pointer;font-size:.8rem}
 .vl-holder{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--primary-main,#1a5276)}
 .vl-holder .holder-icon{font-size:1rem}
 </style>
@@ -96,6 +102,7 @@
 </table>
 </div>
 <div class="vl-page" id="vlPagination"></div>
+<div class="vl-page-info" id="vlPaginationInfo"></div>
 
 <!-- Add/Edit Modal -->
 <div class="vl-modal-bg" id="vlModal">
@@ -231,13 +238,21 @@
     }
 
     function renderPagination(){
-        const total=Math.ceil(filteredViolations.length/perPage);
-        if(total<=1){$('vlPagination').innerHTML='';return;}
-        let h='';
-        for(let i=1;i<=total;i++){
+        const totalItems=filteredViolations.length;
+        const totalPg=Math.ceil(totalItems/perPage);
+        const pg=$('vlPagination'),info=$('vlPaginationInfo');
+        if(totalPg<=1){pg.innerHTML='';info.innerHTML=totalItems?'<span>'+i18n.t('total_records')+': '+totalItems+'</span>':'';return;}
+        let h='<button '+(currentPage<=1?'disabled':'')+' onclick="VlPage.goPage('+(currentPage-1)+')">'+i18n.t('previous')+'</button>';
+        let start=Math.max(1,currentPage-3),end=Math.min(totalPg,currentPage+3);
+        if(start>1){h+='<button onclick="VlPage.goPage(1)">1</button>';if(start>2)h+='<span style="padding:0 4px">…</span>';}
+        for(let i=start;i<=end;i++){
             h+='<button class="'+(i===currentPage?'active':'')+'" onclick="VlPage.goPage('+i+')">'+i+'</button>';
         }
-        $('vlPagination').innerHTML=h;
+        if(end<totalPg){if(end<totalPg-1)h+='<span style="padding:0 4px">…</span>';h+='<button onclick="VlPage.goPage('+totalPg+')">'+totalPg+'</button>';}
+        h+='<button '+(currentPage>=totalPg?'disabled':'')+' onclick="VlPage.goPage('+(currentPage+1)+')">'+i18n.t('next')+'</button>';
+        pg.innerHTML=h;
+        info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+' | '+i18n.t('page')+' '+currentPage+' '+i18n.t('of')+' '+totalPg+'</span>'+
+            '<div class="pg-goto"><label>'+i18n.t('go_to_page')+':</label><input type="number" min="1" max="'+totalPg+'" id="vlGotoInput" value="'+currentPage+'"><button onclick="VlPage.gotoPage()">↵</button></div>';
     }
 
     /* ---- Modal ---- */
@@ -286,7 +301,8 @@
 
     /* ---- Global methods ---- */
     window.VlPage={
-        goPage(p){currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+        goPage(p){const totalPg=Math.ceil(filteredViolations.length/perPage);if(p<1)p=1;if(p>totalPg)p=totalPg;currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+        gotoPage(){const inp=$('vlGotoInput');if(inp){const p=parseInt(inp.value);if(p&&p>=1)this.goPage(p);}},
         async view(id){
             try{
                 const res=await API.get('/violations/'+id);

@@ -33,11 +33,16 @@
 #vehicleTable{display:none}
 .data-table .table-actions .btn-icon{width:30px;height:30px;font-size:.8rem}
 .view-toggle .btn.active{background:var(--primary-main);color:var(--text-light)}
-.pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:24px}
+.pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:24px;flex-wrap:wrap}
 .pagination button{min-width:36px;height:36px;border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-primary);border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .3s}
 .pagination button:hover:not(:disabled){background:var(--primary-main);color:var(--text-light)}
 .pagination button.active{background:var(--primary-main);color:var(--text-light);border-color:var(--primary-main)}
 .pagination button:disabled{opacity:.4;cursor:not-allowed}
+.pagination .pg-prev,.pagination .pg-next{min-width:auto;padding:0 12px;font-weight:600}
+.pagination-info{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:.85rem;color:var(--text-secondary)}
+.pagination-info .pg-goto{display:flex;align-items:center;gap:6px}
+.pagination-info .pg-goto input{width:60px;height:32px;text-align:center;border:1px solid var(--border-default);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:.85rem}
+.pagination-info .pg-goto button{height:32px;padding:0 10px;border:1px solid var(--primary-main);background:var(--primary-main);color:var(--text-light);border-radius:6px;cursor:pointer;font-size:.8rem}
 .modal-lg .modal-content{max-width:720px}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
@@ -62,35 +67,36 @@
 <!-- Toolbar -->
 <div class="toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="searchInput" placeholder="بحث برقم المركبة أو اسم السائق...">
+        <input type="text" class="form-control" id="searchInput" placeholder="">
         <span class="search-icon">🔍</span>
     </div>
     <div class="filters">
         <select class="form-select" id="filterStatus">
-            <option value="">كل الحالات</option>
-            <option value="operational">تعمل</option>
-            <option value="maintenance">صيانة</option>
-            <option value="out_of_service">خارج الخدمة</option>
+            <option value=""></option>
+            <option value="operational"></option>
+            <option value="maintenance"></option>
+            <option value="out_of_service"></option>
         </select>
-        <select class="form-select" id="filterDept"><option value="">كل الإدارات</option></select>
+        <select class="form-select" id="filterDept"><option value=""></option></select>
+        <select class="form-select" id="filterSection"><option value=""></option></select>
         <select class="form-select" id="filterMode">
-            <option value="">كل الأنماط</option>
-            <option value="private">خاصة</option>
-            <option value="shift">وردية</option>
+            <option value=""></option>
+            <option value="private"></option>
+            <option value="shift"></option>
         </select>
         <select class="form-select" id="filterGender">
-            <option value="">كل الجنس</option>
-            <option value="men">رجال</option>
-            <option value="women">نساء</option>
+            <option value=""></option>
+            <option value="men"></option>
+            <option value="women"></option>
         </select>
     </div>
     <div class="toolbar-end">
         <div class="view-toggle">
-            <button class="btn btn-ghost btn-icon active" id="viewCards" title="بطاقات">🗂️</button>
-            <button class="btn btn-ghost btn-icon" id="viewTable" title="جدول">📋</button>
+            <button class="btn btn-ghost btn-icon active" id="viewCards" title="">🗂️</button>
+            <button class="btn btn-ghost btn-icon" id="viewTable" title="">📋</button>
         </div>
-        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
-        <button class="btn btn-primary" id="btnAddVehicle">➕ إضافة مركبة</button>
+        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="">📥 <span data-i18n="export"></span></button>
+        <button class="btn btn-primary" id="btnAddVehicle">➕ <span data-i18n="add_vehicle"></span></button>
     </div>
 </div>
 
@@ -111,6 +117,7 @@
 
 <!-- Pagination -->
 <div class="pagination" id="pagination"></div>
+<div class="pagination-info" id="paginationInfo"></div>
 
 <!-- ===== ADD/EDIT VEHICLE MODAL ===== -->
 <div class="modal" id="vehicleModal">
@@ -254,11 +261,14 @@ $pageScripts = <<<'SCRIPT'
         try{
             const res=await API.get('/references');
             refs=res.data||res;
-            const dd=$('filterDept'),fd=$('fDept');
+            const dd=$('filterDept'),fd=$('fDept'),fs=$('filterSection');
             (refs.departments||[]).forEach(d=>{
                 const o1=new Option(d.name_ar||d.name_en,d.department_id);
                 const o2=new Option(d.name_ar||d.name_en,d.department_id);
                 dd.appendChild(o1);fd.appendChild(o2);
+            });
+            (refs.sections||[]).forEach(s=>{
+                fs.appendChild(new Option(s.name_ar||s.name_en,s.section_id));
             });
         }catch(e){}
     }
@@ -375,15 +385,24 @@ $pageScripts = <<<'SCRIPT'
     }
 
     function renderPagination(){
-        const total=Math.ceil(filteredVehicles.length/perPage);
+        const totalItems=filteredVehicles.length;
+        const totalPg=Math.ceil(totalItems/perPage);
         const pg=$('pagination');
-        if(total<=1){pg.innerHTML='';return;}
-        let h='<button '+(currentPage<=1?'disabled':'')+' onclick="VPage.goPage('+(currentPage-1)+')">‹</button>';
-        for(let i=1;i<=total;i++){
+        const info=$('paginationInfo');
+        if(totalPg<=1){pg.innerHTML='';info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+'</span>';return;}
+        let h='<button class="pg-prev" '+(currentPage<=1?'disabled':'')+' onclick="VPage.goPage('+(currentPage-1)+')">'+i18n.t('previous')+'</button>';
+        // Show max 7 page buttons with ellipsis
+        let start=Math.max(1,currentPage-3), end=Math.min(totalPg,currentPage+3);
+        if(start>1){h+='<button onclick="VPage.goPage(1)">1</button>';if(start>2)h+='<span style="padding:0 4px">…</span>';}
+        for(let i=start;i<=end;i++){
             h+='<button class="'+(i===currentPage?'active':'')+'" onclick="VPage.goPage('+i+')">'+i+'</button>';
         }
-        h+='<button '+(currentPage>=total?'disabled':'')+' onclick="VPage.goPage('+(currentPage+1)+')">›</button>';
+        if(end<totalPg){if(end<totalPg-1)h+='<span style="padding:0 4px">…</span>';h+='<button onclick="VPage.goPage('+totalPg+')">'+totalPg+'</button>';}
+        h+='<button class="pg-next" '+(currentPage>=totalPg?'disabled':'')+' onclick="VPage.goPage('+(currentPage+1)+')">'+i18n.t('next')+'</button>';
         pg.innerHTML=h;
+        // Pagination info with go-to-page
+        info.innerHTML='<span>'+i18n.t('total_records')+': '+totalItems+' | '+i18n.t('page')+' '+currentPage+' '+i18n.t('of')+' '+totalPg+'</span>'+
+            '<div class="pg-goto"><label>'+i18n.t('go_to_page')+':</label><input type="number" min="1" max="'+totalPg+'" id="gotoPageInput" value="'+currentPage+'"><button onclick="VPage.gotoPage()">↵</button></div>';
     }
 
     /* --- View toggle --- */
@@ -393,6 +412,7 @@ $pageScripts = <<<'SCRIPT'
     /* --- Filters --- */
     $('filterStatus').addEventListener('change',loadVehicles);
     $('filterDept').addEventListener('change',loadVehicles);
+    $('filterSection').addEventListener('change',loadVehicles);
     $('filterMode').addEventListener('change',loadVehicles);
     $('filterGender').addEventListener('change',loadVehicles);
     let searchTimer;
@@ -470,7 +490,9 @@ $pageScripts = <<<'SCRIPT'
 
     /* --- Global methods for onclick --- */
     window.VPage={
-        goPage(p){currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+        goPage(p){const totalPg=Math.ceil(filteredVehicles.length/perPage);if(p<1)p=1;if(p>totalPg)p=totalPg;currentPage=p;render();window.scrollTo({top:0,behavior:'smooth'});},
+
+        gotoPage(){const inp=$('gotoPageInput');if(inp){const p=parseInt(inp.value);if(p&&p>=1)this.goPage(p);}},
 
         async view(id){
             try{
@@ -542,9 +564,26 @@ $pageScripts = <<<'SCRIPT'
         }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
     });
 
+    /* --- Apply i18n labels to dynamic elements --- */
+    function applyI18nLabels(){
+        const t=i18n.t.bind(i18n);
+        $('searchInput').placeholder=t('search_vehicle');
+        // Filter dropdowns
+        const fs=$('filterStatus');fs.options[0].text=t('all_statuses');fs.options[1].text=t('operational');fs.options[2].text=t('under_maintenance');fs.options[3].text=t('out_of_service');
+        $('filterDept').options[0].text=t('all_departments');
+        $('filterSection').options[0].text=t('all_sections');
+        const fm=$('filterMode');fm.options[0].text=t('all_modes');fm.options[1].text=t('private');fm.options[2].text=t('shift');
+        const fg=$('filterGender');fg.options[0].text=t('all_genders');fg.options[1].text=t('men');fg.options[2].text=t('women');
+        // Buttons
+        $('viewCards').title=t('card_view');$('viewTable').title=t('table_view');
+        // Apply data-i18n text
+        document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+    }
+
     /* --- Init --- */
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,150));
+        applyI18nLabels();
         await loadRefs();
         loadStats();
         loadVehicles();

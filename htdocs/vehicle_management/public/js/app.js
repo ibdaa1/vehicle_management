@@ -285,9 +285,14 @@ const i18n = {
     lang: localStorage.getItem('lang') || 'ar',
     strings: {},
 
-    async load() {
+    async load(userLang) {
+        // If a user language preference is provided, use it
+        if (userLang && (userLang === 'ar' || userLang === 'en')) {
+            this.lang = userLang;
+            localStorage.setItem('lang', userLang);
+        }
         try {
-            const res = await fetch(API.baseUrl + '/languages/' + this.lang + '.json');
+            const res = await fetch(API.baseUrl + '/public/languages/' + this.lang + '.json');
             if (res.ok) {
                 this.strings = await res.json();
             }
@@ -407,6 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     API.baseUrl = window.location.origin + (pathParts[0] || '');
 
     // Load language strings first (needed for menu labels)
+    // Try to get user's preferred language from auth
     await i18n.load();
 
     // Load and apply theme
@@ -422,6 +428,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!user) {
             window.location.href = API.baseUrl + '/public/login.html';
             return;
+        }
+
+        // If user has a preferred language, reload i18n with it
+        if (user.preferred_language && user.preferred_language !== i18n.lang) {
+            await i18n.load(user.preferred_language);
         }
 
         // Render header user info
