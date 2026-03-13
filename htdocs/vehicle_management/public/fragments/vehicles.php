@@ -67,36 +67,36 @@
 <!-- Toolbar -->
 <div class="toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="searchInput" placeholder="">
+        <input type="text" class="form-control" id="searchInput" placeholder="بحث برقم المركبة أو اسم السائق...">
         <span class="search-icon">🔍</span>
     </div>
     <div class="filters">
         <select class="form-select" id="filterStatus">
-            <option value=""></option>
-            <option value="operational"></option>
-            <option value="maintenance"></option>
-            <option value="out_of_service"></option>
+            <option value="">كل الحالات</option>
+            <option value="operational">تعمل</option>
+            <option value="maintenance">صيانة</option>
+            <option value="out_of_service">خارج الخدمة</option>
         </select>
-        <select class="form-select" id="filterDept"><option value=""></option></select>
-        <select class="form-select" id="filterSection"><option value=""></option></select>
+        <select class="form-select" id="filterDept"><option value="">كل الإدارات</option></select>
+        <select class="form-select" id="filterSection"><option value="">كل الأقسام</option></select>
         <select class="form-select" id="filterMode">
-            <option value=""></option>
-            <option value="private"></option>
-            <option value="shift"></option>
+            <option value="">كل الأنماط</option>
+            <option value="private">خاصة</option>
+            <option value="shift">وردية</option>
         </select>
         <select class="form-select" id="filterGender">
-            <option value=""></option>
-            <option value="men"></option>
-            <option value="women"></option>
+            <option value="">كل الجنس</option>
+            <option value="men">رجال</option>
+            <option value="women">نساء</option>
         </select>
     </div>
     <div class="toolbar-end">
         <div class="view-toggle">
-            <button class="btn btn-ghost btn-icon active" id="viewCards" title="">🗂️</button>
-            <button class="btn btn-ghost btn-icon" id="viewTable" title="">📋</button>
+            <button class="btn btn-ghost btn-icon active" id="viewCards" title="بطاقات">🗂️</button>
+            <button class="btn btn-ghost btn-icon" id="viewTable" title="جدول">📋</button>
         </div>
-        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="">📥 <span data-i18n="export"></span></button>
-        <button class="btn btn-primary" id="btnAddVehicle">➕ <span data-i18n="add_vehicle"></span></button>
+        <button class="btn btn-outline btn-sm" id="btnExportExcel" title="تصدير إكسيل">📥 تصدير</button>
+        <button class="btn btn-primary" id="btnAddVehicle">➕ إضافة مركبة</button>
     </div>
 </div>
 
@@ -566,6 +566,7 @@ $pageScripts = <<<'SCRIPT'
 
     /* --- Apply i18n labels to dynamic elements --- */
     function applyI18nLabels(){
+        if(!i18n.strings || !Object.keys(i18n.strings).length) return;
         const t=i18n.t.bind(i18n);
         $('searchInput').placeholder=t('search_vehicle');
         // Filter dropdowns
@@ -574,10 +575,10 @@ $pageScripts = <<<'SCRIPT'
         $('filterSection').options[0].text=t('all_sections');
         const fm=$('filterMode');fm.options[0].text=t('all_modes');fm.options[1].text=t('private');fm.options[2].text=t('shift');
         const fg=$('filterGender');fg.options[0].text=t('all_genders');fg.options[1].text=t('men');fg.options[2].text=t('women');
-        // Buttons
+        // Buttons and titles
         $('viewCards').title=t('card_view');$('viewTable').title=t('table_view');
-        // Apply data-i18n text
-        document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+        $('btnExportExcel').innerHTML='📥 '+t('export');
+        $('btnAddVehicle').innerHTML='➕ '+t('add_vehicle');
     }
 
     /* --- Init --- */
