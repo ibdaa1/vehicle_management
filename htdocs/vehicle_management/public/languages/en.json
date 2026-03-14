@@ -243,5 +243,7 @@
   "employee_count": "Employees",
   "pickup_category": "Pickup (Category)",
   "statistics": "Statistics",
-  "count": "Count"
+  "count": "Count",
+  "operation_type_pickup": "Pickup",
+  "operation_type_return": "Return"
 }

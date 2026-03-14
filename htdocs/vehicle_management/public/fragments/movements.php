@@ -282,12 +282,20 @@
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
     let vehicleMap={}, latestByVehicle={};
+    var allRefs={};
     var lastStats={};
     var mvUser=null;
     var mvPerms=[];
     var mvCanCreate=false;
     var mvCanEdit=false;
     var mvCanDelete=false;
+
+    /* ---- Helper: get selected data-id from a select element ---- */
+    function getSelId(sel){
+        if(!sel||!sel.value) return '';
+        var opt=sel.options[sel.selectedIndex];
+        return opt?opt.getAttribute('data-id')||'':'';
+    }
 
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
@@ -300,8 +308,10 @@
             vehicles.forEach(v=>{
                 const o=document.createElement('option');o.value=v.vehicle_code;o.textContent=v.vehicle_code;sel.appendChild(o);
             });
-            // Populate department dropdown
+            // Store refs for cascade
             const refs=rRes.data||rRes;
+            allRefs=refs;
+            // Populate department dropdown
             const dSel=$('mvFilterDept');
             (refs.departments||[]).forEach(d=>{
                 const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.department_id||d.id||'');dSel.appendChild(o);
@@ -311,11 +321,8 @@
             (refs.sections||[]).forEach(s=>{
                 const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;o.setAttribute('data-id',s.section_id||s.id||'');sSel.appendChild(o);
             });
-            // Populate division dropdown
-            const dvSel=$('mvFilterDivision');
-            (refs.divisions||[]).forEach(d=>{
-                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.division_id||d.id||'');dvSel.appendChild(o);
-            });
+            // Populate division dropdown (all divisions initially)
+            populateDivisions('');
             // Populate performed_by user dropdown
             const users=(uRes.data||uRes)||[];
             const pbSel=$('mvPerformedBy');
@@ -329,6 +336,22 @@
             // Default to current user's emp_id
             if(mvUser&&mvUser.emp_id) pbSel.value=mvUser.emp_id;
         }catch(e){console.error('loadReferences',e);}
+    }
+
+    /* ---- Populate division dropdown (cascade on section) ---- */
+    function populateDivisions(sectionId){
+        var dvSel=$('mvFilterDivision');
+        // Keep the first "All Divisions" option
+        while(dvSel.options.length>1) dvSel.remove(1);
+        var divisions=allRefs.divisions||[];
+        divisions.forEach(function(d){
+            var divSecId=String(d.section_id||'');
+            if(sectionId && divSecId!==String(sectionId)) return;
+            var o=document.createElement('option');
+            o.value=d.name_ar;o.textContent=d.name_ar;
+            o.setAttribute('data-id',d.division_id||d.id||'');
+            dvSel.appendChild(o);
+        });
     }
 
     /* ---- Build latest movement per vehicle ---- */
@@ -418,9 +441,9 @@
         const dateFrom=$('mvDateFrom').value;
         const dateTo=$('mvDateTo').value;
         const vStatus=$('mvFilterVehicleStatus').value;
-        const dept=$('mvFilterDept').value;
-        const section=$('mvFilterSection').value;
-        const division=$('mvFilterDivision').value;
+        const deptId=getSelId($('mvFilterDept'));
+        const secId=getSelId($('mvFilterSection'));
+        const divId=getSelId($('mvFilterDivision'));
         const gender=$('mvFilterGender').value;
         const vCode=$('mvFilterVehicle').value;
         const vMode=$('mvFilterVehicleMode').value;
@@ -439,9 +462,9 @@
             // Cross-reference vehicle data
             const v=vehicleMap[m.vehicle_code];
             if(vStatus && v && v.status!==vStatus) return false;
-            if(dept && v && v.department_name!==dept) return false;
-            if(section && v && v.section_name!==section) return false;
-            if(division && v && v.division_name!==division) return false;
+            if(deptId && v && String(v.department_id)!==String(deptId)) return false;
+            if(secId && v && String(v.section_id)!==String(secId)) return false;
+            if(divId && v && String(v.division_id)!==String(divId)) return false;
             if(gender && v && v.gender!==gender) return false;
             if(vMode && v && v.vehicle_mode!==vMode) return false;
             if(vCode && m.vehicle_code!==vCode) return false;
@@ -590,7 +613,12 @@
     $('mvDateTo').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
     $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
-    $('mvFilterSection').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterSection').addEventListener('change',function(){
+        // Cascade: repopulate divisions based on selected section
+        var secId=getSelId($('mvFilterSection'));
+        populateDivisions(secId);
+        applyFiltersAndStats();
+    });
     $('mvFilterDivision').addEventListener('change',applyFiltersAndStats);
     $('mvFilterGender').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicleMode').addEventListener('change',applyFiltersAndStats);
@@ -599,15 +627,15 @@
     /* ---- Print individual stat ---- */
     function getFilteredVehicles(){
         var allVehicles=Object.values(vehicleMap);
-        var dept=$('mvFilterDept').value;
-        var section=$('mvFilterSection').value;
-        var division=$('mvFilterDivision').value;
+        var deptId=getSelId($('mvFilterDept'));
+        var secId=getSelId($('mvFilterSection'));
+        var divId=getSelId($('mvFilterDivision'));
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allVehicles.filter(function(v){
-            if(dept && v.department_name!==dept) return false;
-            if(section && v.section_name!==section) return false;
-            if(division && v.division_name!==division) return false;
+            if(deptId && String(v.department_id)!==String(deptId)) return false;
+            if(secId && String(v.section_id)!==String(secId)) return false;
+            if(divId && String(v.division_id)!==String(divId)) return false;
             if(gender && v.gender!==gender) return false;
             if(vMode && v.vehicle_mode!==vMode) return false;
             return true;
@@ -628,8 +656,8 @@
     function getFilteredMovements(typeFilter){
         var dateFrom=$('mvDateFrom').value;
         var dateTo=$('mvDateTo').value;
-        var dept=$('mvFilterDept').value;
-        var section=$('mvFilterSection').value;
+        var deptId=getSelId($('mvFilterDept'));
+        var secId=getSelId($('mvFilterSection'));
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allMovements.filter(function(m){
@@ -638,8 +666,8 @@
             if(dateFrom && md<dateFrom) return false;
             if(dateTo && md>dateTo) return false;
             var v=vehicleMap[m.vehicle_code];
-            if(dept && v && v.department_name!==dept) return false;
-            if(section && v && v.section_name!==section) return false;
+            if(deptId && v && String(v.department_id)!==String(deptId)) return false;
+            if(secId && v && String(v.section_id)!==String(secId)) return false;
             if(gender && v && v.gender!==gender) return false;
             if(vMode && v && v.vehicle_mode!==vMode) return false;
             return true;

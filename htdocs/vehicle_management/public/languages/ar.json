@@ -243,5 +243,7 @@
   "employee_count": "الموظفون",
   "pickup_category": "دبل كابينة",
   "statistics": "الإحصائيات",
-  "count": "العدد"
+  "count": "العدد",
+  "operation_type_pickup": "استلام",
+  "operation_type_return": "إرجاع"
 }
