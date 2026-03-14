@@ -393,9 +393,9 @@
         var user=Auth.getUser();
         if(!user){setTimeout(initPerms,100);return;}
         var perms=(user.permissions)||[];
-        vlCanCreate=perms.includes('violations_create')||perms.includes('*');
-        vlCanEdit=perms.includes('violations_edit')||perms.includes('*');
-        vlCanDelete=perms.includes('violations_delete')||perms.includes('*');
+        vlCanCreate=perms.includes('manage_violations')||perms.includes('*');
+        vlCanEdit=perms.includes('manage_violations')||perms.includes('*');
+        vlCanDelete=perms.includes('manage_violations')||perms.includes('*');
         if(!vlCanCreate){var ab=$('vlBtnAdd');if(ab)ab.style.display='none';}
         translateStatic();
         loadViolations();

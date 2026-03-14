@@ -26,7 +26,7 @@ class VehicleController extends BaseController
      */
     public function index(Request $request, array $params = []): void
     {
-        $this->requirePermission($request, 'vehicles_read');
+        $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         $filters = $request->only(['status', 'vehicle_mode', 'department_id', 'gender']);
@@ -64,7 +64,7 @@ class VehicleController extends BaseController
      */
     public function show(Request $request, array $params = []): void
     {
-        $this->requirePermission($request, 'vehicles_read');
+        $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -88,7 +88,7 @@ class VehicleController extends BaseController
      */
     public function store(Request $request, array $params = []): void
     {
-        $user = $this->requirePermission($request, 'vehicles_create');
+        $user = $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         $data = $request->only([
@@ -121,7 +121,7 @@ class VehicleController extends BaseController
      */
     public function update(Request $request, array $params = []): void
     {
-        $user = $this->requirePermission($request, 'vehicles_edit');
+        $user = $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -166,7 +166,7 @@ class VehicleController extends BaseController
      */
     public function destroy(Request $request, array $params = []): void
     {
-        $this->requirePermission($request, 'vehicles_delete');
+        $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
@@ -323,7 +323,7 @@ class VehicleController extends BaseController
      */
     public function stats(Request $request, array $params = []): void
     {
-        $this->requirePermission($request, 'vehicles_read');
+        $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
         try {

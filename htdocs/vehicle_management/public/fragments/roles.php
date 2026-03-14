@@ -584,8 +584,8 @@
         var user=Auth.getUser();
         if(!user){setTimeout(initRolePerms,100);return;}
         var perms=(user.permissions)||[];
-        rCanEdit=perms.includes('roles_manage')||perms.includes('*');
-        rCanDelete=perms.includes('roles_manage')||perms.includes('*');
+        rCanEdit=perms.includes('manage_roles')||perms.includes('*');
+        rCanDelete=perms.includes('manage_roles')||perms.includes('*');
         if(!rCanEdit){var ab=document.getElementById('btnAddRole');if(ab)ab.style.display='none';}
         loadPermissions().then(function() { loadRoles(); });
     })();

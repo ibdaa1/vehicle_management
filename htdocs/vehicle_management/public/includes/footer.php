@@ -68,7 +68,7 @@
         if (!pageContent || !accessDenied) return;
 
         var requiredPerm = pageContent.getAttribute('data-required-perm');
-        if (!requiredPerm) return; // No permission required for this page
+        if (!requiredPerm) { pageContent.style.display = ''; return; } // No permission required — show immediately
 
         // Check permission after Auth has loaded (Auth.check is called by app.js on DOMContentLoaded)
         function checkPagePermission() {
@@ -79,8 +79,11 @@
                 return;
             }
             var perms = user.permissions || [];
-            if (!perms.includes(requiredPerm) && !perms.includes('*')) {
-                // User lacks permission — hide page content, show access denied
+            if (perms.includes(requiredPerm) || perms.includes('*')) {
+                // User HAS permission — show page content
+                pageContent.style.display = '';
+            } else {
+                // User lacks permission — keep page content hidden, show access denied
                 pageContent.style.display = 'none';
                 accessDenied.style.display = 'block';
                 // Apply language to access denied message

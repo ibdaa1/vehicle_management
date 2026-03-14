@@ -20,14 +20,14 @@ $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page'])
 $pageMeta = [
     'dashboard'   => ['title' => 'لوحة التحكم',           'active' => 'dashboard',    'perm' => null],
     'my_vehicles' => ['title' => 'مركباتي',               'active' => 'my_vehicles',  'perm' => null],
-    'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles',     'perm' => 'vehicles_read'],
-    'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles',     'perm' => 'vehicles_read'],
-    'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements',    'perm' => 'movements_read'],
-    'maintenance' => ['title' => 'الصيانة',               'active' => 'maintenance',  'perm' => 'maintenance_read'],
-    'violations'  => ['title' => 'المخالفات',             'active' => 'violations',   'perm' => 'violations_read'],
-    'users'       => ['title' => 'إدارة المستخدمين',      'active' => 'users',        'perm' => 'users_read'],
-    'roles'       => ['title' => 'إدارة الأدوار',         'active' => 'roles',        'perm' => 'roles_manage'],
-    'settings'    => ['title' => 'الإعدادات',             'active' => 'settings',     'perm' => 'settings_view'],
+    'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles',     'perm' => 'manage_vehicles'],
+    'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles',     'perm' => 'manage_vehicles'],
+    'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements',    'perm' => 'manage_movements'],
+    'maintenance' => ['title' => 'الصيانة',               'active' => 'maintenance',  'perm' => 'manage_maintenance'],
+    'violations'  => ['title' => 'المخالفات',             'active' => 'violations',   'perm' => 'manage_violations'],
+    'users'       => ['title' => 'إدارة المستخدمين',      'active' => 'users',        'perm' => 'manage_users'],
+    'roles'       => ['title' => 'إدارة الأدوار',         'active' => 'roles',        'perm' => 'manage_roles'],
+    'settings'    => ['title' => 'الإعدادات',             'active' => 'settings',     'perm' => 'manage_settings'],
     'profile'     => ['title' => 'الملف الشخصي',          'active' => 'profile',      'perm' => null],
 ];
 
@@ -52,7 +52,7 @@ $requiredPerm = $meta['perm'] ?? null;
 include __DIR__ . '/includes/header.php';
 ?>
 <!-- Page-level permission gate: wraps fragment content -->
-<div id="pageContent" data-required-perm="<?= htmlspecialchars($requiredPerm ?? '') ?>">
+<div id="pageContent" data-required-perm="<?= htmlspecialchars($requiredPerm ?? '') ?>" style="<?= $requiredPerm ? 'display:none' : '' ?>">
 <?php
 // Include the fragment (renders main content only)
 include $fragmentFile;

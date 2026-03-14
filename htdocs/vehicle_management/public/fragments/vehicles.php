@@ -622,9 +622,9 @@ $pageScripts = <<<'SCRIPT'
         // Load user permissions
         var user=Auth.getUser();
         var perms=(user&&user.permissions)||[];
-        canCreate=perms.includes('vehicles_create')||perms.includes('*');
-        canEdit=perms.includes('vehicles_edit')||perms.includes('*');
-        canDelete=perms.includes('vehicles_delete')||perms.includes('*');
+        canCreate=perms.includes('manage_vehicles')||perms.includes('*');
+        canEdit=perms.includes('manage_vehicles')||perms.includes('*');
+        canDelete=perms.includes('manage_vehicles')||perms.includes('*');
         if(!canCreate) $('btnAddVehicle').style.display='none';
         translateStatic();
         await loadRefs();

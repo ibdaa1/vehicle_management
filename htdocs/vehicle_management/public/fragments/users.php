@@ -620,9 +620,9 @@
         var user=Auth.getUser();
         if(!user){setTimeout(initUserPerms,100);return;}
         var perms=(user.permissions)||[];
-        uCanCreate=perms.includes('users_create')||perms.includes('*');
-        uCanEdit=perms.includes('users_edit')||perms.includes('*');
-        uCanDelete=perms.includes('users_delete')||perms.includes('*');
+        uCanCreate=perms.includes('manage_users')||perms.includes('*');
+        uCanEdit=perms.includes('manage_users')||perms.includes('*');
+        uCanDelete=perms.includes('manage_users')||perms.includes('*');
         if(!uCanCreate){var ab=document.getElementById('btnAddUser');if(ab)ab.style.display='none';}
         loadRoles().then(() => loadUserRefs()).then(() => loadUsers());
     })();

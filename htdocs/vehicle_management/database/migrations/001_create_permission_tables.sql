@@ -1,23 +1,15 @@
 -- ================================================================
 -- Migration 001: Permission System Tables
 -- ================================================================
--- This migration creates/ensures the permission system tables exist
--- with the correct structure based on the new schema design.
---
 -- Tables: roles, permissions, role_permissions, resource_permissions
 --
--- Run this migration on the database to set up the new permission system.
--- The new roles table uses a clean structure (id, key_name, display_name)
--- instead of embedding permission flags directly in the roles table.
+-- permissions table: ONE row per module (manage_users, manage_vehicles, etc.)
+-- resource_permissions table: granular CRUD flags per role per resource
 -- ================================================================
 
 -- -------------------------------------------
--- 1. Roles Table (clean structure)
+-- 1. Roles Table
 -- -------------------------------------------
--- Note: If the old roles table exists with permission columns (can_*),
--- this does not drop it. The new MVC code reads from the new normalized tables.
--- Ensure the roles table at minimum has: id, key_name, display_name, created_at
-
 CREATE TABLE IF NOT EXISTS `roles` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
     `key_name` VARCHAR(100) NOT NULL,
@@ -26,7 +18,6 @@ CREATE TABLE IF NOT EXISTS `roles` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert default roles if empty
 INSERT IGNORE INTO `roles` (`id`, `key_name`, `display_name`) VALUES
     (1, 'superadmin', 'مدير النظام / Super Admin'),
     (2, 'admin', 'مدير / Admin'),
@@ -35,7 +26,7 @@ INSERT IGNORE INTO `roles` (`id`, `key_name`, `display_name`) VALUES
     (5, 'viewer', 'مشاهد / Viewer');
 
 -- -------------------------------------------
--- 2. Permissions Table
+-- 2. Permissions Table — ONE row per module
 -- -------------------------------------------
 CREATE TABLE IF NOT EXISTS `permissions` (
     `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -50,54 +41,16 @@ CREATE TABLE IF NOT EXISTS `permissions` (
     UNIQUE KEY `uk_permissions_key` (`key_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insert default permissions for each module
 INSERT IGNORE INTO `permissions` (`key_name`, `display_name`, `description`, `module`) VALUES
-    -- User Management Module
-    ('users_read',    'عرض المستخدمين / View Users',       'View user list and profiles',    'users'),
-    ('users_create',  'إضافة مستخدم / Create User',        'Create new users',               'users'),
-    ('users_edit',    'تعديل مستخدم / Edit User',          'Edit user information',          'users'),
-    ('users_delete',  'حذف مستخدم / Delete User',          'Delete users',                   'users'),
-    ('users_activate','تفعيل مستخدم / Activate User',      'Activate/deactivate users',      'users'),
-
-    -- Vehicle Management Module
-    ('vehicles_read',   'عرض المركبات / View Vehicles',     'View vehicle list',              'vehicles'),
-    ('vehicles_create', 'إضافة مركبة / Create Vehicle',     'Add new vehicles',               'vehicles'),
-    ('vehicles_edit',   'تعديل مركبة / Edit Vehicle',       'Edit vehicle information',       'vehicles'),
-    ('vehicles_delete', 'حذف مركبة / Delete Vehicle',       'Delete vehicles',                'vehicles'),
-    ('vehicles_assign', 'تعيين مركبة / Assign Vehicle',     'Assign vehicles to employees',   'vehicles'),
-
-    -- Vehicle Movements Module
-    ('movements_read',   'عرض الحركات / View Movements',    'View vehicle movements',         'movements'),
-    ('movements_create', 'إضافة حركة / Create Movement',    'Record vehicle movements',       'movements'),
-    ('movements_edit',   'تعديل حركة / Edit Movement',      'Edit movement records',          'movements'),
-
-    -- Vehicle Violations Module
-    ('violations_read',   'عرض المخالفات / View Violations',  'View violations',              'violations'),
-    ('violations_create', 'إضافة مخالفة / Create Violation',  'Record violations',            'violations'),
-    ('violations_edit',   'تعديل مخالفة / Edit Violation',    'Edit violation records',       'violations'),
-    ('violations_delete', 'حذف مخالفة / Delete Violation',    'Delete violations',            'violations'),
-
-    -- Maintenance Module
-    ('maintenance_read',   'عرض الصيانة / View Maintenance',   'View maintenance records',   'maintenance'),
-    ('maintenance_create', 'إضافة صيانة / Create Maintenance', 'Add maintenance records',    'maintenance'),
-    ('maintenance_edit',   'تعديل صيانة / Edit Maintenance',   'Edit maintenance records',   'maintenance'),
-    ('maintenance_delete', 'حذف صيانة / Delete Maintenance',   'Delete maintenance records', 'maintenance'),
-
-    -- Reports Module
-    ('reports_view',   'عرض التقارير / View Reports',       'View reports',                   'reports'),
-    ('reports_export', 'تصدير التقارير / Export Reports',   'Export/print reports',           'reports'),
-
-    -- Roles & Permissions Module
-    ('roles_manage',       'إدارة الأدوار / Manage Roles',           'Create/edit/delete roles',         'admin'),
-    ('permissions_manage', 'إدارة الصلاحيات / Manage Permissions',   'Manage permission assignments',    'admin'),
-
-    -- References Module (Departments/Sections/Divisions)
-    ('references_read',   'عرض المراجع / View References',   'View departments/sections/divisions',   'references'),
-    ('references_manage', 'إدارة المراجع / Manage References', 'Create/edit/delete references',       'references'),
-
-    -- Settings Module
-    ('settings_view',   'عرض الإعدادات / View Settings',    'View system settings',           'settings'),
-    ('settings_manage', 'إدارة الإعدادات / Manage Settings', 'Edit system settings',          'settings');
+    ('manage_users',       'manage_users',       'Manage users (CRUD)',                   'users'),
+    ('manage_vehicles',    'manage_vehicles',    'Manage vehicles (CRUD)',                'vehicles'),
+    ('manage_movements',   'manage_movements',   'Manage vehicle movements',              'movements'),
+    ('manage_violations',  'manage_violations',  'Manage vehicle violations',             'violations'),
+    ('manage_maintenance', 'manage_maintenance', 'Manage maintenance records',            'maintenance'),
+    ('manage_reports',     'manage_reports',     'View and export reports',               'reports'),
+    ('manage_roles',       'manage_roles',       'Manage roles and permissions',          'admin'),
+    ('manage_references',  'manage_references',  'Manage departments/sections/divisions', 'references'),
+    ('manage_settings',    'manage_settings',    'Manage system settings',                'settings');
 
 -- -------------------------------------------
 -- 3. Role-Permission Mapping Table
@@ -113,28 +66,28 @@ CREATE TABLE IF NOT EXISTS `role_permissions` (
     KEY `idx_permission_id` (`permission_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Assign all permissions to superadmin (role_id=1)
+-- Superadmin: all permissions
 INSERT IGNORE INTO `role_permissions` (`role_id`, `permission_id`)
 SELECT 1, id FROM `permissions`;
 
--- Assign most permissions to admin (role_id=2)
+-- Admin: all except manage_roles
 INSERT IGNORE INTO `role_permissions` (`role_id`, `permission_id`)
-SELECT 2, id FROM `permissions` WHERE `key_name` NOT IN ('roles_manage', 'permissions_manage');
+SELECT 2, id FROM `permissions` WHERE `key_name` NOT IN ('manage_roles');
 
--- Assign read + create permissions to manager (role_id=3)
+-- Manager: most modules (not roles/settings)
 INSERT IGNORE INTO `role_permissions` (`role_id`, `permission_id`)
-SELECT 3, id FROM `permissions` WHERE `key_name` LIKE '%_read' OR `key_name` LIKE '%_create' OR `key_name` LIKE '%_edit' OR `key_name` IN ('reports_view', 'reports_export', 'vehicles_assign');
+SELECT 3, id FROM `permissions` WHERE `key_name` IN ('manage_users','manage_vehicles','manage_movements','manage_violations','manage_maintenance','manage_reports','manage_references');
 
--- Assign read + limited create permissions to employee (role_id=4)
+-- Employee: limited modules
 INSERT IGNORE INTO `role_permissions` (`role_id`, `permission_id`)
-SELECT 4, id FROM `permissions` WHERE `key_name` LIKE '%_read' OR `key_name` IN ('movements_create', 'reports_view');
+SELECT 4, id FROM `permissions` WHERE `key_name` IN ('manage_vehicles','manage_movements','manage_reports');
 
--- Assign only read permissions to viewer (role_id=5)
+-- Viewer: read-only (handled via resource_permissions flags)
 INSERT IGNORE INTO `role_permissions` (`role_id`, `permission_id`)
-SELECT 5, id FROM `permissions` WHERE `key_name` LIKE '%_read' OR `key_name` = 'reports_view';
+SELECT 5, id FROM `permissions` WHERE `key_name` IN ('manage_vehicles','manage_movements','manage_reports');
 
 -- -------------------------------------------
--- 4. Resource-Level Permissions Table
+-- 4. Resource Permissions Table — Granular CRUD per role per resource
 -- -------------------------------------------
 CREATE TABLE IF NOT EXISTS `resource_permissions` (
     `id` INT(11) NOT NULL AUTO_INCREMENT,
@@ -155,13 +108,50 @@ CREATE TABLE IF NOT EXISTS `resource_permissions` (
     KEY `idx_rp_resource` (`resource_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Default resource permissions for superadmin (full access to all resources)
+-- Superadmin: full CRUD on all resources
 INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
-SELECT p.id, 1, 'vehicles', 1, 1, 1, 1, 1, 1, 1, 1 FROM permissions p WHERE p.key_name = 'vehicles_read' LIMIT 1;
+SELECT p.id, 1, 'users', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_users';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 1, 'vehicles', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_vehicles';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 1, 'movements', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_movements';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 1, 'violations', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_violations';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 1, 'maintenance', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_maintenance';
 
+-- Admin (role 2): full CRUD on all resources
 INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
-SELECT p.id, 1, 'users', 1, 1, 1, 1, 1, 1, 1, 1 FROM permissions p WHERE p.key_name = 'users_read' LIMIT 1;
+SELECT p.id, 2, 'users', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_users';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 2, 'vehicles', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_vehicles';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 2, 'movements', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_movements';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 2, 'violations', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_violations';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 2, 'maintenance', 1,1,1,1,1,1,1,1 FROM permissions p WHERE p.key_name='manage_maintenance';
 
--- Default resource permissions for employee (view own, create)
+-- Manager (role 3): view all + create + edit, no delete
 INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
-SELECT p.id, 4, 'vehicles', 0, 1, 1, 0, 0, 0, 0, 0 FROM permissions p WHERE p.key_name = 'vehicles_read' LIMIT 1;
+SELECT p.id, 3, 'users', 1,1,1,1,1,1,0,0 FROM permissions p WHERE p.key_name='manage_users';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 3, 'vehicles', 1,1,1,1,1,1,0,0 FROM permissions p WHERE p.key_name='manage_vehicles';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 3, 'movements', 1,1,1,1,1,1,0,0 FROM permissions p WHERE p.key_name='manage_movements';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 3, 'violations', 1,1,1,1,1,1,0,0 FROM permissions p WHERE p.key_name='manage_violations';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 3, 'maintenance', 1,1,1,1,1,1,0,0 FROM permissions p WHERE p.key_name='manage_maintenance';
+
+-- Employee (role 4): view own + create movements
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 4, 'vehicles', 0,1,1,0,0,0,0,0 FROM permissions p WHERE p.key_name='manage_vehicles';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 4, 'movements', 0,1,1,1,0,0,0,0 FROM permissions p WHERE p.key_name='manage_movements';
+
+-- Viewer (role 5): view only
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 5, 'vehicles', 1,1,1,0,0,0,0,0 FROM permissions p WHERE p.key_name='manage_vehicles';
+INSERT IGNORE INTO `resource_permissions` (`permission_id`, `role_id`, `resource_type`, `can_view_all`, `can_view_own`, `can_view_tenant`, `can_create`, `can_edit_all`, `can_edit_own`, `can_delete_all`, `can_delete_own`)
+SELECT p.id, 5, 'movements', 1,1,1,0,0,0,0,0 FROM permissions p WHERE p.key_name='manage_movements';

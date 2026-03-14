@@ -257,9 +257,9 @@
     let vehicleMap={}, latestByVehicle={};
     var mvUser=Auth.getUser();
     var mvPerms=(mvUser&&mvUser.permissions)||[];
-    var mvCanCreate=mvPerms.includes('movements_create')||mvPerms.includes('*');
-    var mvCanEdit=mvPerms.includes('movements_edit')||mvPerms.includes('*');
-    var mvCanDelete=mvPerms.includes('movements_edit')||mvPerms.includes('*');
+    var mvCanCreate=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+    var mvCanEdit=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+    var mvCanDelete=mvPerms.includes('manage_movements')||mvPerms.includes('*');
 
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){

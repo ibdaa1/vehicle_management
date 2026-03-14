@@ -342,14 +342,14 @@ const Menu = {
     items: [
         { key: 'dashboard',          icon: '📊', page: 'dashboard.html',          permission: null },
         { key: 'my_vehicles',        icon: '🚙', page: 'my_vehicles.html',        permission: null },
-        { key: 'vehicles',           icon: '🚗', page: 'vehicle_management.html', permission: 'vehicles_read' },
-        { key: 'movements',          icon: '🔄', page: 'vehicle_movements.html',  permission: 'movements_read' },
-        { key: 'maintenance',        icon: '🔧', page: 'Vehicle_Maintenance.html', permission: 'maintenance_read' },
-        { key: 'violations',         icon: '⚠️', page: 'violations_list.html',    permission: 'violations_read' },
+        { key: 'vehicles',           icon: '🚗', page: 'vehicle_management.html', permission: 'manage_vehicles' },
+        { key: 'movements',          icon: '🔄', page: 'vehicle_movements.html',  permission: 'manage_movements' },
+        { key: 'maintenance',        icon: '🔧', page: 'Vehicle_Maintenance.html', permission: 'manage_maintenance' },
+        { key: 'violations',         icon: '⚠️', page: 'violations_list.html',    permission: 'manage_violations' },
         { divider: true },
-        { key: 'users',              icon: '👥', page: 'admin_users.html',        permission: 'users_read' },
-        { key: 'roles',              icon: '🔑', page: 'admin_roles.html',        permission: 'roles_manage' },
-        { key: 'settings',           icon: '⚙️', page: 'admin_activations.html',  permission: 'settings_view' },
+        { key: 'users',              icon: '👥', page: 'admin_users.html',        permission: 'manage_users' },
+        { key: 'roles',              icon: '🔑', page: 'admin_roles.html',        permission: 'manage_roles' },
+        { key: 'settings',           icon: '⚙️', page: 'admin_activations.html',  permission: 'manage_settings' },
     ],
 
     render(container, userPermissions) {

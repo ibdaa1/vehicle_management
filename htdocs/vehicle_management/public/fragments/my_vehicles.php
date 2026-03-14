@@ -296,7 +296,7 @@
         if (!user) { setTimeout(init, 100); return; }
         currentUser = user;
         perms = (currentUser && currentUser.permissions) || [];
-        hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
+        hasMovementPermission = perms.includes('manage_movements') || perms.includes('*');
 
         applyFragmentLang();
         loadMyVehicles();
