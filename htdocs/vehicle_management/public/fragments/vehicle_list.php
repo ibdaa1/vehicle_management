@@ -130,8 +130,8 @@
         <div class="form-group">
             <label id="vlLblGender" data-label-ar="الجنس" data-label-en="Gender">الجنس</label>
             <select id="vlFldGender">
-                <option value="male">ذكر / Male</option>
-                <option value="female">أنثى / Female</option>
+                <option value="men">ذكر / Male</option>
+                <option value="women">أنثى / Female</option>
             </select>
         </div>
         <div class="form-group">
@@ -266,7 +266,7 @@
             $('vlFldCategory').value='sedan';
             $('vlFldStatus').value='operational';
             $('vlFldMode').value='private';
-            $('vlFldGender').value='male';
+            $('vlFldGender').value='men';
             $('vlFldDept').value='';
             $('vlFldYear').value='';
             $('vlModalTitle').textContent='إضافة مركبة';
@@ -281,7 +281,7 @@
             $('vlFldCategory').value=v.vehicle_category||v.category||'sedan';
             $('vlFldStatus').value=v.status||'operational';
             $('vlFldMode').value=v.vehicle_mode||'private';
-            $('vlFldGender').value=v.gender||'male';
+            $('vlFldGender').value=v.gender||'men';
             $('vlFldDept').value=v.department_id||'';
             $('vlFldYear').value=v.manufacture_year||v.year||'';
             $('vlModalTitle').textContent='تعديل مركبة';

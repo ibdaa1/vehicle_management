@@ -19,12 +19,15 @@
 .mv-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
 .mv-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem;min-width:120px;max-width:200px}
 .mv-toolbar .btn-add{margin-inline-start:auto}
-.mv-filters-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.mv-filters-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px;align-items:end}
 .mv-filters-row label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
-.mv-filters-row select{padding:8px 10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.88rem;min-width:130px}
-.mv-date-range{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mv-filters-row select{width:100%;padding:10px 12px;border:2px solid var(--border-default,#ddd);border-radius:10px;font-size:.9rem;background:var(--bg-card,#fff);color:var(--text-primary,#333);transition:border-color .2s,box-shadow .2s;cursor:pointer;min-height:42px}
+.mv-filters-row select:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.1)}
+.mv-date-range{display:flex;align-items:center;gap:10px;flex-wrap:wrap;grid-column:span 2}
 .mv-date-range label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
-.mv-date-range input[type="date"]{padding:8px 10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.88rem;min-width:140px}
+.mv-date-range input[type="date"]{padding:10px 12px;border:2px solid var(--border-default,#ddd);border-radius:10px;font-size:.9rem;min-width:150px;background:var(--bg-card,#fff);color:var(--text-primary,#333);min-height:42px;transition:border-color .2s,box-shadow .2s}
+.mv-date-range input[type="date"]:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.1)}
+@media(max-width:768px){.mv-filters-row{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.mv-date-range{grid-column:span 1}}
 .mv-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .mv-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
 .mv-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
@@ -495,12 +498,12 @@
             const v=vehicleMap[m.vehicle_code];
             const hasVehicleFilter=vStatus||deptId||secId||divId||gender||vMode;
             if(hasVehicleFilter && !v) return false;
-            if(vStatus && v && v.status!==vStatus) return false;
-            if(deptId && v && String(v.department_id)!==String(deptId)) return false;
-            if(secId && v && String(v.section_id)!==String(secId)) return false;
-            if(divId && v && String(v.division_id)!==String(divId)) return false;
-            if(gender && v && v.gender!==gender) return false;
-            if(vMode && v && v.vehicle_mode!==vMode) return false;
+            if(vStatus && v && (v.status||'')!==vStatus) return false;
+            if(deptId && v && String(v.department_id||'')!==String(deptId)) return false;
+            if(secId && v && String(v.section_id||'')!==String(secId)) return false;
+            if(divId && v && String(v.division_id||'')!==String(divId)) return false;
+            if(gender && v && (v.gender||'')!==gender) return false;
+            if(vMode && v && (v.vehicle_mode||'')!==vMode) return false;
             if(vCode && m.vehicle_code!==vCode) return false;
             return true;
         });
@@ -672,11 +675,11 @@
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allVehicles.filter(function(v){
-            if(deptId && String(v.department_id)!==String(deptId)) return false;
-            if(secId && String(v.section_id)!==String(secId)) return false;
-            if(divId && String(v.division_id)!==String(divId)) return false;
-            if(gender && v.gender!==gender) return false;
-            if(vMode && v.vehicle_mode!==vMode) return false;
+            if(deptId && String(v.department_id||'')!==String(deptId)) return false;
+            if(secId && String(v.section_id||'')!==String(secId)) return false;
+            if(divId && String(v.division_id||'')!==String(divId)) return false;
+            if(gender && (v.gender||'')!==gender) return false;
+            if(vMode && (v.vehicle_mode||'')!==vMode) return false;
             return true;
         });
     }
@@ -697,6 +700,7 @@
         var dateTo=$('mvDateTo').value;
         var deptId=getSelId($('mvFilterDept'));
         var secId=getSelId($('mvFilterSection'));
+        var divId=getSelId($('mvFilterDivision'));
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allMovements.filter(function(m){
@@ -705,10 +709,12 @@
             if(dateFrom && md<dateFrom) return false;
             if(dateTo && md>dateTo) return false;
             var v=vehicleMap[m.vehicle_code];
-            if(deptId && v && String(v.department_id)!==String(deptId)) return false;
-            if(secId && v && String(v.section_id)!==String(secId)) return false;
-            if(gender && v && v.gender!==gender) return false;
-            if(vMode && v && v.vehicle_mode!==vMode) return false;
+            if((deptId||secId||divId||gender||vMode) && !v) return false;
+            if(deptId && v && String(v.department_id||'')!==String(deptId)) return false;
+            if(secId && v && String(v.section_id||'')!==String(secId)) return false;
+            if(divId && v && String(v.division_id||'')!==String(divId)) return false;
+            if(gender && v && (v.gender||'')!==gender) return false;
+            if(vMode && v && (v.vehicle_mode||'')!==vMode) return false;
             return true;
         });
     }
@@ -716,6 +722,7 @@
         var modeLabel=function(m){return m==='private'?i18n.t('private_vehicles'):m==='shift'?i18n.t('shift_vehicles'):(m||'—');};
         var catLabel=function(c){return c==='sedan'?i18n.t('sedan'):c==='pickup'?i18n.t('pickup_category'):c==='bus'?i18n.t('bus'):(c||'—');};
         var statusLabel=function(s){return s==='operational'?i18n.t('operational'):s==='maintenance'?i18n.t('under_maintenance'):s==='out_of_service'?i18n.t('out_of_service'):(s||'—');};
+        var genderLabel=function(g){return g==='men'?i18n.t('men'):g==='women'?i18n.t('women'):'—';};
         var html='<html dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title>';
         html+='<style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center;margin:10px 0}.info{text-align:center;color:#666;margin-bottom:16px}@media print{body{margin:10px}}</style>';
         html+='</head><body>';
@@ -723,9 +730,9 @@
         var s=lastStats||{};
         if(s.date_from||s.date_to) html+='<p class="info">'+i18n.t('from')+' '+(s.date_from||'—')+' — '+i18n.t('to')+' '+(s.date_to||'—')+'</p>';
         html+='<p class="info">'+i18n.t('total_records')+': '+vehicles.length+'</p>';
-        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('vehicle_mode')+'</th><th>'+i18n.t('vehicle_status')+'</th><th>'+i18n.t('department')+'</th><th>'+i18n.t('section')+'</th></tr></thead><tbody>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('vehicle_mode')+'</th><th>'+i18n.t('vehicle_status')+'</th><th>'+i18n.t('department')+'</th><th>'+i18n.t('section')+'</th><th>'+i18n.t('division')+'</th><th>'+i18n.t('gender')+'</th></tr></thead><tbody>';
         vehicles.forEach(function(v,i){
-            html+='<tr><td>'+(i+1)+'</td><td>'+esc(v.vehicle_code)+'</td><td>'+esc(v.type||v.vehicle_type||'')+'</td><td>'+catLabel(v.vehicle_category)+'</td><td>'+modeLabel(v.vehicle_mode)+'</td><td>'+statusLabel(v.status)+'</td><td>'+esc(v.department_name||'')+'</td><td>'+esc(v.section_name||'')+'</td></tr>';
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(v.vehicle_code)+'</td><td>'+esc(v.type||v.vehicle_type||'')+'</td><td>'+catLabel(v.vehicle_category)+'</td><td>'+modeLabel(v.vehicle_mode)+'</td><td>'+statusLabel(v.status)+'</td><td>'+esc(v.department_name||'')+'</td><td>'+esc(v.section_name||'')+'</td><td>'+esc(v.division_name||'')+'</td><td>'+genderLabel(v.gender)+'</td></tr>';
         });
         html+='</tbody></table></body></html>';
         var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
@@ -733,6 +740,7 @@
     function printMovementList(title,movements){
         var typeLabel=function(t){return t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');};
         var condLabel=function(c){return c==='clean'?i18n.t('clean'):c==='acceptable'?i18n.t('acceptable'):c==='damaged'?i18n.t('damaged'):'—';};
+        var genderLabel=function(g){return g==='men'?i18n.t('men'):g==='women'?i18n.t('women'):'—';};
         var html='<html dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title>';
         html+='<style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center;margin:10px 0}.info{text-align:center;color:#666;margin-bottom:16px}@media print{body{margin:10px}}</style>';
         html+='</head><body>';
@@ -740,9 +748,10 @@
         var s=lastStats||{};
         if(s.date_from||s.date_to) html+='<p class="info">'+i18n.t('from')+' '+(s.date_from||'—')+' — '+i18n.t('to')+' '+(s.date_to||'—')+'</p>';
         html+='<p class="info">'+i18n.t('total_records')+': '+movements.length+'</p>';
-        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('operation_type')+'</th><th>'+i18n.t('by')+'</th><th>'+i18n.t('date')+'</th><th>'+i18n.t('condition')+'</th><th>'+i18n.t('fuel_level')+'</th></tr></thead><tbody>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('operation_type')+'</th><th>'+i18n.t('by')+'</th><th>'+i18n.t('date')+'</th><th>'+i18n.t('condition')+'</th><th>'+i18n.t('fuel_level')+'</th><th>'+i18n.t('department')+'</th><th>'+i18n.t('section')+'</th><th>'+i18n.t('division')+'</th><th>'+i18n.t('gender')+'</th></tr></thead><tbody>';
         movements.forEach(function(m,i){
-            html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td><td>'+esc(m.performed_by||'')+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td><td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td></tr>';
+            var v=vehicleMap[m.vehicle_code]||{};
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td><td>'+esc(m.performed_by||'')+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td><td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td><td>'+esc(v.department_name||'')+'</td><td>'+esc(v.section_name||'')+'</td><td>'+esc(v.division_name||'')+'</td><td>'+genderLabel(v.gender)+'</td></tr>';
         });
         html+='</tbody></table></body></html>';
         var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
