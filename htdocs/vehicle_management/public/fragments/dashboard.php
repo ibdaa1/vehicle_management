@@ -69,19 +69,19 @@
     </div>
 </div>
 
-<!-- Quick Actions -->
+<!-- Quick Actions (visibility controlled by JS based on permissions) -->
 <div class="section-header"><h3>إجراءات سريعة</h3></div>
-<div class="quick-actions">
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list">
+<div class="quick-actions" id="quickActions">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list" data-requires="manage_vehicles" style="display:none">
         <div class="action-icon">🚗</div><div class="action-label">إضافة مركبة</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements" data-requires="manage_movements" style="display:none">
         <div class="action-icon">🔄</div><div class="action-label">تسليم / استلام</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list">
-        <div class="action-icon">📊</div><div class="action-label">عرض التقارير</div>
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=my_vehicles" data-requires="">
+        <div class="action-icon">🚙</div><div class="action-label">مركباتي</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users" data-requires="manage_users" style="display:none">
         <div class="action-icon">👥</div><div class="action-label">إدارة المستخدمين</div>
     </a>
 </div>
@@ -122,6 +122,18 @@ $pageScripts = <<<'SCRIPT'
         await new Promise(r=>setTimeout(r,150));
         loadStats();
         setInterval(loadStats,60000);
+
+        // Show quick actions based on user permissions
+        var user = Auth.getUser();
+        if (user) {
+            var perms = user.permissions || [];
+            document.querySelectorAll('#quickActions .action-card[data-requires]').forEach(function(el) {
+                var req = el.getAttribute('data-requires');
+                if (!req || perms.includes(req) || perms.includes('*')) {
+                    el.style.display = '';
+                }
+            });
+        }
     });
 })();
 </script>
