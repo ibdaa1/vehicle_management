@@ -37,6 +37,8 @@
 .pf-mv-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600}
 .pf-mv-badge.pickup{background:#d4edda;color:#155724}
 .pf-mv-badge.return{background:#cce5ff;color:#004085}
+.pf-mv-badge.unpaid{background:#f8d7da;color:#721c24}
+.pf-mv-badge.paid{background:#d4edda;color:#155724}
 .pf-empty{text-align:center;padding:40px 20px;color:var(--text-secondary,#999)}
 .pf-empty .ico{font-size:2.5rem;margin-bottom:10px;opacity:.5}
 .pf-section{margin-bottom:28px}
@@ -81,6 +83,18 @@
             <div class="fg">
                 <label id="pfLblRole" data-label-ar="الدور" data-label-en="Role">الدور</label>
                 <input type="text" id="pfRole" disabled>
+            </div>
+            <div class="fg">
+                <label id="pfLblDept" data-label-ar="الإدارة" data-label-en="Department">الإدارة</label>
+                <input type="text" id="pfDept" disabled>
+            </div>
+            <div class="fg">
+                <label id="pfLblSection" data-label-ar="القسم" data-label-en="Section">القسم</label>
+                <input type="text" id="pfSection" disabled>
+            </div>
+            <div class="fg">
+                <label id="pfLblDivision" data-label-ar="الشعبة" data-label-en="Division">الشعبة</label>
+                <input type="text" id="pfDivision" disabled>
             </div>
             <div class="fg">
                 <label id="pfLblLang" data-label-ar="اللغة المفضلة" data-label-en="Preferred Language">اللغة المفضلة</label>
@@ -157,6 +171,34 @@
     </div>
 </div>
 
+<!-- ===== VIOLATIONS SECTION ===== -->
+<div class="pf-section">
+    <div class="pf-card" style="max-width:100%">
+        <div class="pf-card-title">
+            <span>⚠️</span>
+            <span id="pfVlTitle" data-label-ar="المخالفات المرتبطة بي" data-label-en="My Violations">المخالفات المرتبطة بي</span>
+        </div>
+        <div style="overflow-x:auto">
+            <table class="pf-mv-table" id="pfVlTable">
+                <thead>
+                    <tr>
+                        <th data-label-ar="#" data-label-en="#">#</th>
+                        <th id="pfVlThCode" data-label-ar="رمز المركبة" data-label-en="Vehicle Code">رمز المركبة</th>
+                        <th id="pfVlThDate" data-label-ar="تاريخ المخالفة" data-label-en="Violation Date">تاريخ المخالفة</th>
+                        <th id="pfVlThAmount" data-label-ar="المبلغ" data-label-en="Amount">المبلغ</th>
+                        <th id="pfVlThStatus" data-label-ar="الحالة" data-label-en="Status">الحالة</th>
+                        <th id="pfVlThVType" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">نوع المركبة</th>
+                        <th id="pfVlThNotes" data-label-ar="ملاحظات" data-label-en="Notes">ملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody id="pfVlBody">
+                    <tr><td colspan="7" class="pf-empty"><div class="spinner spinner-sm"></div><span data-label-ar="جارٍ التحميل..." data-label-en="Loading...">جارٍ التحميل...</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <?php ob_start(); ?>
 <script>
 /* ============================================
@@ -209,6 +251,10 @@
 
         var genderMap = { male: t('ذكر', 'Male'), female: t('أنثى', 'Female') };
         $('pfGender').value = genderMap[data.gender] || data.gender || '';
+
+        $('pfDept').value = data.department_name_ar || t('غير محدد', 'Not set');
+        $('pfSection').value = data.section_name_ar || t('غير محدد', 'Not set');
+        $('pfDivision').value = data.division_name_ar || t('غير محدد', 'Not set');
 
         var langSel = $('pfLang');
         if (langSel) langSel.value = data.preferred_language || 'ar';
@@ -350,6 +396,62 @@
         changePassword: changePassword
     };
 
+    /* ---------- Load violations ---------- */
+    async function loadViolations() {
+        var tbody = $('pfVlBody');
+        if (!tbody) return;
+
+        try {
+            var res = await API.get('/profile/violations');
+            var rows = (res && res.data) || res || [];
+            if (!Array.isArray(rows)) rows = [];
+            renderViolations(rows);
+        } catch (e) {
+            console.error('Failed to load violations:', e);
+            tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
+                '<div class="ico">⚠️</div><p>' + t('فشل تحميل المخالفات', 'Failed to load violations') + '</p></td></tr>';
+        }
+    }
+
+    /* ---------- Render violation rows ---------- */
+    function renderViolations(rows) {
+        var tbody = $('pfVlBody');
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
+                '<div class="ico">✅</div><p>' + t('لا توجد مخالفات مسجلة', 'No violations recorded') + '</p></td></tr>';
+            return;
+        }
+
+        var html = '';
+        rows.forEach(function(vl, i) {
+            var isPaid = (vl.violation_status === 'paid');
+            var statusLabel = isPaid ? t('مدفوعة', 'Paid') : t('غير مدفوعة', 'Unpaid');
+            var statusClass = isPaid ? 'paid' : 'unpaid';
+            var dateStr = vl.violation_datetime || vl.created_at || '';
+            if (dateStr) {
+                try {
+                    var d = new Date(dateStr);
+                    dateStr = d.toLocaleDateString(getLang() === 'en' ? 'en-US' : 'ar-SA', {
+                        year: 'numeric', month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                } catch(e) { /* keep original */ }
+            }
+
+            html += '<tr>';
+            html += '<td>' + (i + 1) + '</td>';
+            html += '<td><strong>' + esc(vl.vehicle_code) + '</strong></td>';
+            html += '<td>' + esc(dateStr) + '</td>';
+            html += '<td>' + esc(vl.violation_amount || '0') + '</td>';
+            html += '<td><span class="pf-mv-badge ' + statusClass + '">' + esc(statusLabel) + '</span></td>';
+            html += '<td>' + esc(vl.vehicle_type || '—') + '</td>';
+            html += '<td>' + esc(vl.notes || '—') + '</td>';
+            html += '</tr>';
+        });
+
+        tbody.innerHTML = html;
+    }
+
     /* ---------- Init with retry for Auth ---------- */
     (function init() {
         if (window.__pageDenied) return;
@@ -359,6 +461,7 @@
         applyLang();
         loadProfile();
         loadMovements();
+        loadViolations();
     })();
 })();
 </script>

@@ -33,10 +33,14 @@ class ProfileController extends BaseController
                         u.department_id, u.section_id, u.division_id,
                         u.profile_image, u.created_at, u.updated_at,
                         r.display_name AS role_name,
-                        d.name_ar AS department_name_ar
+                        d.name_ar AS department_name_ar,
+                        s.name_ar AS section_name_ar,
+                        dv.name_ar AS division_name_ar
                  FROM users u
                  LEFT JOIN roles r ON r.id = u.role_id
                  LEFT JOIN Departments d ON d.department_id = u.department_id
+                 LEFT JOIN Sections s ON s.section_id = u.section_id
+                 LEFT JOIN Divisions dv ON dv.division_id = u.division_id
                  WHERE u.id = ?",
                 'i',
                 [(int)$user['id']]
@@ -233,6 +237,63 @@ class ProfileController extends BaseController
             Response::success($rows ?: []);
         } catch (\Throwable $e) {
             error_log("ProfileController::movements error: " . $e->getMessage());
+            Response::success([]);
+        }
+    }
+
+    /**
+     * GET /api/v1/profile/violations
+     * Get violations where the current user was holding the vehicle at the time of violation.
+     */
+    public function violations(Request $request, array $params = []): void
+    {
+        $user = $this->requireAuth($request);
+        if (Response::isSent()) return;
+
+        $db = Database::getInstance();
+        $empId = $user['emp_id'] ?? '';
+
+        if ($empId === '') {
+            Response::success([]);
+            return;
+        }
+
+        try {
+            $rows = $db->fetchAll(
+                "SELECT
+                    vv.id, vv.vehicle_code, vv.violation_datetime,
+                    vv.violation_amount, vv.violation_status,
+                    vv.notes, vv.created_at,
+                    v.type AS vehicle_type, v.driver_name
+                 FROM vehicle_violations vv
+                 LEFT JOIN vehicles v ON v.vehicle_code = vv.vehicle_code
+                 LEFT JOIN vehicle_movements vm
+                   ON vm.vehicle_code = vv.vehicle_code
+                  AND vm.operation_type = 'pickup'
+                  AND vm.movement_datetime = (
+                     SELECT MAX(vm2.movement_datetime)
+                     FROM vehicle_movements vm2
+                     WHERE vm2.vehicle_code = vv.vehicle_code
+                       AND vm2.operation_type = 'pickup'
+                       AND vm2.movement_datetime <= vv.violation_datetime
+                       AND vm2.movement_datetime >= IFNULL((
+                           SELECT MAX(vm3.movement_datetime)
+                           FROM vehicle_movements vm3
+                           WHERE vm3.vehicle_code = vv.vehicle_code
+                             AND vm3.operation_type = 'return'
+                             AND vm3.movement_datetime <= vv.violation_datetime
+                       ), '1970-01-01 00:00:00')
+                  )
+                 WHERE vm.performed_by = ?
+                 ORDER BY vv.violation_datetime DESC
+                 LIMIT 100",
+                's',
+                [$empId]
+            );
+
+            Response::success($rows ?: []);
+        } catch (\Throwable $e) {
+            error_log("ProfileController::violations error: " . $e->getMessage());
             Response::success([]);
         }
     }

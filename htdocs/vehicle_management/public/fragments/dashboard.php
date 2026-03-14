@@ -24,9 +24,7 @@
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
 .section-header h3{font-size:1.1rem;font-weight:700;color:var(--text-primary)}
 .section-card{background:var(--bg-card);border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);padding:20px;margin-bottom:28px}
-.vehicles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
-.vehicles-grid .vehicle-card{cursor:pointer;transition:transform .3s,box-shadow .3s}
-.vehicles-grid .vehicle-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+
 .quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
 .action-card{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 16px;background:var(--bg-card);border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);cursor:pointer;transition:all .3s;text-decoration:none;color:var(--text-primary)}
 .action-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12);border-color:var(--primary-light)}
@@ -88,16 +86,7 @@
     </a>
 </div>
 
-<!-- Recent Vehicles -->
-<div class="section-card">
-    <div class="section-header">
-        <h3>أحدث المركبات</h3>
-        <a href="<?= $publicUrl ?>/dashboard.php?page=vehicles" class="btn btn-outline btn-sm">عرض الكل</a>
-    </div>
-    <div id="recentVehicles">
-        <div class="loading-placeholder"><div class="spinner spinner-sm"></div><span>جارٍ التحميل...</span></div>
-    </div>
-</div>
+
 
 <?php
 // Page-specific script (will be output in footer.php)
@@ -129,38 +118,9 @@ $pageScripts = <<<'SCRIPT'
         }catch(e){}
     }
 
-    async function loadRecentVehicles(){
-        const c=$('recentVehicles');
-        try{
-            const res=await API.get('/vehicles');
-            const vehicles=Array.isArray(res.data)?res.data:(Array.isArray(res)?res:[]);
-            const list=vehicles.slice(0,8);
-            if(!list.length){c.innerHTML='<div class="empty-state"><div class="empty-icon">🚗</div><p>لا توجد مركبات بعد</p></div>';return;}
-            let h='<div class="vehicles-grid">';
-            list.forEach(v=>{
-                const code=UI._escapeHtml(v.vehicle_code||'—');
-                const type=UI._escapeHtml(v.type||'—');
-                const driver=UI._escapeHtml(v.driver_name||'—');
-                const dept=UI._escapeHtml(v.department_name_ar||'—');
-                const year=v.manufacture_year||'—';
-                h+='<div class="card vehicle-card" onclick="location.href=\'dashboard.php?page=vehicles\'">';
-                h+='<div class="vehicle-card-header"><strong>'+code+'</strong>'+statusBadge(v.status)+'</div>';
-                h+='<div class="vehicle-card-body">';
-                h+='<div class="detail-row"><span class="label">النوع</span><span class="value">'+type+'</span></div>';
-                h+='<div class="detail-row"><span class="label">السائق</span><span class="value">'+driver+'</span></div>';
-                h+='<div class="detail-row"><span class="label">الإدارة</span><span class="value">'+dept+'</span></div>';
-                h+='<div class="detail-row"><span class="label">السنة</span><span class="value">'+year+'</span></div>';
-                h+='</div></div>';
-            });
-            h+='</div>';
-            c.innerHTML=h;
-        }catch(e){c.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><p>تعذر تحميل المركبات</p></div>';}
-    }
-
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,150));
         loadStats();
-        loadRecentVehicles();
         setInterval(loadStats,60000);
     });
 })();

@@ -123,6 +123,7 @@ $router->post('api/v1/movements/{id}/photos', MovementController::class, 'upload
 // === Profile Routes (self-service, no admin required) ===
 $router->put('api/v1/profile/password', ProfileController::class, 'changePassword');
 $router->get('api/v1/profile/movements', ProfileController::class, 'movements');
+$router->get('api/v1/profile/violations', ProfileController::class, 'violations');
 $router->get('api/v1/profile', ProfileController::class, 'show');
 $router->put('api/v1/profile', ProfileController::class, 'update');
 
