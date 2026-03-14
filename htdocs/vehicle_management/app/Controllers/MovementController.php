@@ -33,7 +33,7 @@ class MovementController extends BaseController
         $this->requirePermission($request, 'manage_movements');
         if (Response::isSent()) return;
 
-        $filters = $request->only(['department_id', 'section_id', 'date_from', 'date_to', 'gender', 'vehicle_mode']);
+        $filters = $request->only(['department_id', 'section_id', 'division_id', 'date_from', 'date_to', 'gender', 'vehicle_mode']);
 
         try {
             $db = Database::getInstance();
@@ -52,6 +52,11 @@ class MovementController extends BaseController
                 $vWhere .= " AND v.section_id = ?";
                 $vTypes .= 'i';
                 $vParams[] = (int)$filters['section_id'];
+            }
+            if (!empty($filters['division_id'])) {
+                $vWhere .= " AND v.division_id = ?";
+                $vTypes .= 'i';
+                $vParams[] = (int)$filters['division_id'];
             }
             if (!empty($filters['gender'])) {
                 $vWhere .= " AND v.gender = ?";

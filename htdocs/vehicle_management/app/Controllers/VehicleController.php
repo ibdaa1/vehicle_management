@@ -342,8 +342,12 @@ class VehicleController extends BaseController
                     'status'          => $v['status'] ?? '',
                     'vehicle_mode'    => $v['vehicle_mode'] ?? '',
                     'gender'          => $v['gender'] ?? '',
-                    'department_name' => $v['department_name'] ?? '',
-                    'section_name'    => $v['section_name'] ?? '',
+                    'department_id'   => $v['department_id'] ?? null,
+                    'department_name' => $v['department_name_ar'] ?? $v['department_name'] ?? '',
+                    'section_id'      => $v['section_id'] ?? null,
+                    'section_name'    => $v['section_name_ar'] ?? $v['section_name'] ?? '',
+                    'division_id'     => $v['division_id'] ?? null,
+                    'division_name'   => $v['division_name_ar'] ?? $v['division_name'] ?? '',
                 ];
             }, $vehicles);
         } catch (\Throwable $e) {

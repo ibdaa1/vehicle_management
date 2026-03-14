@@ -130,6 +130,9 @@
     <select id="mvFilterSection">
         <option value="" id="mvOptAllSections">All Sections</option>
     </select>
+    <select id="mvFilterDivision">
+        <option value="" id="mvOptAllDivisions">All Divisions</option>
+    </select>
     <select id="mvFilterGender">
         <option value="" id="mvOptAllGenders">All Genders</option>
         <option value="men" id="mvOptMen">Men</option>
@@ -301,12 +304,17 @@
             const refs=rRes.data||rRes;
             const dSel=$('mvFilterDept');
             (refs.departments||[]).forEach(d=>{
-                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.id||'');dSel.appendChild(o);
+                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.department_id||d.id||'');dSel.appendChild(o);
             });
             // Populate section dropdown
             const sSel=$('mvFilterSection');
             (refs.sections||[]).forEach(s=>{
-                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;o.setAttribute('data-id',s.id||'');sSel.appendChild(o);
+                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;o.setAttribute('data-id',s.section_id||s.id||'');sSel.appendChild(o);
+            });
+            // Populate division dropdown
+            const dvSel=$('mvFilterDivision');
+            (refs.divisions||[]).forEach(d=>{
+                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.division_id||d.id||'');dvSel.appendChild(o);
             });
             // Populate performed_by user dropdown
             const users=(uRes.data||uRes)||[];
@@ -349,6 +357,7 @@
             var params=[];
             var deptSel=$('mvFilterDept');
             var secSel=$('mvFilterSection');
+            var divSel=$('mvFilterDivision');
             var dateFrom=$('mvDateFrom').value;
             var dateTo=$('mvDateTo').value;
             var gender=$('mvFilterGender').value;
@@ -362,6 +371,11 @@
                 var secOpt=secSel.options[secSel.selectedIndex];
                 var secId=secOpt?secOpt.getAttribute('data-id'):'';
                 if(secId) params.push('section_id='+encodeURIComponent(secId));
+            }
+            if(divSel&&divSel.value){
+                var divOpt=divSel.options[divSel.selectedIndex];
+                var divId=divOpt?divOpt.getAttribute('data-id'):'';
+                if(divId) params.push('division_id='+encodeURIComponent(divId));
             }
             if(dateFrom) params.push('date_from='+encodeURIComponent(dateFrom));
             if(dateTo) params.push('date_to='+encodeURIComponent(dateTo));
@@ -406,6 +420,7 @@
         const vStatus=$('mvFilterVehicleStatus').value;
         const dept=$('mvFilterDept').value;
         const section=$('mvFilterSection').value;
+        const division=$('mvFilterDivision').value;
         const gender=$('mvFilterGender').value;
         const vCode=$('mvFilterVehicle').value;
         const vMode=$('mvFilterVehicleMode').value;
@@ -426,6 +441,7 @@
             if(vStatus && v && v.status!==vStatus) return false;
             if(dept && v && v.department_name!==dept) return false;
             if(section && v && v.section_name!==section) return false;
+            if(division && v && v.division_name!==division) return false;
             if(gender && v && v.gender!==gender) return false;
             if(vMode && v && v.vehicle_mode!==vMode) return false;
             if(vCode && m.vehicle_code!==vCode) return false;
@@ -575,6 +591,7 @@
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
     $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
     $('mvFilterSection').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterDivision').addEventListener('change',applyFiltersAndStats);
     $('mvFilterGender').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicleMode').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicle').addEventListener('change',applyFilters);
@@ -584,11 +601,13 @@
         var allVehicles=Object.values(vehicleMap);
         var dept=$('mvFilterDept').value;
         var section=$('mvFilterSection').value;
+        var division=$('mvFilterDivision').value;
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allVehicles.filter(function(v){
             if(dept && v.department_name!==dept) return false;
             if(section && v.section_name!==section) return false;
+            if(division && v.division_name!==division) return false;
             if(gender && v.gender!==gender) return false;
             if(vMode && v.vehicle_mode!==vMode) return false;
             return true;
@@ -934,7 +953,7 @@
             mvOptAllTypes:'all_types', mvOptPickup:'pickup_operation', mvOptReturn:'return_operation',
             mvOptAllConditions:'all_conditions', mvOptClean:'clean', mvOptAcceptable:'acceptable', mvOptDamaged:'damaged',
             mvOptAllVehicleStatuses:'all_vehicle_statuses', mvOptOperational:'operational', mvOptMaintenance:'under_maintenance', mvOptOutOfService:'out_of_service',
-            mvOptAllDepts:'all_departments', mvOptAllSections:'all_sections',
+            mvOptAllDepts:'all_departments', mvOptAllSections:'all_sections', mvOptAllDivisions:'all_divisions',
             mvOptAllGenders:'all_genders', mvOptMen:'men', mvOptWomen:'women',
             mvOptAllModes:'all_modes', mvOptPrivateMode:'private_vehicles', mvOptShiftMode:'shift_vehicles',
             mvOptAllVehicles:'all_vehicles',
