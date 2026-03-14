@@ -17,11 +17,14 @@
 .mv-toolbar .search-box{flex:1;min-width:200px;position:relative}
 .mv-toolbar .search-box input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
 .mv-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
-.mv-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
+.mv-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem;min-width:120px;max-width:200px}
 .mv-toolbar .btn-add{margin-inline-start:auto}
-.mv-date-range{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.mv-date-range label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap}
-.mv-date-range input[type="date"]{padding:8px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.85rem;max-width:150px}
+.mv-filters-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.mv-filters-row label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
+.mv-filters-row select{padding:8px 10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.88rem;min-width:130px}
+.mv-date-range{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mv-date-range label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
+.mv-date-range input[type="date"]{padding:8px 10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.88rem;min-width:140px}
 .mv-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .mv-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
 .mv-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
@@ -101,29 +104,18 @@
     <div class="mv-stat" data-stat="operational"><div class="num" id="mvStatOperational">0</div><div class="lbl" data-lang-key="operational">Operational</div><div class="print-hint">🖨️</div></div>
 </div>
 
-<!-- Toolbar -->
+<!-- Toolbar: Search + Actions -->
 <div class="mv-toolbar">
     <div class="search-box">
         <span class="ico">🔍</span>
         <input type="text" id="mvSearch" placeholder="Search movement">
     </div>
-    <select id="mvFilterType">
-        <option value="" id="mvOptAllTypes">All Types</option>
-        <option value="pickup" id="mvOptPickup">Pickup</option>
-        <option value="return" id="mvOptReturn">Return</option>
-    </select>
-    <select id="mvFilterCondition">
-        <option value="" id="mvOptAllConditions">All Conditions</option>
-        <option value="clean" id="mvOptClean">Clean</option>
-        <option value="acceptable" id="mvOptAcceptable">Acceptable</option>
-        <option value="damaged" id="mvOptDamaged">Damaged</option>
-    </select>
-    <select id="mvFilterVehicleStatus">
-        <option value="" id="mvOptAllVehicleStatuses">All Vehicle Statuses</option>
-        <option value="operational" id="mvOptOperational">Operational</option>
-        <option value="maintenance" id="mvOptMaintenance">Under Maintenance</option>
-        <option value="out_of_service" id="mvOptOutOfService">Out of Service</option>
-    </select>
+    <button class="btn btn-outline btn-sm" id="mvBtnPrint" title="Print Report">🖨️ <span id="mvBtnPrintText">Print Report</span></button>
+    <button class="btn btn-primary btn-sm btn-add" id="mvBtnAdd">➕ <span id="mvBtnAddText">Add Movement</span></button>
+</div>
+
+<!-- Filters Row 1: Organizational filters -->
+<div class="mv-filters-row">
     <select id="mvFilterDept">
         <option value="" id="mvOptAllDepts">All Departments</option>
     </select>
@@ -143,6 +135,27 @@
         <option value="private" id="mvOptPrivateMode">Private</option>
         <option value="shift" id="mvOptShiftMode">Shift</option>
     </select>
+</div>
+
+<!-- Filters Row 2: Vehicle and movement filters + date range -->
+<div class="mv-filters-row">
+    <select id="mvFilterType">
+        <option value="" id="mvOptAllTypes">All Types</option>
+        <option value="pickup" id="mvOptPickup">Pickup</option>
+        <option value="return" id="mvOptReturn">Return</option>
+    </select>
+    <select id="mvFilterCondition">
+        <option value="" id="mvOptAllConditions">All Conditions</option>
+        <option value="clean" id="mvOptClean">Clean</option>
+        <option value="acceptable" id="mvOptAcceptable">Acceptable</option>
+        <option value="damaged" id="mvOptDamaged">Damaged</option>
+    </select>
+    <select id="mvFilterVehicleStatus">
+        <option value="" id="mvOptAllVehicleStatuses">All Vehicle Statuses</option>
+        <option value="operational" id="mvOptOperational">Operational</option>
+        <option value="maintenance" id="mvOptMaintenance">Under Maintenance</option>
+        <option value="out_of_service" id="mvOptOutOfService">Out of Service</option>
+    </select>
     <select id="mvFilterVehicle">
         <option value="" id="mvOptAllVehicles">All Vehicles</option>
     </select>
@@ -152,8 +165,6 @@
         <label id="mvLabelTo">To:</label>
         <input type="date" id="mvDateTo" class="form-control">
     </div>
-    <button class="btn btn-outline btn-sm" id="mvBtnPrint" title="Print Report">🖨️ <span id="mvBtnPrintText">Print Report</span></button>
-    <button class="btn btn-primary btn-sm btn-add" id="mvBtnAdd">➕ <span id="mvBtnAddText">Add Movement</span></button>
 </div>
 
 <!-- Table -->
@@ -299,40 +310,47 @@
 
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
+        // Load each resource independently so a failure in one doesn't block others
         try{
-            const [vRes, rRes, uRes]=await Promise.all([API.get('/vehicles/list'), API.get('/references'), API.get('/users')]);
-            const vehicles=(vRes.data||vRes)||[];
-            vehicles.forEach(v=>{vehicleMap[v.vehicle_code]=v;});
+            var vRes=await API.get('/vehicles/list');
+            var vehicles=(vRes.data||vRes)||[];
+            vehicles.forEach(function(v){vehicleMap[v.vehicle_code]=v;});
             // Populate vehicle code dropdown
-            const sel=$('mvFilterVehicle');
-            vehicles.forEach(v=>{
-                const o=document.createElement('option');o.value=v.vehicle_code;o.textContent=v.vehicle_code;sel.appendChild(o);
+            var sel=$('mvFilterVehicle');
+            vehicles.forEach(function(v){
+                var o=document.createElement('option');o.value=v.vehicle_code;o.textContent=v.vehicle_code;sel.appendChild(o);
             });
-            // Store refs for cascade
-            const refs=rRes.data||rRes;
+        }catch(e){console.error('loadReferences: vehicles',e);}
+
+        try{
+            var rRes=await API.get('/references');
+            var refs=rRes.data||rRes;
             allRefs=refs;
             // Populate department dropdown
-            const dSel=$('mvFilterDept');
-            (refs.departments||[]).forEach(d=>{
-                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.department_id||d.id||'');dSel.appendChild(o);
+            var dSel=$('mvFilterDept');
+            (refs.departments||[]).forEach(function(d){
+                var o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.department_id||d.id||'');dSel.appendChild(o);
             });
             // Populate section dropdown (all sections initially)
             populateSections('');
             // Populate division dropdown (all divisions initially)
             populateDivisions('');
-            // Populate performed_by user dropdown
-            const users=(uRes.data||uRes)||[];
-            const pbSel=$('mvPerformedBy');
-            users.forEach(u=>{
+        }catch(e){console.error('loadReferences: references',e);}
+
+        try{
+            var uRes=await API.get('/users');
+            var users=(uRes.data||uRes)||[];
+            var pbSel=$('mvPerformedBy');
+            users.forEach(function(u){
                 if(!u.emp_id) return;
-                const o=document.createElement('option');
+                var o=document.createElement('option');
                 o.value=u.emp_id;
                 o.textContent=u.emp_id+' - '+(u.username||u.email||'');
                 pbSel.appendChild(o);
             });
             // Default to current user's emp_id
             if(mvUser&&mvUser.emp_id) pbSel.value=mvUser.emp_id;
-        }catch(e){console.error('loadReferences',e);}
+        }catch(e){console.error('loadReferences: users',e);}
     }
 
     /* ---- Populate section dropdown (cascade on department) ---- */
@@ -1040,8 +1058,8 @@
         mvCanDelete=mvPerms.includes('manage_movements')||mvPerms.includes('*');
         if(!mvCanCreate){var addBtn=$('mvBtnAdd');if(addBtn)addBtn.style.display='none';}
         translateStatic();
-        loadReferences();
-        loadMovements();
+        // Await loadReferences so vehicleMap is populated before loadMovements applies filters
+        loadReferences().then(function(){ loadMovements(); });
     })();
 })();
 </script>
