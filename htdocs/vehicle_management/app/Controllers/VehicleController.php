@@ -7,6 +7,7 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\Database;
 use App\Models\Vehicle;
 use App\Models\VehicleMovement;
 
@@ -17,7 +18,7 @@ class VehicleController extends BaseController
 
     public function __construct()
     {
-        $this->vehicleModel = new Vehicle();
+        $this->vehicleModel  = new Vehicle();
         $this->movementModel = new VehicleMovement();
     }
 
@@ -31,19 +32,17 @@ class VehicleController extends BaseController
 
         $filters = $request->only(['status', 'vehicle_mode', 'department_id', 'gender']);
         try {
-            $vehicles = $this->vehicleModel->allWithRelations($filters);
-            // Add availability info based on latest movement
+            $vehicles        = $this->vehicleModel->allWithRelations($filters);
             $latestMovements = $this->movementModel->getLatestByVehicle();
             foreach ($vehicles as &$v) {
                 $code = $v['vehicle_code'] ?? '';
                 if (isset($latestMovements[$code])) {
                     $v['last_operation'] = $latestMovements[$code]['operation_type'];
-                    $v['last_holder'] = $latestMovements[$code]['performed_by'] ?? null;
+                    $v['last_holder']    = $latestMovements[$code]['performed_by'] ?? null;
                 } else {
                     $v['last_operation'] = null;
-                    $v['last_holder'] = null;
+                    $v['last_holder']    = null;
                 }
-                // available = no movement or last was return
                 $v['available'] = ($v['last_operation'] === null || $v['last_operation'] === 'return');
             }
             unset($v);
@@ -52,11 +51,7 @@ class VehicleController extends BaseController
             $vehicles = [];
         }
 
-        Response::json([
-            'success' => true,
-            'data' => $vehicles,
-        ]);
-        return;
+        Response::json(['success' => true, 'data' => $vehicles]);
     }
 
     /**
@@ -68,19 +63,12 @@ class VehicleController extends BaseController
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
-        if ($id <= 0) {
-            Response::error('Invalid vehicle ID', 400);
-            return;
-        }
+        if ($id <= 0) { Response::error('Invalid vehicle ID', 400); return; }
 
         $vehicle = $this->vehicleModel->find($id);
-        if (!$vehicle) {
-            Response::error('Vehicle not found', 404);
-            return;
-        }
+        if (!$vehicle) { Response::error('Vehicle not found', 404); return; }
 
         Response::json(['success' => true, 'data' => $vehicle]);
-        return;
     }
 
     /**
@@ -105,15 +93,13 @@ class VehicleController extends BaseController
 
         $data['created_by'] = $user['id'];
         try {
-            $id = $this->vehicleModel->create($data);
-
+            $id      = $this->vehicleModel->create($data);
             $vehicle = $this->vehicleModel->find($id);
             Response::json(['success' => true, 'message' => 'Vehicle created', 'data' => $vehicle], 201);
         } catch (\Throwable $e) {
             error_log("VehicleController::store error: " . $e->getMessage());
             Response::error('Failed to create vehicle: ' . $e->getMessage(), 500);
         }
-        return;
     }
 
     /**
@@ -125,16 +111,10 @@ class VehicleController extends BaseController
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
-        if ($id <= 0) {
-            Response::error('Invalid vehicle ID', 400);
-            return;
-        }
+        if ($id <= 0) { Response::error('Invalid vehicle ID', 400); return; }
 
         $vehicle = $this->vehicleModel->find($id);
-        if (!$vehicle) {
-            Response::error('Vehicle not found', 404);
-            return;
-        }
+        if (!$vehicle) { Response::error('Vehicle not found', 404); return; }
 
         $data = $request->only([
             'vehicle_code', 'type', 'vehicle_category', 'manufacture_year', 'emp_id',
@@ -144,21 +124,16 @@ class VehicleController extends BaseController
         $data = array_filter($data, fn($v) => $v !== null && $v !== '');
         $data['updated_by'] = $user['id'];
 
-        if (empty($data)) {
-            Response::error('No fields to update', 400);
-            return;
-        }
+        if (empty($data)) { Response::error('No fields to update', 400); return; }
 
         try {
             $this->vehicleModel->update($id, $data);
-
             $vehicle = $this->vehicleModel->find($id);
             Response::json(['success' => true, 'message' => 'Vehicle updated', 'data' => $vehicle]);
         } catch (\Throwable $e) {
             error_log("VehicleController::update error: " . $e->getMessage());
             Response::error('Failed to update vehicle: ' . $e->getMessage(), 500);
         }
-        return;
     }
 
     /**
@@ -170,149 +145,137 @@ class VehicleController extends BaseController
         if (Response::isSent()) return;
 
         $id = (int)($params['id'] ?? 0);
-        if ($id <= 0) {
-            Response::error('Invalid vehicle ID', 400);
-            return;
-        }
+        if ($id <= 0) { Response::error('Invalid vehicle ID', 400); return; }
 
         $vehicle = $this->vehicleModel->find($id);
-        if (!$vehicle) {
-            Response::error('Vehicle not found', 404);
-            return;
-        }
+        if (!$vehicle) { Response::error('Vehicle not found', 404); return; }
 
         $success = $this->vehicleModel->delete($id);
-        if (!$success) {
-            Response::error('Failed to delete vehicle', 500);
-            return;
-        }
+        if (!$success) { Response::error('Failed to delete vehicle', 500); return; }
 
         Response::success(null, 'Vehicle deleted successfully');
-        return;
     }
 
     /**
      * GET /api/v1/vehicles/my-vehicles
-     * Returns vehicles the current employee is allowed to see/pickup:
-     * - Private: only their own vehicle (emp_id + gender match)
-     * - Shift: only the next-in-turn vehicle based on round-robin rotation for their gender
+     * - Private : vehicles where emp_id + gender match the logged-in user
+     * - Shift   : ONE vehicle only (next in round-robin for user's gender)
+     *             If the user already holds a shift vehicle → show that for
+     *             return only, do NOT show next vehicle for pickup.
      */
     public function myVehicles(Request $request, array $params = []): void
     {
         $user = $this->requireAuth($request);
         if (Response::isSent()) return;
 
-        $userEmpId = $user['emp_id'] ?? '';
+        $userEmpId  = $user['emp_id'] ?? '';
         $userGender = $user['gender'] ?? null;
-        $username = $user['username'] ?? '';
 
         try {
-            $allVehicles = $this->vehicleModel->allWithRelations([]);
+            $allVehicles     = $this->vehicleModel->allWithRelations([]);
             $latestMovements = $this->movementModel->getLatestByVehicle();
 
             foreach ($allVehicles as &$v) {
                 $code = $v['vehicle_code'] ?? '';
                 if (isset($latestMovements[$code])) {
                     $v['last_operation'] = $latestMovements[$code]['operation_type'];
-                    $v['last_holder'] = $latestMovements[$code]['performed_by'] ?? null;
+                    $v['last_holder']    = $latestMovements[$code]['performed_by'] ?? null;
                 } else {
                     $v['last_operation'] = null;
-                    $v['last_holder'] = null;
+                    $v['last_holder']    = null;
                 }
                 $v['available'] = ($v['last_operation'] === null || $v['last_operation'] === 'return');
             }
             unset($v);
 
-            // --- Private vehicles: emp_id match AND gender match ---
+            // Private: emp_id + gender match
             $privateVehicles = array_values(array_filter($allVehicles, function ($v) use ($userEmpId, $userGender) {
                 return ($v['vehicle_mode'] ?? '') === 'private'
-                    && trim($v['emp_id'] ?? '') != '' && trim($userEmpId) != ''
-                    && trim($v['emp_id'] ?? '') == trim($userEmpId)
-                    && ($v['status'] ?? '') === 'operational'
+                    && trim($v['emp_id'] ?? '') !== ''
+                    && trim($userEmpId)           !== ''
+                    && trim($v['emp_id'] ?? '') === trim($userEmpId)
+                    && ($v['status']     ?? '') === 'operational'
                     && (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
             }));
 
-            // --- Shift vehicles for this gender ---
+            // Shift: operational + gender match
             $shiftVehicles = array_values(array_filter($allVehicles, function ($v) use ($userGender) {
                 return ($v['vehicle_mode'] ?? '') === 'shift'
-                    && ($v['status'] ?? '') === 'operational'
+                    && ($v['status']       ?? '') === 'operational'
                     && (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
             }));
 
-            // Sort by vehicle_code for consistent round-robin order
-            usort($shiftVehicles, function ($a, $b) {
-                return strcmp($a['vehicle_code'] ?? '', $b['vehicle_code'] ?? '');
-            });
+            usort($shiftVehicles, fn($a, $b) => strcmp($a['vehicle_code'] ?? '', $b['vehicle_code'] ?? ''));
 
-            // Determine next-in-turn vehicle using round-robin
-            $nextShiftVehicle = null;
+            $nextShiftVehicle  = null;
             $myCheckedOutShift = null;
 
             if (!empty($shiftVehicles)) {
-                // Check if user currently holds a shift vehicle
+                // FIX: compare with emp_id (FK → users.emp_id)
                 foreach ($shiftVehicles as $v) {
-                    if (!$v['available'] && ($v['last_holder'] ?? '') === $username) {
+                    if (!$v['available'] && ($v['last_holder'] ?? '') === $userEmpId) {
                         $myCheckedOutShift = $v;
                         break;
                     }
                 }
 
-                // Find the last pickup for a shift vehicle of this gender (round-robin pivot)
-                $shiftCodes = array_column($shiftVehicles, 'vehicle_code');
-                $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($shiftCodes);
+                // FIX: only calculate next vehicle if user has no checked-out shift vehicle
+                if ($myCheckedOutShift === null) {
+                    $shiftCodes     = array_column($shiftVehicles, 'vehicle_code');
+                    $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($shiftCodes);
 
-                if ($lastPickupCode) {
-                    // Find position of last picked-up vehicle in sorted list
-                    $lastIdx = -1;
-                    foreach ($shiftVehicles as $i => $v) {
-                        if ($v['vehicle_code'] === $lastPickupCode) {
-                            $lastIdx = $i;
-                            break;
+                    if ($lastPickupCode) {
+                        $lastIdx = -1;
+                        foreach ($shiftVehicles as $i => $v) {
+                            if ($v['vehicle_code'] === $lastPickupCode) {
+                                $lastIdx = $i;
+                                break;
+                            }
+                        }
+                        $count = count($shiftVehicles);
+                        for ($j = 1; $j <= $count; $j++) {
+                            $idx = ($lastIdx + $j) % $count;
+                            if ($shiftVehicles[$idx]['available']) {
+                                $nextShiftVehicle = $shiftVehicles[$idx];
+                                $nextShiftVehicle['turn_order'] = $idx + 1;
+                                break;
+                            }
                         }
                     }
 
-                    // Find next available vehicle starting after lastIdx (circular)
-                    $count = count($shiftVehicles);
-                    for ($j = 1; $j <= $count; $j++) {
-                        $idx = ($lastIdx + $j) % $count;
-                        if ($shiftVehicles[$idx]['available']) {
-                            $nextShiftVehicle = $shiftVehicles[$idx];
-                            $nextShiftVehicle['turn_order'] = $idx + 1;
-                            break;
+                    // No history yet → first available
+                    if (!$nextShiftVehicle) {
+                        foreach ($shiftVehicles as $i => $v) {
+                            if ($v['available']) {
+                                $nextShiftVehicle = $v;
+                                $nextShiftVehicle['turn_order'] = $i + 1;
+                                break;
+                            }
                         }
                     }
                 }
-
-                // If no next found (all checked out or no history), pick first available
-                if (!$nextShiftVehicle) {
-                    foreach ($shiftVehicles as $i => $v) {
-                        if ($v['available']) {
-                            $nextShiftVehicle = $v;
-                            $nextShiftVehicle['turn_order'] = $i + 1;
-                            break;
-                        }
-                    }
-                }
+                // If $myCheckedOutShift !== null → $nextShiftVehicle stays null (no pickup shown)
             }
 
             Response::json([
                 'success' => true,
-                'data' => [
-                    'private' => $privateVehicles,
-                    'shift_next' => $nextShiftVehicle,
+                'data'    => [
+                    'private'          => $privateVehicles,
+                    'shift_next'       => $nextShiftVehicle,
                     'shift_my_current' => $myCheckedOutShift,
-                    'shift_total' => count($shiftVehicles),
+                    'shift_total'      => count($shiftVehicles),
                 ],
             ]);
+
         } catch (\Throwable $e) {
             error_log("VehicleController::myVehicles error: " . $e->getMessage());
             Response::json([
                 'success' => true,
-                'data' => [
-                    'private' => [],
-                    'shift_next' => null,
+                'data'    => [
+                    'private'          => [],
+                    'shift_next'       => null,
                     'shift_my_current' => null,
-                    'shift_total' => 0,
+                    'shift_total'      => 0,
                 ],
             ]);
         }
@@ -320,42 +283,45 @@ class VehicleController extends BaseController
 
     /**
      * GET /api/v1/vehicles/list
-     * Lightweight vehicle list for reference/dropdown use.
-     * Requires only authentication (not manage_vehicles).
-     * Returns basic vehicle info: id, vehicle_code, type, status, vehicle_mode, department, gender.
+     * Lightweight list for dropdowns and cross-filtering.
+     * FIX: queries DB directly to guarantee department_id, section_id, division_id
+     * are always present — allWithRelations() may not return them in all setups.
      */
     public function list(Request $request, array $params = []): void
     {
-        $user = $this->requireAuth($request);
+        $this->requireAuth($request);
         if (Response::isSent()) return;
 
         try {
-            $vehicles = $this->vehicleModel->allWithRelations([]);
-            // Return lightweight fields only
-            $result = array_map(function ($v) {
-                return [
-                    'id'              => $v['id'] ?? null,
-                    'vehicle_code'    => $v['vehicle_code'] ?? '',
-                    'vehicle_type'    => $v['vehicle_type'] ?? $v['type'] ?? '',
-                    'type'            => $v['type'] ?? $v['vehicle_type'] ?? '',
-                    'vehicle_category'=> $v['vehicle_category'] ?? '',
-                    'status'          => $v['status'] ?? '',
-                    'vehicle_mode'    => $v['vehicle_mode'] ?? '',
-                    'gender'          => $v['gender'] ?? '',
-                    'department_id'   => $v['department_id'] ?? null,
-                    'department_name' => $v['department_name_ar'] ?? $v['department_name'] ?? '',
-                    'section_id'      => $v['section_id'] ?? null,
-                    'section_name'    => $v['section_name_ar'] ?? $v['section_name'] ?? '',
-                    'division_id'     => $v['division_id'] ?? null,
-                    'division_name'   => $v['division_name_ar'] ?? $v['division_name'] ?? '',
-                ];
-            }, $vehicles);
+            $db   = Database::getInstance();
+            $rows = $db->fetchAll(
+                "SELECT
+                    v.id,
+                    v.vehicle_code,
+                    v.type,
+                    v.type              AS vehicle_type,
+                    v.vehicle_category,
+                    v.status,
+                    v.vehicle_mode,
+                    v.gender,
+                    v.department_id,
+                    v.section_id,
+                    v.division_id,
+                    COALESCE(d.name_ar,  '') AS department_name,
+                    COALESCE(s.name_ar,  '') AS section_name,
+                    COALESCE(dv.name_ar, '') AS division_name
+                FROM vehicles v
+                LEFT JOIN Departments d  ON d.department_id  = v.department_id
+                LEFT JOIN Sections    s  ON s.section_id     = v.section_id
+                LEFT JOIN Divisions   dv ON dv.division_id   = v.division_id
+                ORDER BY v.vehicle_code ASC"
+            );
         } catch (\Throwable $e) {
             error_log("VehicleController::list error: " . $e->getMessage());
-            $result = [];
+            $rows = [];
         }
 
-        Response::json(['success' => true, 'data' => $result]);
+        Response::json(['success' => true, 'data' => $rows]);
     }
 
     /**
@@ -373,6 +339,5 @@ class VehicleController extends BaseController
             $stats = ['total' => 0, 'operational' => 0, 'maintenance' => 0, 'out_of_service' => 0, 'private' => 0, 'shift' => 0];
         }
         Response::json(['success' => true, 'data' => $stats]);
-        return;
     }
 }
