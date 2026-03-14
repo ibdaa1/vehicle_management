@@ -1012,6 +1012,7 @@ ob_start();
     /* ---- Init ---- */
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,200));
+        if(window.__pageDenied) return;
         await loadThemes();
         loadColorsTab();
         loadActiveDesign();

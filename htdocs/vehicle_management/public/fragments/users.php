@@ -229,6 +229,7 @@
 (function(){
     let allUsers = [];
     let roles = [];
+    var uCanCreate=false, uCanEdit=false, uCanDelete=false;
 
     async function loadRoles() {
         try {
@@ -353,8 +354,8 @@
                 '<td data-label="' + i18n.t('created_at') + '">' + created + '</td>' +
                 '<td data-label="' + i18n.t('actions') + '" class="table-actions">' +
                     '<button class="btn-icon btn-view" title="' + i18n.t('view') + '" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
-                    '<button class="btn-icon btn-edit" title="' + i18n.t('edit') + '" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' +
-                    '<button class="btn-icon btn-delete" title="' + i18n.t('delete') + '" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' +
+                    (uCanEdit ? '<button class="btn-icon btn-edit" title="' + i18n.t('edit') + '" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' : '') +
+                    (uCanDelete ? '<button class="btn-icon btn-delete" title="' + i18n.t('delete') + '" data-action="delete" data-id="' + parseInt(u.id) + '">🗑️</button>' : '') +
                 '</td></tr>';
         }).join('');
         renderUsersPagination(totalItems, totalPg);
@@ -615,7 +616,16 @@
     }
 
     translateStatic();
-    loadRoles().then(() => loadUserRefs()).then(() => loadUsers());
+    (function initUserPerms(){
+        var user=Auth.getUser();
+        if(!user){setTimeout(initUserPerms,100);return;}
+        var perms=(user.permissions)||[];
+        uCanCreate=perms.includes('users_create')||perms.includes('*');
+        uCanEdit=perms.includes('users_edit')||perms.includes('*');
+        uCanDelete=perms.includes('users_delete')||perms.includes('*');
+        if(!uCanCreate){var ab=document.getElementById('btnAddUser');if(ab)ab.style.display='none';}
+        loadRoles().then(() => loadUserRefs()).then(() => loadUsers());
+    })();
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>

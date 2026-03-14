@@ -16,18 +16,19 @@
 $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page']) : 'dashboard';
 
 // Page metadata per fragment (also serves as allowlist)
+// 'perm' key defines the required permission to access this page (null = no permission required)
 $pageMeta = [
-    'dashboard'   => ['title' => 'لوحة التحكم',           'active' => 'dashboard'],
-    'my_vehicles' => ['title' => 'مركباتي',               'active' => 'my_vehicles'],
-    'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles'],
-    'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles'],
-    'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements'],
-    'maintenance' => ['title' => 'الصيانة',               'active' => 'maintenance'],
-    'violations'  => ['title' => 'المخالفات',             'active' => 'violations'],
-    'users'       => ['title' => 'إدارة المستخدمين',      'active' => 'users'],
-    'roles'       => ['title' => 'إدارة الأدوار',         'active' => 'roles'],
-    'settings'    => ['title' => 'الإعدادات',             'active' => 'settings'],
-    'profile'     => ['title' => 'الملف الشخصي',          'active' => 'profile'],
+    'dashboard'   => ['title' => 'لوحة التحكم',           'active' => 'dashboard',    'perm' => null],
+    'my_vehicles' => ['title' => 'مركباتي',               'active' => 'my_vehicles',  'perm' => null],
+    'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles',     'perm' => 'vehicles_read'],
+    'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles',     'perm' => 'vehicles_read'],
+    'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements',    'perm' => 'movements_read'],
+    'maintenance' => ['title' => 'الصيانة',               'active' => 'maintenance',  'perm' => 'maintenance_read'],
+    'violations'  => ['title' => 'المخالفات',             'active' => 'violations',   'perm' => 'violations_read'],
+    'users'       => ['title' => 'إدارة المستخدمين',      'active' => 'users',        'perm' => 'users_read'],
+    'roles'       => ['title' => 'إدارة الأدوار',         'active' => 'roles',        'perm' => 'roles_manage'],
+    'settings'    => ['title' => 'الإعدادات',             'active' => 'settings',     'perm' => 'settings_view'],
+    'profile'     => ['title' => 'الملف الشخصي',          'active' => 'profile',      'perm' => null],
 ];
 
 // Enforce allowlist: only permit known page keys
@@ -42,15 +43,27 @@ if (!file_exists($fragmentFile)) {
     $page = 'dashboard';
 }
 
-$meta = $pageMeta[$page] ?? ['title' => 'لوحة التحكم', 'active' => 'dashboard'];
+$meta = $pageMeta[$page] ?? ['title' => 'لوحة التحكم', 'active' => 'dashboard', 'perm' => null];
 $pageTitle  = $meta['title'];
 $activePage = $meta['active'];
+$requiredPerm = $meta['perm'] ?? null;
 
 // Include header (renders HTML <head>, header bar, sidebar, opens <main>)
 include __DIR__ . '/includes/header.php';
-
+?>
+<!-- Page-level permission gate: wraps fragment content -->
+<div id="pageContent" data-required-perm="<?= htmlspecialchars($requiredPerm ?? '') ?>">
+<?php
 // Include the fragment (renders main content only)
 include $fragmentFile;
-
+?>
+</div>
+<div id="accessDenied" style="display:none;text-align:center;padding:80px 20px;">
+    <div style="font-size:4rem;margin-bottom:16px;">🔒</div>
+    <h2 id="accessDeniedTitle" data-label-ar="غير مصرح بالوصول" data-label-en="Access Denied">غير مصرح بالوصول</h2>
+    <p id="accessDeniedMsg" data-label-ar="ليس لديك صلاحية للوصول إلى هذه الصفحة" data-label-en="You do not have permission to access this page" style="color:var(--text-secondary,#666);margin-top:8px;">ليس لديك صلاحية للوصول إلى هذه الصفحة</p>
+    <a href="dashboard.php?page=dashboard" class="btn btn-primary" style="margin-top:24px;display:inline-block;padding:10px 24px;border-radius:8px;text-decoration:none;" id="accessDeniedBack" data-label-ar="العودة للوحة التحكم" data-label-en="Back to Dashboard">العودة للوحة التحكم</a>
+</div>
+<?php
 // Include footer (closes </main>, renders footer, loads JS)
 include __DIR__ . '/includes/footer.php';

@@ -167,6 +167,7 @@
     const $=id=>document.getElementById(id);
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allViolations=[], filteredViolations=[], currentPage=1, perPage=100;
+    var vlCanCreate=false, vlCanEdit=false, vlCanDelete=false;
 
     /* ---- Load ---- */
     async function loadViolations(){
@@ -229,8 +230,8 @@
             h+='<td>'+esc(v.notes||'—')+'</td>';
             h+='<td class="vl-actions">';
             h+='<button onclick="VlPage.view('+v.id+')" title="'+i18n.t('view')+'">👁</button>';
-            h+='<button onclick="VlPage.edit('+v.id+')" title="'+i18n.t('edit_violation')+'">✏️</button>';
-            h+='<button onclick="VlPage.del('+v.id+')" title="'+i18n.t('delete')+'">🗑️</button>';
+            if(vlCanEdit) h+='<button onclick="VlPage.edit('+v.id+')" title="'+i18n.t('edit_violation')+'">✏️</button>';
+            if(vlCanDelete) h+='<button onclick="VlPage.del('+v.id+')" title="'+i18n.t('delete')+'">🗑️</button>';
             h+='</td></tr>';
         });
         tbody.innerHTML=h;
@@ -388,8 +389,17 @@
     }
 
     // Init
-    translateStatic();
-    loadViolations();
+    (function initPerms(){
+        var user=Auth.getUser();
+        if(!user){setTimeout(initPerms,100);return;}
+        var perms=(user.permissions)||[];
+        vlCanCreate=perms.includes('violations_create')||perms.includes('*');
+        vlCanEdit=perms.includes('violations_edit')||perms.includes('*');
+        vlCanDelete=perms.includes('violations_delete')||perms.includes('*');
+        if(!vlCanCreate){var ab=$('vlBtnAdd');if(ab)ab.style.display='none';}
+        translateStatic();
+        loadViolations();
+    })();
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>

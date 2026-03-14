@@ -60,6 +60,43 @@
         }
     })();
     </script>
+    <script>
+    /* ---- Page-level permission gate ---- */
+    (function(){
+        var pageContent = document.getElementById('pageContent');
+        var accessDenied = document.getElementById('accessDenied');
+        if (!pageContent || !accessDenied) return;
+
+        var requiredPerm = pageContent.getAttribute('data-required-perm');
+        if (!requiredPerm) return; // No permission required for this page
+
+        // Check permission after Auth has loaded (Auth.check is called by app.js on DOMContentLoaded)
+        function checkPagePermission() {
+            var user = Auth.getUser();
+            if (!user) {
+                // Auth not loaded yet, retry
+                setTimeout(checkPagePermission, 100);
+                return;
+            }
+            var perms = user.permissions || [];
+            if (!perms.includes(requiredPerm) && !perms.includes('*')) {
+                // User lacks permission — hide page content, show access denied
+                pageContent.style.display = 'none';
+                accessDenied.style.display = 'block';
+                // Apply language to access denied message
+                var lang = localStorage.getItem('lang') || 'ar';
+                var isEn = (lang === 'en');
+                accessDenied.querySelectorAll('[data-label-ar]').forEach(function(el) {
+                    el.textContent = el.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || el.textContent;
+                });
+                // Set a global flag so fragment scripts can skip initialization
+                window.__pageDenied = true;
+            }
+        }
+        // Start checking after a small delay to allow Auth.check() to complete
+        setTimeout(checkPagePermission, 200);
+    })();
+    </script>
     <?php if (!empty($pageScripts)): ?>
     <!-- Page-specific scripts -->
     <?= $pageScripts ?>

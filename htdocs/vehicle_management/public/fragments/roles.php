@@ -217,6 +217,7 @@
     let allRoles = [];
     let allPermissions = [];
     let currentRoleId = null;
+    var rCanEdit=false, rCanDelete=false;
 
     const moduleLabels = {
         users: 'المستخدمين',
@@ -310,9 +311,9 @@
                 '<td>' + permBadge + '</td>' +
                 '<td>' + created + '</td>' +
                 '<td class="table-actions">' +
-                    '<button class="btn-icon btn-perm" title="الصلاحيات" data-action="perm" data-id="' + parseInt(r.id) + '">🔐</button>' +
-                    '<button class="btn-icon btn-edit" title="تعديل" data-action="edit" data-id="' + parseInt(r.id) + '">✏️</button>' +
-                    deleteBtn +
+                    (rCanEdit ? '<button class="btn-icon btn-perm" title="الصلاحيات" data-action="perm" data-id="' + parseInt(r.id) + '">🔐</button>' : '') +
+                    (rCanEdit ? '<button class="btn-icon btn-edit" title="تعديل" data-action="edit" data-id="' + parseInt(r.id) + '">✏️</button>' : '') +
+                    (rCanDelete ? deleteBtn : '') +
                 '</td></tr>';
         }).join('');
     }
@@ -579,7 +580,15 @@
     });
 
     /* ---- Init ---- */
-    loadPermissions().then(function() { loadRoles(); });
+    (function initRolePerms(){
+        var user=Auth.getUser();
+        if(!user){setTimeout(initRolePerms,100);return;}
+        var perms=(user.permissions)||[];
+        rCanEdit=perms.includes('roles_manage')||perms.includes('*');
+        rCanDelete=perms.includes('roles_manage')||perms.includes('*');
+        if(!rCanEdit){var ab=document.getElementById('btnAddRole');if(ab)ab.style.display='none';}
+        loadPermissions().then(function() { loadRoles(); });
+    })();
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>
