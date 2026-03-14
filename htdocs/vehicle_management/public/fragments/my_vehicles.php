@@ -133,7 +133,7 @@
         var isAvailable = v.available !== false && v.available !== 0 && v.available !== '0';
         var isOperational = v.status === 'operational';
         var canPickup = isAvailable && isOperational;
-        var isCheckedByMe = !isAvailable && (v.last_holder || '') === (currentUser.username || '');
+        var isCheckedByMe = !isAvailable && (v.last_holder || '') === (currentUser.emp_id || '');
 
         var html = '<div class="mv-v-card">';
         html += '<div class="mv-v-card-head">';

@@ -319,6 +319,42 @@ class VehicleController extends BaseController
     }
 
     /**
+     * GET /api/v1/vehicles/list
+     * Lightweight vehicle list for reference/dropdown use.
+     * Requires only authentication (not manage_vehicles).
+     * Returns basic vehicle info: id, vehicle_code, type, status, vehicle_mode, department, gender.
+     */
+    public function list(Request $request, array $params = []): void
+    {
+        $user = $this->requireAuth($request);
+        if (Response::isSent()) return;
+
+        try {
+            $vehicles = $this->vehicleModel->allWithRelations([]);
+            // Return lightweight fields only
+            $result = array_map(function ($v) {
+                return [
+                    'id'              => $v['id'] ?? null,
+                    'vehicle_code'    => $v['vehicle_code'] ?? '',
+                    'vehicle_type'    => $v['vehicle_type'] ?? $v['type'] ?? '',
+                    'type'            => $v['type'] ?? $v['vehicle_type'] ?? '',
+                    'vehicle_category'=> $v['vehicle_category'] ?? '',
+                    'status'          => $v['status'] ?? '',
+                    'vehicle_mode'    => $v['vehicle_mode'] ?? '',
+                    'gender'          => $v['gender'] ?? '',
+                    'department_name' => $v['department_name'] ?? '',
+                    'section_name'    => $v['section_name'] ?? '',
+                ];
+            }, $vehicles);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::list error: " . $e->getMessage());
+            $result = [];
+        }
+
+        Response::json(['success' => true, 'data' => $result]);
+    }
+
+    /**
      * GET /api/v1/vehicles/stats
      */
     public function stats(Request $request, array $params = []): void

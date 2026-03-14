@@ -99,6 +99,7 @@ $router->delete('api/v1/settings/{id}', SettingsController::class, 'destroySetti
 // === Vehicle Routes ===
 $router->get('api/v1/vehicles/stats', VehicleController::class, 'stats');
 $router->get('api/v1/vehicles/my-vehicles', VehicleController::class, 'myVehicles');
+$router->get('api/v1/vehicles/list', VehicleController::class, 'list');
 $router->get('api/v1/vehicles', VehicleController::class, 'index');
 $router->get('api/v1/vehicles/{id}', VehicleController::class, 'show');
 $router->post('api/v1/vehicles', VehicleController::class, 'store');

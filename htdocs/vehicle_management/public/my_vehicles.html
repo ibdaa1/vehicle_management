@@ -324,9 +324,9 @@
                 return;
             }
 
-            // FIX: use movements_create (matches DB permission key) not manage_movements
+            // Use manage_movements permission (matches DB permission key)
             var perms = currentUser.permissions || [];
-            hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
+            hasMovementPermission = perms.includes('manage_movements') || perms.includes('*');
 
             loadMyVehicles();
         });

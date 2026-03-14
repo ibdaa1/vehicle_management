@@ -264,7 +264,7 @@
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
         try{
-            const [vRes, rRes, uRes]=await Promise.all([API.get('/vehicles'), API.get('/references'), API.get('/users')]);
+            const [vRes, rRes, uRes]=await Promise.all([API.get('/vehicles/list'), API.get('/references'), API.get('/users')]);
             const vehicles=(vRes.data||vRes)||[];
             vehicles.forEach(v=>{vehicleMap[v.vehicle_code]=v;});
             // Populate vehicle code dropdown

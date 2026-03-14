@@ -224,15 +224,15 @@
         filtered.forEach(function(v,i){
             var statusCls=v.status==='operational'?'operational':(v.status==='under_maintenance'?'maintenance':'out_of_service');
             var statusTxt=v.status==='operational'?'تعمل':(v.status==='under_maintenance'?'صيانة':'خارج الخدمة');
-            var modeTxt=v.usage_mode==='private'?'خاص':'وردية';
+            var modeTxt=(v.vehicle_mode||v.usage_mode)==='private'?'خاص':'وردية';
             var actions='';
             if(canEdit) actions+='<button onclick="VLForm.showEdit('+v.id+')" title="Edit">✏️</button>';
             if(canDelete) actions+='<button onclick="VLForm.showDelete('+v.id+')" title="Delete">🗑️</button>';
             html+='<tr>'
                 +'<td>'+(i+1)+'</td>'
                 +'<td>'+(v.vehicle_code||'—')+'</td>'
-                +'<td>'+(v.vehicle_type||'—')+'</td>'
-                +'<td>'+(v.department_name||'—')+'</td>'
+                +'<td>'+(v.type||v.vehicle_type||'—')+'</td>'
+                +'<td>'+(v.department_name_ar||v.department_name||'—')+'</td>'
                 +'<td><span class="vl-badge '+statusCls+'">'+statusTxt+'</span></td>'
                 +'<td>'+modeTxt+'</td>'
                 +'<td class="vl-actions">'+actions+'</td>'
@@ -277,13 +277,13 @@
             if(!v) return;
             $('vlEditId').value=v.id;
             $('vlFldCode').value=v.vehicle_code||'';
-            $('vlFldType').value=v.vehicle_type||'';
-            $('vlFldCategory').value=v.category||'sedan';
+            $('vlFldType').value=v.type||v.vehicle_type||'';
+            $('vlFldCategory').value=v.vehicle_category||v.category||'sedan';
             $('vlFldStatus').value=v.status||'operational';
-            $('vlFldMode').value=v.usage_mode||'private';
+            $('vlFldMode').value=v.vehicle_mode||'private';
             $('vlFldGender').value=v.gender||'male';
             $('vlFldDept').value=v.department_id||'';
-            $('vlFldYear').value=v.year||'';
+            $('vlFldYear').value=v.manufacture_year||v.year||'';
             $('vlModalTitle').textContent='تعديل مركبة';
             $('vlModal').classList.add('active');
         },
@@ -294,13 +294,13 @@
             var id=$('vlEditId').value;
             var data={
                 vehicle_code: $('vlFldCode').value.trim(),
-                vehicle_type: $('vlFldType').value.trim(),
-                category: $('vlFldCategory').value,
+                type: $('vlFldType').value.trim(),
+                vehicle_category: $('vlFldCategory').value,
                 status: $('vlFldStatus').value,
-                usage_mode: $('vlFldMode').value,
+                vehicle_mode: $('vlFldMode').value,
                 gender: $('vlFldGender').value,
                 department_id: $('vlFldDept').value||null,
-                year: $('vlFldYear').value||null
+                manufacture_year: $('vlFldYear').value||null
             };
             if(!data.vehicle_code){
                 UI.showToast('كود المركبة مطلوب','error');
