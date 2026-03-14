@@ -560,11 +560,18 @@
 
     /* ---- Filters ---- */
     function applyFiltersAndStats(){applyFilters();loadStats();}
+    var _dateDebounce=null;
+    function debouncedApplyFiltersAndStats(){
+        clearTimeout(_dateDebounce);
+        _dateDebounce=setTimeout(applyFiltersAndStats,300);
+    }
     $('mvSearch').addEventListener('input',applyFilters);
     $('mvFilterType').addEventListener('change',applyFilters);
     $('mvFilterCondition').addEventListener('change',applyFilters);
     $('mvDateFrom').addEventListener('change',applyFiltersAndStats);
     $('mvDateTo').addEventListener('change',applyFiltersAndStats);
+    $('mvDateFrom').addEventListener('input',debouncedApplyFiltersAndStats);
+    $('mvDateTo').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
     $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
     $('mvFilterSection').addEventListener('change',applyFiltersAndStats);
@@ -654,6 +661,31 @@
         html+='</tbody></table></body></html>';
         var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
     }
+    function printEmployeeList(title,movements){
+        var empMap={};
+        movements.forEach(function(m){
+            var key=m.performed_by||'';
+            if(!key) return;
+            if(!empMap[key]) empMap[key]={emp_id:key,pickups:0,returns:0,total:0};
+            empMap[key].total++;
+            if(m.operation_type==='pickup') empMap[key].pickups++;
+            else if(m.operation_type==='return') empMap[key].returns++;
+        });
+        var employees=Object.values(empMap).sort(function(a,b){return b.total-a.total;});
+        var html='<html dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title>';
+        html+='<style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center;margin:10px 0}.info{text-align:center;color:#666;margin-bottom:16px}@media print{body{margin:10px}}</style>';
+        html+='</head><body>';
+        html+='<h2>'+esc(title)+'</h2>';
+        var s=lastStats||{};
+        if(s.date_from||s.date_to) html+='<p class="info">'+i18n.t('from')+' '+(s.date_from||'—')+' — '+i18n.t('to')+' '+(s.date_to||'—')+'</p>';
+        html+='<p class="info">'+i18n.t('employee_count')+': '+employees.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('employee_id')+'</th><th>'+i18n.t('total_movements')+'</th><th>'+i18n.t('operation_type_pickup')+'</th><th>'+i18n.t('operation_type_return')+'</th></tr></thead><tbody>';
+        employees.forEach(function(e,i){
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(e.emp_id)+'</td><td>'+e.total+'</td><td>'+e.pickups+'</td><td>'+e.returns+'</td></tr>';
+        });
+        html+='</tbody></table></body></html>';
+        var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+    }
     function printStatDetail(statKey){
         var vehicles=getFilteredVehicles();
         var usedCodes=getUsedVehicleCodes();
@@ -702,9 +734,8 @@
                 printMovementList(i18n.t('return_operation'),getFilteredMovements('return'));
                 break;
             case 'employees':
-                // Employee count — no detailed data available, show info toast
-                UI.showToast(i18n.t('employee_count')+': '+(lastStats.employee_count||0),'info');
-                return;
+                printEmployeeList(i18n.t('employee_count'),getFilteredMovements(null));
+                break;
             case 'sedan':
                 printVehicleList(i18n.t('sedan'),vehicles.filter(function(v){return v.vehicle_category==='sedan';}));
                 break;
