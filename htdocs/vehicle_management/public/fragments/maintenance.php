@@ -301,21 +301,21 @@
             notes:$('mtNotes').value.trim()
         };
         if(!data.vehicle_code||!data.visit_date){
-            UI.toast(lang()==='en'?'Please fill required fields':'يرجى ملء الحقول المطلوبة','warning');
+            UI.showToast(lang()==='en'?'Please fill required fields':'يرجى ملء الحقول المطلوبة','warning');
             return;
         }
         try{
             if(id){
                 await API.put('/maintenance/'+id,data);
-                UI.toast(lang()==='en'?'Updated successfully':'تم التحديث بنجاح','success');
+                UI.showToast(lang()==='en'?'Updated successfully':'تم التحديث بنجاح','success');
             }else{
                 await API.post('/maintenance',data);
-                UI.toast(lang()==='en'?'Created successfully':'تم الإنشاء بنجاح','success');
+                UI.showToast(lang()==='en'?'Created successfully':'تم الإنشاء بنجاح','success');
             }
             closeModal();
             loadRecords();
         }catch(e){
-            UI.toast(e.message||'Error','danger');
+            UI.showToast(e.message||'Error','danger');
         }
     }
 
@@ -337,23 +337,23 @@
             if(r.updated_at) html+='<div class="d-row"><span class="d-lbl">'+esc(i18n.t('updated_at'))+'</span><span class="d-val">'+(r.updated_at||'-')+'</span></div>';
             $('mtDetailBody').innerHTML=html;
             $('mtDetailModal').classList.add('show');
-        }catch(e){UI.toast(e.message||'Error','danger');}
+        }catch(e){UI.showToast(e.message||'Error','danger');}
     };
 
     window.__mtEdit=async function(id){
         try{
             const res=await API.get('/maintenance/'+id);
             openModal(res.data||res);
-        }catch(e){UI.toast(e.message||'Error','danger');}
+        }catch(e){UI.showToast(e.message||'Error','danger');}
     };
 
     window.__mtDelete=async function(id){
         if(!confirm(i18n.t('confirm_delete')))return;
         try{
             await API.delete('/maintenance/'+id);
-            UI.toast(lang()==='en'?'Deleted successfully':'تم الحذف بنجاح','success');
+            UI.showToast(lang()==='en'?'Deleted successfully':'تم الحذف بنجاح','success');
             loadRecords();
-        }catch(e){UI.toast(e.message||'Error','danger');}
+        }catch(e){UI.showToast(e.message||'Error','danger');}
     };
 
     /* ---- Events ---- */
