@@ -129,6 +129,16 @@ class AuthController extends BaseController
             $resources = [];
             try {
                 $roleId = (int)($user['role_id'] ?? 0);
+
+                // Look up role name
+                $db = \App\Core\Database::getInstance();
+                $roleRow = $db->fetchOne(
+                    "SELECT key_name, display_name FROM roles WHERE id = ? LIMIT 1",
+                    'i',
+                    [$roleId]
+                );
+                $user['role_name'] = $roleRow['key_name'] ?? '';
+
                 if ($roleId === 1) {
                     // Superadmin has all permissions
                     $permissions = ['*'];

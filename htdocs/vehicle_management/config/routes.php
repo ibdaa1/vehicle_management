@@ -19,6 +19,7 @@ use App\Controllers\ReferencesController;
 use App\Controllers\UserController;
 use App\Controllers\MovementController;
 use App\Controllers\ViolationController;
+use App\Controllers\MaintenanceController;
 use App\Controllers\ProfileController;
 
 // === Health Check Route (diagnostic) ===
@@ -142,3 +143,11 @@ $router->get('api/v1/violations/{id}', ViolationController::class, 'show');
 $router->post('api/v1/violations', ViolationController::class, 'store');
 $router->put('api/v1/violations/{id}', ViolationController::class, 'update');
 $router->delete('api/v1/violations/{id}', ViolationController::class, 'destroy');
+
+// === Maintenance Routes ===
+$router->get('api/v1/maintenance/stats', MaintenanceController::class, 'stats');
+$router->get('api/v1/maintenance', MaintenanceController::class, 'index');
+$router->get('api/v1/maintenance/{id}', MaintenanceController::class, 'show');
+$router->post('api/v1/maintenance', MaintenanceController::class, 'store');
+$router->put('api/v1/maintenance/{id}', MaintenanceController::class, 'update');
+$router->delete('api/v1/maintenance/{id}', MaintenanceController::class, 'destroy');
