@@ -240,5 +240,7 @@
   "unused_vehicles": "Unused",
   "private_not_returned": "Private Not Returned",
   "employee_count": "Employees",
-  "pickup_category": "Pickup (Category)"
+  "pickup_category": "Pickup (Category)",
+  "statistics": "Statistics",
+  "count": "Count"
 }

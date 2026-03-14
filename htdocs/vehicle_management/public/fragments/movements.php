@@ -131,6 +131,11 @@
         <option value="men" id="mvOptMen">Men</option>
         <option value="women" id="mvOptWomen">Women</option>
     </select>
+    <select id="mvFilterVehicleMode">
+        <option value="" id="mvOptAllModes">All Modes</option>
+        <option value="private" id="mvOptPrivateMode">Private</option>
+        <option value="shift" id="mvOptShiftMode">Shift</option>
+    </select>
     <select id="mvFilterVehicle">
         <option value="" id="mvOptAllVehicles">All Vehicles</option>
     </select>
@@ -270,6 +275,7 @@
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
     let vehicleMap={}, latestByVehicle={};
+    var lastStats={};
     var mvUser=null;
     var mvPerms=[];
     var mvCanCreate=false;
@@ -356,9 +362,12 @@
             if(dateFrom) params.push('date_from='+encodeURIComponent(dateFrom));
             if(dateTo) params.push('date_to='+encodeURIComponent(dateTo));
             if(gender) params.push('gender='+encodeURIComponent(gender));
+            var vehicleMode=$('mvFilterVehicleMode').value;
+            if(vehicleMode) params.push('vehicle_mode='+encodeURIComponent(vehicleMode));
             var url='/movements/stats'+(params.length?'?'+params.join('&'):'');
             var res=await API.get(url);
             var s=res.data||res;
+            lastStats=s;
             $('mvStatTotal').textContent=s.total_vehicles||0;
             $('mvStatPrivate').textContent=s.private_vehicles||0;
             $('mvStatShift').textContent=s.shift_vehicles||0;
@@ -395,6 +404,7 @@
         const section=$('mvFilterSection').value;
         const gender=$('mvFilterGender').value;
         const vCode=$('mvFilterVehicle').value;
+        const vMode=$('mvFilterVehicleMode').value;
         filteredMovements=allMovements.filter(m=>{
             if(t && m.operation_type!==t) return false;
             if(c && m.vehicle_condition!==c) return false;
@@ -413,6 +423,7 @@
             if(dept && v && v.department!==dept) return false;
             if(section && v && v.section!==section) return false;
             if(gender && v && v.gender!==gender) return false;
+            if(vMode && v && v.vehicle_mode!==vMode) return false;
             if(vCode && m.vehicle_code!==vCode) return false;
             return true;
         });
@@ -554,6 +565,7 @@
     $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
     $('mvFilterSection').addEventListener('change',applyFiltersAndStats);
     $('mvFilterGender').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterVehicleMode').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicle').addEventListener('change',applyFilters);
 
     /* ---- Print Report ---- */
@@ -562,11 +574,51 @@
         if(!data.length){UI.showToast(i18n.t('no_data_for_print'),'error');return;}
         const typeLabel=t=>t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');
         const condLabel=c=>c==='clean'?i18n.t('clean'):c==='acceptable'?i18n.t('acceptable'):c==='damaged'?i18n.t('damaged'):'—';
-        let html='<html dir="rtl"><head><meta charset="utf-8"><title>'+i18n.t('movements_report')+'</title><style>body{font-family:Arial,sans-serif;direction:rtl}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center}@media print{body{margin:0}}</style></head><body>';
-        html+='<h2>'+i18n.t('movements_report')+'</h2><p>'+i18n.t('total_records')+': '+data.length+'</p>';
-        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('by')+'</th><th>'+i18n.t('date')+'</th><th>'+i18n.t('condition')+'</th><th>'+i18n.t('fuel_level')+'</th></tr></thead><tbody>';
+        const modeLabel=m=>m==='private'?i18n.t('private_vehicles'):m==='shift'?i18n.t('shift_vehicles'):'—';
+        const catLabel=c=>c==='sedan'?i18n.t('sedan'):c==='pickup'?i18n.t('pickup_category'):c==='bus'?i18n.t('bus'):(c||'—');
+        const statusLabel=s=>s==='operational'?i18n.t('operational'):s==='maintenance'?i18n.t('under_maintenance'):s==='out_of_service'?i18n.t('out_of_service'):(s||'—');
+        var s=lastStats||{};
+        var cats=s.categories||{};
+        var sts=s.statuses||{};
+        let html='<html dir="rtl"><head><meta charset="utf-8"><title>'+i18n.t('movements_report')+'</title><style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2,h3{text-align:center;margin:10px 0}.stats-grid{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;justify-content:center}.stat-box{border:1px solid #ccc;border-radius:8px;padding:10px 16px;text-align:center;min-width:120px}.stat-box .snum{font-size:1.4rem;font-weight:700;color:#1a5276}.stat-box .slbl{font-size:.8rem;color:#666;margin-top:2px}@media print{body{margin:10px}.stats-grid{page-break-inside:avoid}}</style></head><body>';
+        html+='<h2>'+i18n.t('movements_report')+'</h2>';
+        if(s.date_from||s.date_to) html+='<p style="text-align:center;color:#666">'+i18n.t('from')+': '+(s.date_from||'—')+' — '+i18n.t('to')+': '+(s.date_to||'—')+'</p>';
+
+        // Statistics summary section
+        html+='<h3>📊 '+i18n.t('statistics')+'</h3>';
+        html+='<div class="stats-grid">';
+        html+='<div class="stat-box"><div class="snum">'+(s.total_vehicles||0)+'</div><div class="slbl">'+i18n.t('total_vehicles')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.private_vehicles||0)+'</div><div class="slbl">'+i18n.t('private_vehicles')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.shift_vehicles||0)+'</div><div class="slbl">'+i18n.t('shift_vehicles')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.checked_out||0)+'</div><div class="slbl">'+i18n.t('checked_out')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.available||0)+'</div><div class="slbl">'+i18n.t('available_vehicles')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.used_in_period||0)+'</div><div class="slbl">'+i18n.t('used_in_period')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.unused_in_period||0)+'</div><div class="slbl">'+i18n.t('unused_vehicles')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.private_not_returned||0)+'</div><div class="slbl">'+i18n.t('private_not_returned')+'</div></div>';
+        html+='<div class="stat-box"><div class="snum">'+(s.employee_count||0)+'</div><div class="slbl">'+i18n.t('employee_count')+'</div></div>';
+        html+='</div>';
+
+        // Category & status breakdown
+        html+='<table><thead><tr><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('count')+'</th></tr></thead><tbody>';
+        Object.entries(cats).forEach(function(e){html+='<tr><td>'+catLabel(e[0])+'</td><td>'+e[1]+'</td></tr>';});
+        html+='</tbody></table>';
+        html+='<table><thead><tr><th>'+i18n.t('vehicle_status')+'</th><th>'+i18n.t('count')+'</th></tr></thead><tbody>';
+        Object.entries(sts).forEach(function(e){html+='<tr><td>'+statusLabel(e[0])+'</td><td>'+e[1]+'</td></tr>';});
+        html+='</tbody></table>';
+
+        // Movement counts
+        html+='<table><thead><tr><th>'+i18n.t('total_movements')+'</th><th>'+i18n.t('operation_type_pickup')+'</th><th>'+i18n.t('operation_type_return')+'</th></tr></thead><tbody>';
+        html+='<tr><td>'+(s.total_movements||0)+'</td><td>'+(s.pickups||0)+'</td><td>'+(s.returns||0)+'</td></tr>';
+        html+='</tbody></table>';
+
+        // Movements detail table
+        html+='<h3>📋 '+i18n.t('movements')+'</h3>';
+        html+='<p>'+i18n.t('total_records')+': '+data.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('vehicle_mode')+'</th><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('by')+'</th><th>'+i18n.t('date')+'</th><th>'+i18n.t('condition')+'</th><th>'+i18n.t('fuel_level')+'</th></tr></thead><tbody>';
         data.forEach((m,i)=>{
+            const v=vehicleMap[m.vehicle_code]||{};
             html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td>';
+            html+='<td>'+modeLabel(v.vehicle_mode)+'</td><td>'+catLabel(v.vehicle_category)+'</td>';
             html+='<td>'+esc(m.performed_by)+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
             html+='<td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td></tr>';
         });
@@ -692,6 +744,7 @@
             mvOptAllVehicleStatuses:'all_vehicle_statuses', mvOptOperational:'operational', mvOptMaintenance:'under_maintenance', mvOptOutOfService:'out_of_service',
             mvOptAllDepts:'all_departments', mvOptAllSections:'all_sections',
             mvOptAllGenders:'all_genders', mvOptMen:'men', mvOptWomen:'women',
+            mvOptAllModes:'all_modes', mvOptPrivateMode:'private_vehicles', mvOptShiftMode:'shift_vehicles',
             mvOptAllVehicles:'all_vehicles',
             mvBtnPrintText:'print_report', mvBtnAddText:'add_movement',
             mvThCode:'vehicle_code', mvThType:'vehicle_type', mvThBy:'by', mvThDate:'date',

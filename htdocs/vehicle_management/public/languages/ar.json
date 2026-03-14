@@ -240,5 +240,7 @@
   "unused_vehicles": "غير مستخدمة",
   "private_not_returned": "خاصة لم تُرجع المفتاح",
   "employee_count": "الموظفون",
-  "pickup_category": "دبل كابينة"
+  "pickup_category": "دبل كابينة",
+  "statistics": "الإحصائيات",
+  "count": "العدد"
 }
