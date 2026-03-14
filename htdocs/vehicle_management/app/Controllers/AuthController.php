@@ -126,29 +126,29 @@ class AuthController extends BaseController
         if ($user) {
             // Load permissions for the user
             $permissions = [];
+            $resources = [];
             try {
-                $db = \App\Core\Database::getInstance();
                 $roleId = (int)($user['role_id'] ?? 0);
-                if ($roleId <= 2) {
+                if ($roleId === 1) {
+                    // Superadmin has all permissions
                     $permissions = ['*'];
                 } else {
-                    $rows = $db->fetchAll(
-                        "SELECT p.key_name FROM permissions p
-                         JOIN role_permissions rp ON rp.permission_id = p.id
-                         WHERE rp.role_id = ? AND p.is_active = 1",
-                        'i',
-                        [$roleId]
-                    );
-                    foreach ($rows as $row) {
-                        $permissions[] = $row['key_name'];
+                    // Load module-level permissions from role_permissions + permissions tables
+                    $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);
+                    foreach (($rolePerms['permissions'] ?? []) as $p) {
+                        $permissions[] = $p['key_name'];
+                    }
+                    // Load resource-level permissions
+                    foreach (($rolePerms['resources'] ?? []) as $r) {
+                        $resources[] = $r;
                     }
                 }
             } catch (\Throwable $e) {
                 error_log("AuthController::check permissions error: " . $e->getMessage());
-                $permissions = ['*'];
             }
 
             $user['permissions'] = $permissions;
+            $user['resources'] = $resources;
 
             Response::json([
                 'success'    => true,

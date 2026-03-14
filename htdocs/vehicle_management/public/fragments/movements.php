@@ -255,11 +255,11 @@
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
     let vehicleMap={}, latestByVehicle={};
-    var mvUser=Auth.getUser();
-    var mvPerms=(mvUser&&mvUser.permissions)||[];
-    var mvCanCreate=mvPerms.includes('manage_movements')||mvPerms.includes('*');
-    var mvCanEdit=mvPerms.includes('manage_movements')||mvPerms.includes('*');
-    var mvCanDelete=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+    var mvUser=null;
+    var mvPerms=[];
+    var mvCanCreate=false;
+    var mvCanEdit=false;
+    var mvCanDelete=false;
 
     /* ---- Load vehicles & references for cross-filters ---- */
     async function loadReferences(){
@@ -645,11 +645,21 @@
         var printBtn=$('mvBtnPrint');if(printBtn)printBtn.title=i18n.t('print_report');
     }
 
-    // Init
-    if(!mvCanCreate){var addBtn=$('mvBtnAdd');if(addBtn)addBtn.style.display='none';}
-    translateStatic();
-    loadReferences();
-    loadMovements();
+    // Init with retry for Auth (matches working fragment pattern)
+    (function mvInit(){
+        if(window.__pageDenied) return;
+        var user=Auth.getUser();
+        if(!user){setTimeout(mvInit,100);return;}
+        mvUser=user;
+        mvPerms=(mvUser&&mvUser.permissions)||[];
+        mvCanCreate=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+        mvCanEdit=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+        mvCanDelete=mvPerms.includes('manage_movements')||mvPerms.includes('*');
+        if(!mvCanCreate){var addBtn=$('mvBtnAdd');if(addBtn)addBtn.style.display='none';}
+        translateStatic();
+        loadReferences();
+        loadMovements();
+    })();
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>
