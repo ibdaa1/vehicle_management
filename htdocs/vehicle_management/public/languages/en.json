@@ -245,5 +245,13 @@
   "statistics": "Statistics",
   "count": "Count",
   "operation_type_pickup": "Pickup",
-  "operation_type_return": "Return"
+  "operation_type_return": "Return",
+  "vehicle_code_label": "Vehicle Code *",
+  "operation_type_label": "Operation Type *",
+  "performed_by_label": "Performed By *",
+  "notes_label": "Notes",
+  "vehicle_condition_label": "Vehicle Condition",
+  "fuel_level_label": "Fuel Level",
+  "location_label": "Location",
+  "photos_label": "Photos (max 6)"
 }

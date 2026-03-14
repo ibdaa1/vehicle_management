@@ -245,5 +245,13 @@
   "statistics": "الإحصائيات",
   "count": "العدد",
   "operation_type_pickup": "استلام",
-  "operation_type_return": "إرجاع"
+  "operation_type_return": "إرجاع",
+  "vehicle_code_label": "رقم المركبة *",
+  "operation_type_label": "نوع العملية *",
+  "performed_by_label": "بواسطة *",
+  "notes_label": "ملاحظات",
+  "vehicle_condition_label": "حالة المركبة",
+  "fuel_level_label": "مستوى الوقود",
+  "location_label": "الموقع",
+  "photos_label": "صور (بحد أقصى 6)"
 }

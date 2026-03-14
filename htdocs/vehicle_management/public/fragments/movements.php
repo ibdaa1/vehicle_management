@@ -208,7 +208,7 @@
                 </div>
                 <div class="row2">
                     <div class="fg">
-                        <label>Vehicle Condition</label>
+                        <label data-lang-key="vehicle_condition_label">Vehicle Condition</label>
                         <select id="mvCondition">
                             <option value="">-- Select --</option>
                             <option value="clean">Clean</option>
@@ -217,7 +217,7 @@
                         </select>
                     </div>
                     <div class="fg">
-                        <label>Fuel Level</label>
+                        <label data-lang-key="fuel_level_label">Fuel Level</label>
                         <select id="mvFuel">
                             <option value="">-- Select --</option>
                             <option value="full">Full</option>
@@ -230,7 +230,7 @@
                 </div>
                 <!-- Location -->
                 <div class="fg">
-                    <label>📍 Location</label>
+                    <label data-lang-key="location_label">📍 Location</label>
                     <div class="loc-btns">
                         <button type="button" class="get-loc" id="mvGetLoc">📍 Get Location</button>
                         <button type="button" class="open-map" id="mvOpenMap">🗺️ Map</button>
@@ -248,7 +248,7 @@
                 </div>
                 <!-- Photos -->
                 <div class="fg">
-                    <label>📷 Photos (max 6)</label>
+                    <label data-lang-key="photos_label">📷 Photos (max 6)</label>
                     <div class="photo-area" id="mvPhotoArea">
                         <p>Click or drag photos here</p>
                         <input type="file" id="mvPhotoInput" accept="image/jpeg,image/png" multiple>
@@ -316,11 +316,8 @@
             (refs.departments||[]).forEach(d=>{
                 const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.department_id||d.id||'');dSel.appendChild(o);
             });
-            // Populate section dropdown
-            const sSel=$('mvFilterSection');
-            (refs.sections||[]).forEach(s=>{
-                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;o.setAttribute('data-id',s.section_id||s.id||'');sSel.appendChild(o);
-            });
+            // Populate section dropdown (all sections initially)
+            populateSections('');
             // Populate division dropdown (all divisions initially)
             populateDivisions('');
             // Populate performed_by user dropdown
@@ -336,6 +333,23 @@
             // Default to current user's emp_id
             if(mvUser&&mvUser.emp_id) pbSel.value=mvUser.emp_id;
         }catch(e){console.error('loadReferences',e);}
+    }
+
+    /* ---- Populate section dropdown (cascade on department) ---- */
+    function populateSections(deptId){
+        var secSel=$('mvFilterSection');
+        while(secSel.options.length>1) secSel.remove(1);
+        var sections=allRefs.sections||[];
+        sections.forEach(function(s){
+            var secDeptId=String(s.department_id||'');
+            if(deptId && secDeptId!==String(deptId)) return;
+            var o=document.createElement('option');
+            o.value=s.name_ar;o.textContent=s.name_ar;
+            o.setAttribute('data-id',s.section_id||s.id||'');
+            secSel.appendChild(o);
+        });
+        // Reset division dropdown too
+        populateDivisions('');
     }
 
     /* ---- Populate division dropdown (cascade on section) ---- */
@@ -461,6 +475,8 @@
             }
             // Cross-reference vehicle data
             const v=vehicleMap[m.vehicle_code];
+            const hasVehicleFilter=vStatus||deptId||secId||divId||gender||vMode;
+            if(hasVehicleFilter && !v) return false;
             if(vStatus && v && v.status!==vStatus) return false;
             if(deptId && v && String(v.department_id)!==String(deptId)) return false;
             if(secId && v && String(v.section_id)!==String(secId)) return false;
@@ -612,7 +628,12 @@
     $('mvDateFrom').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvDateTo').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
-    $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterDept').addEventListener('change',function(){
+        // Cascade: repopulate sections based on selected department
+        var deptId=getSelId($('mvFilterDept'));
+        populateSections(deptId);
+        applyFiltersAndStats();
+    });
     $('mvFilterSection').addEventListener('change',function(){
         // Cascade: repopulate divisions based on selected section
         var secId=getSelId($('mvFilterSection'));
@@ -909,19 +930,20 @@
             try{
                 const res=await API.get('/movements/'+id);
                 const m=res.data||res;
-                const condL=c=>c==='clean'?'Clean':c==='acceptable'?'Acceptable':c==='damaged'?'Damaged':'—';
-                const fuelL=f=>{const mp={full:'Full',three_quarter:'3/4',half:'Half',quarter:'1/4',empty:'Empty'};return mp[f]||'—';};
-                let h='<div class="d-row"><span class="d-lbl">Vehicle Code</span><span class="d-val">'+esc(m.vehicle_code)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Operation</span><span class="d-val"><span class="mv-badge '+m.operation_type+'">'+(m.operation_type==='pickup'?'Pickup':'Return')+'</span></span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Performed By</span><span class="d-val">'+esc(m.performed_by)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Date/Time</span><span class="d-val">'+esc(m.movement_datetime)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Condition</span><span class="d-val">'+condL(m.vehicle_condition)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Fuel</span><span class="d-val">'+fuelL(m.fuel_level)+'</span></div>';
+                const condL=c=>c==='clean'?i18n.t('clean'):c==='acceptable'?i18n.t('acceptable'):c==='damaged'?i18n.t('damaged'):'—';
+                const fuelL=f=>{const mp={full:i18n.t('fuel_full'),three_quarter:i18n.t('fuel_three_quarter'),half:i18n.t('fuel_half'),quarter:i18n.t('fuel_quarter'),empty:i18n.t('fuel_empty')};return mp[f]||'—';};
+                const typeL=t=>t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');
+                let h='<div class="d-row"><span class="d-lbl">'+i18n.t('vehicle_code')+'</span><span class="d-val">'+esc(m.vehicle_code)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('operation_type')+'</span><span class="d-val"><span class="mv-badge '+m.operation_type+'">'+typeL(m.operation_type)+'</span></span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('by')+'</span><span class="d-val">'+esc(m.performed_by)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('date')+'</span><span class="d-val">'+esc(m.movement_datetime)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('condition')+'</span><span class="d-val">'+condL(m.vehicle_condition)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('fuel_level')+'</span><span class="d-val">'+fuelL(m.fuel_level)+'</span></div>';
                 if(m.latitude&&m.longitude){
-                    h+='<div class="d-row"><span class="d-lbl">Location</span><span class="d-val"><a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank">📍 '+m.latitude+', '+m.longitude+'</a></span></div>';
+                    h+='<div class="d-row"><span class="d-lbl">'+i18n.t('location')+'</span><span class="d-val"><a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank">📍 '+m.latitude+', '+m.longitude+'</a></span></div>';
                 }
-                h+='<div class="d-row"><span class="d-lbl">Notes</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">Created By</span><span class="d-val">'+esc(m.created_by||'—')+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(m.created_by||'—')+'</span></div>';
                 // Photos
                 const photos=m.photos||[];
                 if(photos.length){
@@ -977,6 +999,11 @@
 
     /* ---- Translate static HTML elements ---- */
     function translateStatic(){
+        // Retry if i18n translations are not loaded yet
+        if(!i18n.strings || !Object.keys(i18n.strings).length){
+            setTimeout(translateStatic,100);
+            return;
+        }
         const txt={
             mvOptAllTypes:'all_types', mvOptPickup:'pickup_operation', mvOptReturn:'return_operation',
             mvOptAllConditions:'all_conditions', mvOptClean:'clean', mvOptAcceptable:'acceptable', mvOptDamaged:'damaged',
@@ -994,6 +1021,11 @@
         var lblTo=$('mvLabelTo');if(lblTo)lblTo.textContent=i18n.t('to')+':';
         var search=$('mvSearch');if(search)search.placeholder=i18n.t('search_movement');
         var printBtn=$('mvBtnPrint');if(printBtn)printBtn.title=i18n.t('print_report');
+        // Translate all elements with data-lang-key attribute
+        document.querySelectorAll('[data-lang-key]').forEach(function(el){
+            var key=el.getAttribute('data-lang-key');
+            if(key) el.textContent=i18n.t(key);
+        });
     }
 
     // Init with retry for Auth (matches working fragment pattern)
