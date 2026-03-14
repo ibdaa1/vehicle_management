@@ -262,7 +262,7 @@
             var lang=localStorage.getItem('lang')||'ar';
             sel.innerHTML='<option value="">—</option>';
             depts.forEach(function(d){
-                var dId=d.department_id||d.id||'';
+                var dId=d.department_id||'';
                 var dName=(lang==='en'?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—';
                 sel.innerHTML+='<option value="'+dId+'">'+dName+'</option>';
             });
