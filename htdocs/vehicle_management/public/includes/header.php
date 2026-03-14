@@ -96,6 +96,8 @@ $menuItems = [
     ['key' => 'users',       'icon' => '👥', 'page' => 'users',               'label_ar' => 'المستخدمين',     'label_en' => 'Users',       'perm' => 'users_read'],
     ['key' => 'roles',       'icon' => '🔑', 'page' => 'roles',               'label_ar' => 'الأدوار',        'label_en' => 'Roles',       'perm' => 'roles_manage'],
     ['key' => 'settings',    'icon' => '⚙️', 'page' => 'settings',            'label_ar' => 'الإعدادات',      'label_en' => 'Settings',    'perm' => 'settings_view'],
+    ['key' => 'divider'],
+    ['key' => 'profile',     'icon' => '👤', 'page' => 'profile',             'label_ar' => 'الملف الشخصي',   'label_en' => 'Profile',     'perm' => null],
 ];
 ?>
 <!DOCTYPE html>

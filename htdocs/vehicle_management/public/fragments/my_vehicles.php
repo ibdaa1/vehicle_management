@@ -289,28 +289,18 @@
     /* ---------- Expose globally ---------- */
     window.MyVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle };
 
-    /* ---------- Init (wait for Auth.check() in app.js to complete) ---------- */
-    document.addEventListener('DOMContentLoaded', async function() {
-        await new Promise(function(r){ setTimeout(r, 150); });
-        currentUser = Auth.getUser();
+    /* ---------- Init with retry for Auth (matches working fragment pattern) ---------- */
+    (function init() {
+        if (window.__pageDenied) return;
+        var user = Auth.getUser();
+        if (!user) { setTimeout(init, 100); return; }
+        currentUser = user;
         perms = (currentUser && currentUser.permissions) || [];
         hasMovementPermission = perms.includes('movements_create') || perms.includes('*');
 
-        if (!currentUser) {
-            var container = document.getElementById('mvPrivateGrid');
-            if (container) {
-                container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔒</div><p>' +
-                    t('يرجى تسجيل الدخول', 'Please log in') + '</p></div>';
-            }
-            var sContainer = document.getElementById('mvShiftGrid');
-            if (sContainer) {
-                sContainer.innerHTML = '';
-            }
-        } else {
-            applyFragmentLang();
-            loadMyVehicles();
-        }
-    });
+        applyFragmentLang();
+        loadMyVehicles();
+    })();
 })();
 </script>
 <?php $pageScripts = ob_get_clean(); ?>

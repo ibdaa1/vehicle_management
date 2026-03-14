@@ -19,6 +19,7 @@ use App\Controllers\ReferencesController;
 use App\Controllers\UserController;
 use App\Controllers\MovementController;
 use App\Controllers\ViolationController;
+use App\Controllers\ProfileController;
 
 // === Health Check Route (diagnostic) ===
 $router->get('api/v1/health', \App\Controllers\HealthController::class, 'check');
@@ -118,6 +119,12 @@ $router->put('api/v1/movements/{id}', MovementController::class, 'update');
 $router->delete('api/v1/movements/{id}', MovementController::class, 'destroy');
 $router->get('api/v1/movements/{id}/photos', MovementController::class, 'photos');
 $router->post('api/v1/movements/{id}/photos', MovementController::class, 'uploadPhotos');
+
+// === Profile Routes (self-service, no admin required) ===
+$router->put('api/v1/profile/password', ProfileController::class, 'changePassword');
+$router->get('api/v1/profile/movements', ProfileController::class, 'movements');
+$router->get('api/v1/profile', ProfileController::class, 'show');
+$router->put('api/v1/profile', ProfileController::class, 'update');
 
 // === User Routes ===
 $router->get('api/v1/users', UserController::class, 'index');
