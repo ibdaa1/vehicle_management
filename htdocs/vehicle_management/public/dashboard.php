@@ -18,22 +18,28 @@ $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page'])
 // Page metadata per fragment (also serves as allowlist)
 // 'perm' key defines the required permission to access this page (null = no permission required)
 $pageMeta = [
-    'dashboard'   => ['title' => 'لوحة التحكم',           'active' => 'dashboard',    'perm' => null],
-    'my_vehicles' => ['title' => 'مركباتي',               'active' => 'my_vehicles',  'perm' => null],
-    'vehicles'    => ['title' => 'إدارة المركبات',         'active' => 'vehicles',     'perm' => 'manage_vehicles'],
-    'vehicle_form'=> ['title' => 'بيانات المركبة',         'active' => 'vehicles',     'perm' => 'manage_vehicles'],
-    'movements'   => ['title' => 'حركات المركبات',         'active' => 'movements',    'perm' => 'manage_movements'],
-    'maintenance' => ['title' => 'الصيانة',               'active' => 'maintenance',  'perm' => 'manage_maintenance'],
-    'violations'  => ['title' => 'المخالفات',             'active' => 'violations',   'perm' => 'manage_violations'],
-    'users'       => ['title' => 'إدارة المستخدمين',      'active' => 'users',        'perm' => 'manage_users'],
-    'roles'       => ['title' => 'إدارة الأدوار',         'active' => 'roles',        'perm' => 'manage_roles'],
-    'settings'    => ['title' => 'الإعدادات',             'active' => 'settings',     'perm' => 'manage_settings'],
-    'profile'     => ['title' => 'الملف الشخصي',          'active' => 'profile',      'perm' => null],
+    'dashboard'    => ['title' => 'لوحة التحكم',           'active' => 'dashboard',     'perm' => null],
+    'my_vehicles'  => ['title' => 'مركباتي',               'active' => 'my_vehicles',   'perm' => null],
+    'vehicle_list' => ['title' => 'إدارة المركبات',         'active' => 'vehicle_list',  'perm' => 'manage_vehicles'],
+    'vehicles'     => ['title' => 'إدارة المركبات',         'active' => 'vehicle_list',  'perm' => 'manage_vehicles'],
+    'vehicle_form' => ['title' => 'بيانات المركبة',         'active' => 'vehicle_list',  'perm' => 'manage_vehicles'],
+    'movements'    => ['title' => 'حركات المركبات',         'active' => 'movements',     'perm' => 'manage_movements'],
+    'maintenance'  => ['title' => 'الصيانة',               'active' => 'maintenance',   'perm' => 'manage_maintenance'],
+    'violations'   => ['title' => 'المخالفات',             'active' => 'violations',    'perm' => 'manage_violations'],
+    'users'        => ['title' => 'إدارة المستخدمين',      'active' => 'users',         'perm' => 'manage_users'],
+    'roles'        => ['title' => 'إدارة الأدوار',         'active' => 'roles',         'perm' => 'manage_roles'],
+    'settings'     => ['title' => 'الإعدادات',             'active' => 'settings',      'perm' => 'manage_settings'],
+    'profile'      => ['title' => 'الملف الشخصي',          'active' => 'profile',       'perm' => null],
 ];
 
 // Enforce allowlist: only permit known page keys
 if (!isset($pageMeta[$page])) {
     $page = 'dashboard';
+}
+
+// Redirect old 'vehicles' page to new 'vehicle_list' fragment
+if ($page === 'vehicles') {
+    $page = 'vehicle_list';
 }
 
 // Fragment file path (double-check file exists)
