@@ -63,7 +63,7 @@
     <select id="vlFilterStatus">
         <option value="">كل الحالات</option>
         <option value="operational">تعمل</option>
-        <option value="under_maintenance">صيانة</option>
+        <option value="maintenance">صيانة</option>
         <option value="out_of_service">خارج الخدمة</option>
     </select>
     <button class="btn btn-primary btn-add" id="vlBtnAdd" style="display:none" onclick="VLForm.showAdd()">➕ <span data-label-ar="إضافة مركبة" data-label-en="Add Vehicle">إضافة مركبة</span></button>
@@ -116,7 +116,7 @@
             <label id="vlLblStatus" data-label-ar="الحالة" data-label-en="Status">الحالة</label>
             <select id="vlFldStatus">
                 <option value="operational">تعمل / Operational</option>
-                <option value="under_maintenance">صيانة / Maintenance</option>
+                <option value="maintenance">صيانة / Maintenance</option>
                 <option value="out_of_service">خارج الخدمة / Out of Service</option>
             </select>
         </div>
@@ -187,7 +187,7 @@
         var op=0, maint=0, oos=0;
         allVehicles.forEach(function(v){
             if(v.status==='operational') op++;
-            else if(v.status==='under_maintenance') maint++;
+            else if(v.status==='maintenance') maint++;
             else if(v.status==='out_of_service') oos++;
         });
         $('vlStatTotal').textContent=total;
@@ -222,8 +222,8 @@
 
         var html='';
         filtered.forEach(function(v,i){
-            var statusCls=v.status==='operational'?'operational':(v.status==='under_maintenance'?'maintenance':'out_of_service');
-            var statusTxt=v.status==='operational'?'تعمل':(v.status==='under_maintenance'?'صيانة':'خارج الخدمة');
+            var statusCls=v.status==='operational'?'operational':(v.status==='maintenance'?'maintenance':'out_of_service');
+            var statusTxt=v.status==='operational'?'تعمل':(v.status==='maintenance'?'صيانة':'خارج الخدمة');
             var modeTxt=(v.vehicle_mode||v.usage_mode)==='private'?'خاص':'وردية';
             var actions='';
             if(canEdit) actions+='<button onclick="VLForm.showEdit('+v.id+')" title="Edit">✏️</button>';
