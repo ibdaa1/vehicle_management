@@ -204,7 +204,7 @@
             if(statusFilter && v.status!==statusFilter) return false;
             if(search){
                 var code=(v.vehicle_code||'').toLowerCase();
-                var type=(v.vehicle_type||'').toLowerCase();
+                var type=(v.type||v.vehicle_type||'').toLowerCase();
                 if(code.indexOf(search)<0 && type.indexOf(search)<0) return false;
             }
             return true;

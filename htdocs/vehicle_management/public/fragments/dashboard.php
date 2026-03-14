@@ -72,13 +72,13 @@
 <!-- Quick Actions -->
 <div class="section-header"><h3>إجراءات سريعة</h3></div>
 <div class="quick-actions">
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicles&action=add">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list">
         <div class="action-icon">🚗</div><div class="action-label">إضافة مركبة</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicles">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements">
         <div class="action-icon">🔄</div><div class="action-label">تسليم / استلام</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicles">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list">
         <div class="action-icon">📊</div><div class="action-label">عرض التقارير</div>
     </a>
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users">

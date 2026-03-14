@@ -7,7 +7,7 @@
  * Loads the requested fragment from fragments/ directory.
  * 
  * Usage: dashboard.php?page=dashboard
- *        dashboard.php?page=vehicles
+ *        dashboard.php?page=vehicle_list
  *        dashboard.php?page=maintenance
  *        etc.
  */
