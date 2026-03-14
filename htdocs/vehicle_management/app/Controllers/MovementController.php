@@ -35,6 +35,9 @@ class MovementController extends BaseController
 
         $filters = $request->only(['department_id', 'section_id', 'division_id', 'date_from', 'date_to', 'gender', 'vehicle_mode']);
 
+        // Debug logging for filter parameters
+        error_log("MovementController::stats filters: " . json_encode($filters));
+
         try {
             $db = Database::getInstance();
 
@@ -69,10 +72,15 @@ class MovementController extends BaseController
                 $vParams[] = $filters['vehicle_mode'];
             }
 
+            // Debug logging for generated SQL and record count
+            error_log("MovementController::stats SQL WHERE: " . $vWhere . " | params: " . json_encode($vParams));
+
             // Total vehicles
             $totalVehicles = $db->fetchOne(
                 "SELECT COUNT(*) as cnt FROM vehicles v" . $vWhere, $vTypes, $vParams
             );
+
+            error_log("MovementController::stats total_vehicles: " . ($totalVehicles['cnt'] ?? 0));
 
             // Vehicles by mode (private vs shift)
             $byMode = $db->fetchAll(
@@ -512,6 +520,8 @@ class MovementController extends BaseController
 
         $saved = [];
         $empId = $user['emp_id'] ?? (string)$user['id'];
+        $config = require dirname(__DIR__, 2) . '/config/app.php';
+        $baseUrl = $config['base_url'] ?? '';
 
         foreach ($photos as $i => $photoData) {
             if (!is_string($photoData) || strpos($photoData, 'base64,') === false) {
@@ -538,7 +548,7 @@ class MovementController extends BaseController
             $filepath = $uploadDir . '/' . $filename;
             file_put_contents($filepath, $decoded);
 
-            $photoUrl = '/public/uploads/vehicle_movements/' . $id . '/' . $filename;
+            $photoUrl = $baseUrl . '/public/uploads/vehicle_movements/' . $id . '/' . $filename;
             $photoId = $this->photoModel->create([
                 'movement_id' => $id,
                 'photo_url'   => $photoUrl,

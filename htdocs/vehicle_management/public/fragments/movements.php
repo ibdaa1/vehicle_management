@@ -975,7 +975,13 @@
                 const photos=m.photos||[];
                 if(photos.length){
                     h+='<h4 style="margin-top:16px">📷 Photos</h4><div class="d-photos">';
-                    photos.forEach(p=>{h+='<img src="'+esc(p.photo_url)+'" onclick="window.open(this.src,\'_blank\')">';});
+                    photos.forEach(p=>{
+                        var pu=p.photo_url||'';
+                        // Fix legacy URLs missing base path (e.g. /public/uploads/... → /vehicle_management/public/uploads/...)
+                        var basePath=(new URL(API.baseUrl)).pathname;
+                        if(basePath && pu.indexOf('/public/uploads/')===0 && pu.indexOf(basePath)!==0) pu=basePath+pu;
+                        h+='<img src="'+esc(pu)+'" onclick="window.open(this.src,\'_blank\')">';
+                    });
                     h+='</div>';
                 }
                 $('mvDetailBody').innerHTML=h;
