@@ -7,8 +7,12 @@
 <style>
 .mv-stats{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
 .mv-stat{flex:1;min-width:140px;background:var(--bg-card,#fff);border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.mv-stat{cursor:pointer;transition:transform .15s,box-shadow .15s}
+.mv-stat:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12)}
 .mv-stat .num{font-size:1.8rem;font-weight:700;color:var(--primary-main,#1a5276)}
 .mv-stat .lbl{font-size:.85rem;color:var(--text-secondary,#666);margin-top:4px}
+.mv-stat .print-hint{font-size:.7rem;color:var(--text-secondary,#999);margin-top:2px;opacity:0;transition:opacity .2s}
+.mv-stat:hover .print-hint{opacity:1}
 .mv-toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
 .mv-toolbar .search-box{flex:1;min-width:200px;position:relative}
 .mv-toolbar .search-box input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
@@ -77,24 +81,24 @@
 
 <!-- Stats -->
 <div class="mv-stats">
-    <div class="mv-stat"><div class="num" id="mvStatTotal">0</div><div class="lbl" data-lang-key="total_vehicles">Total Vehicles</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatPrivate">0</div><div class="lbl" data-lang-key="private_vehicles">Private</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatShift">0</div><div class="lbl" data-lang-key="shift_vehicles">Shift</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatCheckedOut">0</div><div class="lbl" data-lang-key="checked_out">Handed Over</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatAvailable">0</div><div class="lbl" data-lang-key="available_vehicles">Available</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatUsedToday">0</div><div class="lbl" data-lang-key="used_in_period">Used in Period</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatUnused">0</div><div class="lbl" data-lang-key="unused_vehicles">Unused</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatPrivateNotReturned">0</div><div class="lbl" data-lang-key="private_not_returned">Private Not Returned</div></div>
+    <div class="mv-stat" data-stat="total_vehicles"><div class="num" id="mvStatTotal">0</div><div class="lbl" data-lang-key="total_vehicles">Total Vehicles</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="private_vehicles"><div class="num" id="mvStatPrivate">0</div><div class="lbl" data-lang-key="private_vehicles">Private</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="shift_vehicles"><div class="num" id="mvStatShift">0</div><div class="lbl" data-lang-key="shift_vehicles">Shift</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="checked_out"><div class="num" id="mvStatCheckedOut">0</div><div class="lbl" data-lang-key="checked_out">Handed Over</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="available"><div class="num" id="mvStatAvailable">0</div><div class="lbl" data-lang-key="available_vehicles">Available</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="used_in_period"><div class="num" id="mvStatUsedToday">0</div><div class="lbl" data-lang-key="used_in_period">Used in Period</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="unused_in_period"><div class="num" id="mvStatUnused">0</div><div class="lbl" data-lang-key="unused_vehicles">Unused</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="private_not_returned"><div class="num" id="mvStatPrivateNotReturned">0</div><div class="lbl" data-lang-key="private_not_returned">Private Not Returned</div><div class="print-hint">🖨️</div></div>
 </div>
 <div class="mv-stats">
-    <div class="mv-stat"><div class="num" id="mvStatMovements">0</div><div class="lbl" data-lang-key="total_movements">Total Movements</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatPickup">0</div><div class="lbl" data-lang-key="operation_type_pickup">Pickup</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatReturn">0</div><div class="lbl" data-lang-key="operation_type_return">Return</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatEmployees">0</div><div class="lbl" data-lang-key="employee_count">Employees</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatSedan">0</div><div class="lbl" data-lang-key="sedan">Sedan</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatPickupCat">0</div><div class="lbl" data-lang-key="pickup_category">Pickup</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatBus">0</div><div class="lbl" data-lang-key="bus">Bus</div></div>
-    <div class="mv-stat"><div class="num" id="mvStatOperational">0</div><div class="lbl" data-lang-key="operational">Operational</div></div>
+    <div class="mv-stat" data-stat="total_movements"><div class="num" id="mvStatMovements">0</div><div class="lbl" data-lang-key="total_movements">Total Movements</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="pickups"><div class="num" id="mvStatPickup">0</div><div class="lbl" data-lang-key="operation_type_pickup">Pickup</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="returns"><div class="num" id="mvStatReturn">0</div><div class="lbl" data-lang-key="operation_type_return">Return</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="employees"><div class="num" id="mvStatEmployees">0</div><div class="lbl" data-lang-key="employee_count">Employees</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="sedan"><div class="num" id="mvStatSedan">0</div><div class="lbl" data-lang-key="sedan">Sedan</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="pickup_cat"><div class="num" id="mvStatPickupCat">0</div><div class="lbl" data-lang-key="pickup_category">Pickup</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="bus"><div class="num" id="mvStatBus">0</div><div class="lbl" data-lang-key="bus">Bus</div><div class="print-hint">🖨️</div></div>
+    <div class="mv-stat" data-stat="operational"><div class="num" id="mvStatOperational">0</div><div class="lbl" data-lang-key="operational">Operational</div><div class="print-hint">🖨️</div></div>
 </div>
 
 <!-- Toolbar -->
@@ -420,8 +424,8 @@
             // Cross-reference vehicle data
             const v=vehicleMap[m.vehicle_code];
             if(vStatus && v && v.status!==vStatus) return false;
-            if(dept && v && v.department!==dept) return false;
-            if(section && v && v.section!==section) return false;
+            if(dept && v && v.department_name!==dept) return false;
+            if(section && v && v.section_name!==section) return false;
             if(gender && v && v.gender!==gender) return false;
             if(vMode && v && v.vehicle_mode!==vMode) return false;
             if(vCode && m.vehicle_code!==vCode) return false;
@@ -567,6 +571,163 @@
     $('mvFilterGender').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicleMode').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicle').addEventListener('change',applyFilters);
+
+    /* ---- Print individual stat ---- */
+    function getFilteredVehicles(){
+        var allVehicles=Object.values(vehicleMap);
+        var dept=$('mvFilterDept').value;
+        var section=$('mvFilterSection').value;
+        var gender=$('mvFilterGender').value;
+        var vMode=$('mvFilterVehicleMode').value;
+        return allVehicles.filter(function(v){
+            if(dept && v.department_name!==dept) return false;
+            if(section && v.section_name!==section) return false;
+            if(gender && v.gender!==gender) return false;
+            if(vMode && v.vehicle_mode!==vMode) return false;
+            return true;
+        });
+    }
+    function getUsedVehicleCodes(){
+        var dateFrom=$('mvDateFrom').value;
+        var dateTo=$('mvDateTo').value;
+        var codes={};
+        allMovements.forEach(function(m){
+            var md=(m.movement_datetime||'').substring(0,10);
+            if((!dateFrom||md>=dateFrom)&&(!dateTo||md<=dateTo)){
+                codes[m.vehicle_code]=true;
+            }
+        });
+        return codes;
+    }
+    function getFilteredMovements(typeFilter){
+        var dateFrom=$('mvDateFrom').value;
+        var dateTo=$('mvDateTo').value;
+        var dept=$('mvFilterDept').value;
+        var section=$('mvFilterSection').value;
+        var gender=$('mvFilterGender').value;
+        var vMode=$('mvFilterVehicleMode').value;
+        return allMovements.filter(function(m){
+            if(typeFilter && m.operation_type!==typeFilter) return false;
+            var md=(m.movement_datetime||'').substring(0,10);
+            if(dateFrom && md<dateFrom) return false;
+            if(dateTo && md>dateTo) return false;
+            var v=vehicleMap[m.vehicle_code];
+            if(dept && v && v.department_name!==dept) return false;
+            if(section && v && v.section_name!==section) return false;
+            if(gender && v && v.gender!==gender) return false;
+            if(vMode && v && v.vehicle_mode!==vMode) return false;
+            return true;
+        });
+    }
+    function printVehicleList(title,vehicles){
+        var modeLabel=function(m){return m==='private'?i18n.t('private_vehicles'):m==='shift'?i18n.t('shift_vehicles'):(m||'—');};
+        var catLabel=function(c){return c==='sedan'?i18n.t('sedan'):c==='pickup'?i18n.t('pickup_category'):c==='bus'?i18n.t('bus'):(c||'—');};
+        var statusLabel=function(s){return s==='operational'?i18n.t('operational'):s==='maintenance'?i18n.t('under_maintenance'):s==='out_of_service'?i18n.t('out_of_service'):(s||'—');};
+        var html='<html dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title>';
+        html+='<style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center;margin:10px 0}.info{text-align:center;color:#666;margin-bottom:16px}@media print{body{margin:10px}}</style>';
+        html+='</head><body>';
+        html+='<h2>'+esc(title)+'</h2>';
+        var s=lastStats||{};
+        if(s.date_from||s.date_to) html+='<p class="info">'+i18n.t('from')+' '+(s.date_from||'—')+' — '+i18n.t('to')+' '+(s.date_to||'—')+'</p>';
+        html+='<p class="info">'+i18n.t('total_records')+': '+vehicles.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('vehicle_type')+'</th><th>'+i18n.t('vehicle_category')+'</th><th>'+i18n.t('vehicle_mode')+'</th><th>'+i18n.t('vehicle_status')+'</th><th>'+i18n.t('department')+'</th><th>'+i18n.t('section')+'</th></tr></thead><tbody>';
+        vehicles.forEach(function(v,i){
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(v.vehicle_code)+'</td><td>'+esc(v.type||v.vehicle_type||'')+'</td><td>'+catLabel(v.vehicle_category)+'</td><td>'+modeLabel(v.vehicle_mode)+'</td><td>'+statusLabel(v.status)+'</td><td>'+esc(v.department_name||'')+'</td><td>'+esc(v.section_name||'')+'</td></tr>';
+        });
+        html+='</tbody></table></body></html>';
+        var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+    }
+    function printMovementList(title,movements){
+        var typeLabel=function(t){return t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');};
+        var condLabel=function(c){return c==='clean'?i18n.t('clean'):c==='acceptable'?i18n.t('acceptable'):c==='damaged'?i18n.t('damaged'):'—';};
+        var html='<html dir="rtl"><head><meta charset="utf-8"><title>'+esc(title)+'</title>';
+        html+='<style>body{font-family:Arial,sans-serif;direction:rtl;margin:20px}table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th,td{border:1px solid #ccc;padding:6px 8px;text-align:right}th{background:#f0f0f0}h2{text-align:center;margin:10px 0}.info{text-align:center;color:#666;margin-bottom:16px}@media print{body{margin:10px}}</style>';
+        html+='</head><body>';
+        html+='<h2>'+esc(title)+'</h2>';
+        var s=lastStats||{};
+        if(s.date_from||s.date_to) html+='<p class="info">'+i18n.t('from')+' '+(s.date_from||'—')+' — '+i18n.t('to')+' '+(s.date_to||'—')+'</p>';
+        html+='<p class="info">'+i18n.t('total_records')+': '+movements.length+'</p>';
+        html+='<table><thead><tr><th>#</th><th>'+i18n.t('vehicle_code')+'</th><th>'+i18n.t('operation_type')+'</th><th>'+i18n.t('by')+'</th><th>'+i18n.t('date')+'</th><th>'+i18n.t('condition')+'</th><th>'+i18n.t('fuel_level')+'</th></tr></thead><tbody>';
+        movements.forEach(function(m,i){
+            html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td><td>'+esc(m.performed_by||'')+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td><td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td></tr>';
+        });
+        html+='</tbody></table></body></html>';
+        var w=window.open('','_blank');w.document.write(html);w.document.close();w.print();
+    }
+    function printStatDetail(statKey){
+        var vehicles=getFilteredVehicles();
+        var usedCodes=getUsedVehicleCodes();
+        switch(statKey){
+            case 'total_vehicles':
+                printVehicleList(i18n.t('total_vehicles'),vehicles);
+                break;
+            case 'private_vehicles':
+                printVehicleList(i18n.t('private_vehicles'),vehicles.filter(function(v){return v.vehicle_mode==='private';}));
+                break;
+            case 'shift_vehicles':
+                printVehicleList(i18n.t('shift_vehicles'),vehicles.filter(function(v){return v.vehicle_mode==='shift';}));
+                break;
+            case 'checked_out':
+                printVehicleList(i18n.t('checked_out'),vehicles.filter(function(v){
+                    var latest=latestByVehicle[v.vehicle_code];
+                    return latest&&latest.operation_type==='pickup';
+                }));
+                break;
+            case 'available':
+                printVehicleList(i18n.t('available_vehicles'),vehicles.filter(function(v){
+                    var latest=latestByVehicle[v.vehicle_code];
+                    return !latest||latest.operation_type!=='pickup';
+                }));
+                break;
+            case 'used_in_period':
+                printVehicleList(i18n.t('used_in_period'),vehicles.filter(function(v){return usedCodes[v.vehicle_code];}));
+                break;
+            case 'unused_in_period':
+                printVehicleList(i18n.t('unused_vehicles'),vehicles.filter(function(v){return !usedCodes[v.vehicle_code];}));
+                break;
+            case 'private_not_returned':
+                printVehicleList(i18n.t('private_not_returned'),vehicles.filter(function(v){
+                    if(v.vehicle_mode!=='private') return false;
+                    var latest=latestByVehicle[v.vehicle_code];
+                    return latest&&latest.operation_type==='pickup';
+                }));
+                break;
+            case 'total_movements':
+                printMovementList(i18n.t('total_movements'),getFilteredMovements(null));
+                break;
+            case 'pickups':
+                printMovementList(i18n.t('pickup_operation'),getFilteredMovements('pickup'));
+                break;
+            case 'returns':
+                printMovementList(i18n.t('return_operation'),getFilteredMovements('return'));
+                break;
+            case 'employees':
+                // Employee count — no detailed data available, show info toast
+                UI.showToast(i18n.t('employee_count')+': '+(lastStats.employee_count||0),'info');
+                return;
+            case 'sedan':
+                printVehicleList(i18n.t('sedan'),vehicles.filter(function(v){return v.vehicle_category==='sedan';}));
+                break;
+            case 'pickup_cat':
+                printVehicleList(i18n.t('pickup_category'),vehicles.filter(function(v){return v.vehicle_category==='pickup';}));
+                break;
+            case 'bus':
+                printVehicleList(i18n.t('bus'),vehicles.filter(function(v){return v.vehicle_category==='bus';}));
+                break;
+            case 'operational':
+                printVehicleList(i18n.t('operational'),vehicles.filter(function(v){return v.status==='operational';}));
+                break;
+            default:
+                return;
+        }
+    }
+    // Attach click handlers to all stat cards
+    document.querySelectorAll('.mv-stat[data-stat]').forEach(function(el){
+        el.addEventListener('click',function(){
+            var key=this.getAttribute('data-stat');
+            if(key) printStatDetail(key);
+        });
+    });
 
     /* ---- Print Report ---- */
     $('mvBtnPrint').addEventListener('click',function(){
