@@ -978,8 +978,10 @@
                     photos.forEach(p=>{
                         var pu=p.photo_url||'';
                         // Fix legacy URLs missing base path (e.g. /public/uploads/... → /vehicle_management/public/uploads/...)
-                        var basePath=(new URL(API.baseUrl)).pathname;
-                        if(basePath && pu.indexOf('/public/uploads/')===0 && pu.indexOf(basePath)!==0) pu=basePath+pu;
+                        var basePath='';
+                        try{basePath=(new URL(API.baseUrl)).pathname;}catch(e){basePath=API.baseUrl||'';}
+                        basePath=basePath.replace(/\/+$/,'');
+                        if(basePath && basePath!=='/' && pu.indexOf('/public/uploads/')===0 && pu.indexOf(basePath)!==0) pu=basePath+pu;
                         h+='<img src="'+esc(pu)+'" onclick="window.open(this.src,\'_blank\')">';
                     });
                     h+='</div>';

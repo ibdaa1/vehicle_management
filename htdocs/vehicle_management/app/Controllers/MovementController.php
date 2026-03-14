@@ -25,6 +25,27 @@ class MovementController extends BaseController
     }
 
     /**
+     * Ensure photo URLs include the base_url prefix.
+     * Fixes legacy records stored without the prefix (e.g. /public/uploads/... → /vehicle_management/public/uploads/...).
+     */
+    private function fixPhotoUrls(array $photos): array
+    {
+        $config = require dirname(__DIR__, 2) . '/config/app.php';
+        $baseUrl = rtrim($config['base_url'] ?? '', '/');
+        if ($baseUrl === '') {
+            return $photos;
+        }
+        foreach ($photos as &$photo) {
+            $url = $photo['photo_url'] ?? '';
+            if ($url !== '' && strpos($url, '/public/uploads/') === 0) {
+                $photo['photo_url'] = $baseUrl . $url;
+            }
+        }
+        unset($photo);
+        return $photos;
+    }
+
+    /**
      * GET /api/v1/movements/stats
      * Returns comprehensive vehicle and movement statistics.
      */
@@ -34,9 +55,6 @@ class MovementController extends BaseController
         if (Response::isSent()) return;
 
         $filters = $request->only(['department_id', 'section_id', 'division_id', 'date_from', 'date_to', 'gender', 'vehicle_mode']);
-
-        // Debug logging for filter parameters
-        error_log("MovementController::stats filters: " . json_encode($filters));
 
         try {
             $db = Database::getInstance();
@@ -72,15 +90,10 @@ class MovementController extends BaseController
                 $vParams[] = $filters['vehicle_mode'];
             }
 
-            // Debug logging for generated SQL and record count
-            error_log("MovementController::stats SQL WHERE: " . $vWhere . " | params: " . json_encode($vParams));
-
             // Total vehicles
             $totalVehicles = $db->fetchOne(
                 "SELECT COUNT(*) as cnt FROM vehicles v" . $vWhere, $vTypes, $vParams
             );
-
-            error_log("MovementController::stats total_vehicles: " . ($totalVehicles['cnt'] ?? 0));
 
             // Vehicles by mode (private vs shift)
             $byMode = $db->fetchAll(
@@ -275,7 +288,7 @@ class MovementController extends BaseController
                 Response::error('Movement not found', 404);
                 return;
             }
-            $movement['photos'] = $this->photoModel->getByMovement($id);
+            $movement['photos'] = $this->fixPhotoUrls($this->photoModel->getByMovement($id));
         } catch (\Throwable $e) {
             error_log("MovementController::show error: " . $e->getMessage());
             Response::error('Failed to load movement', 500);
@@ -476,7 +489,7 @@ class MovementController extends BaseController
             $photos = [];
         }
 
-        Response::json(['success' => true, 'data' => $photos]);
+        Response::json(['success' => true, 'data' => $this->fixPhotoUrls($photos)]);
     }
 
     /**
