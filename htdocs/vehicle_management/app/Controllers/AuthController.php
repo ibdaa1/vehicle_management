@@ -82,6 +82,26 @@ class AuthController extends BaseController
             return;
         }
 
+        // Load permissions for the user (same logic as check())
+        $permissions = [];
+        $resources = [];
+        try {
+            $roleId = (int)($user['role_id'] ?? 0);
+            if ($roleId === 1) {
+                $permissions = ['*'];
+            } else {
+                $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);
+                foreach (($rolePerms['permissions'] ?? []) as $p) {
+                    $permissions[] = $p['key_name'];
+                }
+                foreach (($rolePerms['resources'] ?? []) as $r) {
+                    $resources[] = $r;
+                }
+            }
+        } catch (\Throwable $e) {
+            error_log("AuthController::login permissions error: " . $e->getMessage());
+        }
+
         // Store in PHP session as well
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -105,10 +125,17 @@ class AuthController extends BaseController
                 'id'                 => (int)$user['id'],
                 'emp_id'             => $user['emp_id'],
                 'username'           => $user['username'],
+                'name'               => $user['username'],
                 'email'              => $user['email'],
                 'phone'              => $user['phone'],
+                'gender'             => $user['gender'] ?? null,
                 'role_id'            => (int)$user['role_id'],
                 'preferred_language' => $user['preferred_language'] ?? 'ar',
+                'department_id'      => $user['department_id'] ? (int)$user['department_id'] : null,
+                'section_id'         => $user['section_id'] ? (int)$user['section_id'] : null,
+                'division_id'        => $user['division_id'] ? (int)$user['division_id'] : null,
+                'permissions'        => $permissions,
+                'resources'          => $resources,
             ],
         ]);
     }

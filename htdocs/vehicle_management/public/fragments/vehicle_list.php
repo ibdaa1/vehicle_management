@@ -178,7 +178,16 @@
             allVehicles=(res.data||res||[]);
             renderTable();
             updateStats();
-        }).catch(function(e){ console.error('Load vehicles error',e); });
+        }).catch(function(e){
+            console.error('Load vehicles error',e);
+            var errMsg=(e&&e.message)||'';
+            if(typeof UI!=='undefined'&&UI.showToast){
+                UI.showToast((localStorage.getItem('lang')==='en'?'Failed to load vehicles':'تعذر تحميل المركبات')+(errMsg?': '+errMsg:''),'error');
+            }
+            allVehicles=[];
+            renderTable();
+            updateStats();
+        });
     }
 
     /* --- Stats --- */
@@ -250,11 +259,14 @@
         API.get('/references/departments').then(function(res){
             var depts=res.data||res||[];
             var sel=$('vlFldDept');
+            var lang=localStorage.getItem('lang')||'ar';
             sel.innerHTML='<option value="">—</option>';
             depts.forEach(function(d){
-                sel.innerHTML+='<option value="'+d.id+'">'+d.name+'</option>';
+                var dId=d.department_id||d.id||'';
+                var dName=(lang==='en'?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—';
+                sel.innerHTML+='<option value="'+dId+'">'+dName+'</option>';
             });
-        }).catch(function(){});
+        }).catch(function(e){ console.error('Load departments error',e); });
     }
 
     /* --- Form object (exposed globally for onclick) --- */

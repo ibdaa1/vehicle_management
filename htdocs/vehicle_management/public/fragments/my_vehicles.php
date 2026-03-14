@@ -185,9 +185,24 @@
             renderShift(data.shift_next, data.shift_my_current, data.shift_total || 0);
         } catch (e) {
             console.error('Failed to load my vehicles:', e);
-            renderPrivate([]);
-            renderShift(null, null, 0);
+            var errMsg = (e && e.message) || '';
+            if (typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast(t('تعذر تحميل بيانات المركبات', 'Failed to load vehicle data') + (errMsg ? ': ' + errMsg : ''), 'error');
+            }
+            renderError('mvPrivateGrid');
+            renderError('mvShiftGrid');
         }
+    }
+
+    /* ---------- Render error state with retry ---------- */
+    function renderError(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '<div class="mv-empty-state">' +
+            '<div class="empty-icon">⚠️</div>' +
+            '<p>' + t('حدث خطأ أثناء تحميل البيانات', 'An error occurred while loading data') + '</p>' +
+            '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.reload()" style="margin-top:12px">' +
+            t('إعادة المحاولة', 'Retry') + '</button></div>';
     }
 
     /* ---------- Render private vehicles ---------- */
@@ -287,7 +302,7 @@
     }
 
     /* ---------- Expose globally ---------- */
-    window.MyVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle };
+    window.MyVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadMyVehicles };
 
     /* ---------- Init with retry for Auth (matches working fragment pattern) ---------- */
     (function init() {
