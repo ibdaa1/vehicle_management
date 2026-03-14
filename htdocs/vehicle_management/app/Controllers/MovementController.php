@@ -25,6 +25,204 @@ class MovementController extends BaseController
     }
 
     /**
+     * GET /api/v1/movements/stats
+     * Returns comprehensive vehicle and movement statistics.
+     */
+    public function stats(Request $request, array $params = []): void
+    {
+        $this->requirePermission($request, 'manage_movements');
+        if (Response::isSent()) return;
+
+        $filters = $request->only(['department_id', 'section_id', 'date_from', 'date_to', 'gender', 'vehicle_mode']);
+
+        try {
+            $db = Database::getInstance();
+
+            // Build vehicle filter conditions
+            $vWhere = " WHERE 1=1";
+            $vTypes = '';
+            $vParams = [];
+
+            if (!empty($filters['department_id'])) {
+                $vWhere .= " AND v.department_id = ?";
+                $vTypes .= 'i';
+                $vParams[] = (int)$filters['department_id'];
+            }
+            if (!empty($filters['section_id'])) {
+                $vWhere .= " AND v.section_id = ?";
+                $vTypes .= 'i';
+                $vParams[] = (int)$filters['section_id'];
+            }
+            if (!empty($filters['gender'])) {
+                $vWhere .= " AND v.gender = ?";
+                $vTypes .= 's';
+                $vParams[] = $filters['gender'];
+            }
+            if (!empty($filters['vehicle_mode'])) {
+                $vWhere .= " AND v.vehicle_mode = ?";
+                $vTypes .= 's';
+                $vParams[] = $filters['vehicle_mode'];
+            }
+
+            // Total vehicles
+            $totalVehicles = $db->fetchOne(
+                "SELECT COUNT(*) as cnt FROM vehicles v" . $vWhere, $vTypes, $vParams
+            );
+
+            // Vehicles by mode (private vs shift)
+            $byMode = $db->fetchAll(
+                "SELECT v.vehicle_mode, COUNT(*) as cnt FROM vehicles v" . $vWhere . " GROUP BY v.vehicle_mode",
+                $vTypes, $vParams
+            );
+            $privateCount = 0;
+            $shiftCount = 0;
+            foreach ($byMode as $row) {
+                if ($row['vehicle_mode'] === 'private') $privateCount = (int)$row['cnt'];
+                elseif ($row['vehicle_mode'] === 'shift') $shiftCount = (int)$row['cnt'];
+            }
+
+            // Vehicles by category (sedan, pickup, bus)
+            $byCategory = $db->fetchAll(
+                "SELECT v.vehicle_category, COUNT(*) as cnt FROM vehicles v" . $vWhere . " GROUP BY v.vehicle_category",
+                $vTypes, $vParams
+            );
+            $categories = [];
+            foreach ($byCategory as $row) {
+                $categories[$row['vehicle_category'] ?? 'other'] = (int)$row['cnt'];
+            }
+
+            // Vehicles by status (operational, maintenance, out_of_service)
+            $byStatus = $db->fetchAll(
+                "SELECT v.status, COUNT(*) as cnt FROM vehicles v" . $vWhere . " GROUP BY v.status",
+                $vTypes, $vParams
+            );
+            $statuses = [];
+            foreach ($byStatus as $row) {
+                $statuses[$row['status'] ?? 'unknown'] = (int)$row['cnt'];
+            }
+
+            // Vehicles by gender
+            $byGender = $db->fetchAll(
+                "SELECT v.gender, COUNT(*) as cnt FROM vehicles v" . $vWhere . " GROUP BY v.gender",
+                $vTypes, $vParams
+            );
+            $genders = [];
+            foreach ($byGender as $row) {
+                $genders[$row['gender'] ?? 'unspecified'] = (int)$row['cnt'];
+            }
+
+            // Date filter for movements
+            $today = date('Y-m-d');
+            $dateFrom = !empty($filters['date_from']) ? $filters['date_from'] : $today;
+            $dateTo = !empty($filters['date_to']) ? $filters['date_to'] : $today;
+
+            // Vehicles used in the date range (have movements)
+            $usedSql = "SELECT COUNT(DISTINCT m.vehicle_code) as cnt
+                        FROM vehicle_movements m
+                        INNER JOIN vehicles v ON v.vehicle_code = m.vehicle_code"
+                        . $vWhere
+                        . " AND DATE(m.movement_datetime) BETWEEN ? AND ?";
+            $usedVehicles = $db->fetchOne(
+                $usedSql, $vTypes . 'ss', array_merge($vParams, [$dateFrom, $dateTo])
+            );
+
+            $totalCount = (int)($totalVehicles['cnt'] ?? 0);
+            $usedCount = (int)($usedVehicles['cnt'] ?? 0);
+            $unusedCount = $totalCount - $usedCount;
+
+            // Currently checked out vehicles (latest movement is pickup)
+            // This tells us how many vehicles are currently handed over
+            $checkedOutSql = "SELECT COUNT(*) as cnt FROM (
+                SELECT m.vehicle_code, m.operation_type
+                FROM vehicle_movements m
+                INNER JOIN vehicles v ON v.vehicle_code = m.vehicle_code
+                INNER JOIN (
+                    SELECT vehicle_code, MAX(movement_datetime) as max_dt
+                    FROM vehicle_movements
+                    GROUP BY vehicle_code
+                ) latest ON m.vehicle_code = latest.vehicle_code AND m.movement_datetime = latest.max_dt"
+                . $vWhere
+                . " AND m.operation_type = 'pickup'
+            ) as checked_out";
+            $checkedOut = $db->fetchOne($checkedOutSql, $vTypes, $vParams);
+            $checkedOutCount = (int)($checkedOut['cnt'] ?? 0);
+            $availableCount = $totalCount - $checkedOutCount;
+
+            // Private vehicles currently checked out (key not returned)
+            $privateCheckedOutSql = "SELECT COUNT(*) as cnt FROM (
+                SELECT m.vehicle_code
+                FROM vehicle_movements m
+                INNER JOIN vehicles v ON v.vehicle_code = m.vehicle_code
+                INNER JOIN (
+                    SELECT vehicle_code, MAX(movement_datetime) as max_dt
+                    FROM vehicle_movements
+                    GROUP BY vehicle_code
+                ) latest ON m.vehicle_code = latest.vehicle_code AND m.movement_datetime = latest.max_dt"
+                . $vWhere
+                . " AND v.vehicle_mode = 'private' AND m.operation_type = 'pickup'
+            ) as priv_out";
+            $privateCheckedOut = $db->fetchOne($privateCheckedOutSql, $vTypes, $vParams);
+            $privateNotReturnedCount = (int)($privateCheckedOut['cnt'] ?? 0);
+
+            // Movement counts for the date range
+            $movementCountsSql = "SELECT
+                COUNT(*) as total_movements,
+                SUM(CASE WHEN m.operation_type = 'pickup' THEN 1 ELSE 0 END) as pickups,
+                SUM(CASE WHEN m.operation_type = 'return' THEN 1 ELSE 0 END) as returns
+                FROM vehicle_movements m
+                INNER JOIN vehicles v ON v.vehicle_code = m.vehicle_code"
+                . $vWhere
+                . " AND DATE(m.movement_datetime) BETWEEN ? AND ?";
+            $movementCounts = $db->fetchOne(
+                $movementCountsSql, $vTypes . 'ss', array_merge($vParams, [$dateFrom, $dateTo])
+            );
+
+            // Employee count in the filtered department/section
+            $empWhere = " WHERE 1=1";
+            $empTypes = '';
+            $empParams = [];
+            if (!empty($filters['department_id'])) {
+                $empWhere .= " AND department_id = ?";
+                $empTypes .= 'i';
+                $empParams[] = (int)$filters['department_id'];
+            }
+            if (!empty($filters['section_id'])) {
+                $empWhere .= " AND section_id = ?";
+                $empTypes .= 'i';
+                $empParams[] = (int)$filters['section_id'];
+            }
+            $empCount = $db->fetchOne(
+                "SELECT COUNT(*) as cnt FROM users" . $empWhere, $empTypes, $empParams
+            );
+
+            $stats = [
+                'total_vehicles'       => $totalCount,
+                'private_vehicles'     => $privateCount,
+                'shift_vehicles'       => $shiftCount,
+                'categories'           => $categories,
+                'statuses'             => $statuses,
+                'genders'              => $genders,
+                'used_in_period'       => $usedCount,
+                'unused_in_period'     => $unusedCount,
+                'checked_out'          => $checkedOutCount,
+                'available'            => $availableCount,
+                'private_not_returned' => $privateNotReturnedCount,
+                'total_movements'      => (int)($movementCounts['total_movements'] ?? 0),
+                'pickups'              => (int)($movementCounts['pickups'] ?? 0),
+                'returns'              => (int)($movementCounts['returns'] ?? 0),
+                'employee_count'       => (int)($empCount['cnt'] ?? 0),
+                'date_from'            => $dateFrom,
+                'date_to'              => $dateTo,
+            ];
+
+            Response::json(['success' => true, 'data' => $stats]);
+        } catch (\Throwable $e) {
+            error_log("MovementController::stats error: " . $e->getMessage());
+            Response::error('Failed to load statistics', 500);
+        }
+    }
+
+    /**
      * GET /api/v1/movements
      */
     public function index(Request $request, array $params = []): void

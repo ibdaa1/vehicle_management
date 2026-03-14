@@ -114,6 +114,7 @@ $router->get('api/v1/references/sections/{departmentId}', ReferencesController::
 $router->get('api/v1/references/divisions/{sectionId}', ReferencesController::class, 'divisions');
 
 // === Movement Routes ===
+$router->get('api/v1/movements/stats', MovementController::class, 'stats');
 $router->get('api/v1/movements', MovementController::class, 'index');
 $router->get('api/v1/movements/{id}', MovementController::class, 'show');
 $router->post('api/v1/movements', MovementController::class, 'store');

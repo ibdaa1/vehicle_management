@@ -231,5 +231,14 @@
   "all_shift_checked_out": "جميع مركبات الورديات مستلمة حالياً",
   "confirm_pickup": "هل تريد استلام المركبة",
   "pickup_success": "تم استلام المركبة بنجاح",
-  "current_holder": "المستلم الحالي"
+  "current_holder": "المستلم الحالي",
+  "private_vehicles": "مركبات خاصة",
+  "shift_vehicles": "مركبات الشفتات",
+  "total_movements": "إجمالي الحركات",
+  "available_vehicles": "متاحة",
+  "used_in_period": "مستخدمة خلال الفترة",
+  "unused_vehicles": "غير مستخدمة",
+  "private_not_returned": "خاصة لم تُرجع المفتاح",
+  "employee_count": "الموظفون",
+  "pickup_category": "دبل كابينة"
 }

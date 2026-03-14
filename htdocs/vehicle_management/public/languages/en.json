@@ -231,5 +231,14 @@
   "all_shift_checked_out": "All shift vehicles are currently checked out",
   "confirm_pickup": "Do you want to pick up vehicle",
   "pickup_success": "Vehicle picked up successfully",
-  "current_holder": "Current Holder"
+  "current_holder": "Current Holder",
+  "private_vehicles": "Private Vehicles",
+  "shift_vehicles": "Shift Vehicles",
+  "total_movements": "Total Movements",
+  "available_vehicles": "Available",
+  "used_in_period": "Used in Period",
+  "unused_vehicles": "Unused",
+  "private_not_returned": "Private Not Returned",
+  "employee_count": "Employees",
+  "pickup_category": "Pickup (Category)"
 }

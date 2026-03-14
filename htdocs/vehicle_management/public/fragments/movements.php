@@ -77,9 +77,24 @@
 
 <!-- Stats -->
 <div class="mv-stats">
-    <div class="mv-stat"><div class="num" id="mvStatTotal">0</div><div class="lbl" data-lang-key="total">Total</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatTotal">0</div><div class="lbl" data-lang-key="total_vehicles">Total Vehicles</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatPrivate">0</div><div class="lbl" data-lang-key="private_vehicles">Private</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatShift">0</div><div class="lbl" data-lang-key="shift_vehicles">Shift</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatCheckedOut">0</div><div class="lbl" data-lang-key="checked_out">Handed Over</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatAvailable">0</div><div class="lbl" data-lang-key="available_vehicles">Available</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatUsedToday">0</div><div class="lbl" data-lang-key="used_in_period">Used in Period</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatUnused">0</div><div class="lbl" data-lang-key="unused_vehicles">Unused</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatPrivateNotReturned">0</div><div class="lbl" data-lang-key="private_not_returned">Private Not Returned</div></div>
+</div>
+<div class="mv-stats">
+    <div class="mv-stat"><div class="num" id="mvStatMovements">0</div><div class="lbl" data-lang-key="total_movements">Total Movements</div></div>
     <div class="mv-stat"><div class="num" id="mvStatPickup">0</div><div class="lbl" data-lang-key="operation_type_pickup">Pickup</div></div>
     <div class="mv-stat"><div class="num" id="mvStatReturn">0</div><div class="lbl" data-lang-key="operation_type_return">Return</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatEmployees">0</div><div class="lbl" data-lang-key="employee_count">Employees</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatSedan">0</div><div class="lbl" data-lang-key="sedan">Sedan</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatPickupCat">0</div><div class="lbl" data-lang-key="pickup_category">Pickup</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatBus">0</div><div class="lbl" data-lang-key="bus">Bus</div></div>
+    <div class="mv-stat"><div class="num" id="mvStatOperational">0</div><div class="lbl" data-lang-key="operational">Operational</div></div>
 </div>
 
 <!-- Toolbar -->
@@ -276,12 +291,12 @@
             const refs=rRes.data||rRes;
             const dSel=$('mvFilterDept');
             (refs.departments||[]).forEach(d=>{
-                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;dSel.appendChild(o);
+                const o=document.createElement('option');o.value=d.name_ar;o.textContent=d.name_ar;o.setAttribute('data-id',d.id||'');dSel.appendChild(o);
             });
             // Populate section dropdown
             const sSel=$('mvFilterSection');
             (refs.sections||[]).forEach(s=>{
-                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;sSel.appendChild(o);
+                const o=document.createElement('option');o.value=s.name_ar;o.textContent=s.name_ar;o.setAttribute('data-id',s.id||'');sSel.appendChild(o);
             });
             // Populate performed_by user dropdown
             const users=(uRes.data||uRes)||[];
@@ -316,14 +331,57 @@
         }catch(e){allMovements=[];}
         buildLatestMap();
         applyFilters();
-        updateStats();
+        loadStats();
+    }
+
+    async function loadStats(){
+        try{
+            var params=[];
+            var deptSel=$('mvFilterDept');
+            var secSel=$('mvFilterSection');
+            var dateFrom=$('mvDateFrom').value;
+            var dateTo=$('mvDateTo').value;
+            var gender=$('mvFilterGender').value;
+            // Get department_id from the selected department name
+            if(deptSel&&deptSel.value){
+                var deptOpt=deptSel.options[deptSel.selectedIndex];
+                var deptId=deptOpt?deptOpt.getAttribute('data-id'):'';
+                if(deptId) params.push('department_id='+encodeURIComponent(deptId));
+            }
+            if(secSel&&secSel.value){
+                var secOpt=secSel.options[secSel.selectedIndex];
+                var secId=secOpt?secOpt.getAttribute('data-id'):'';
+                if(secId) params.push('section_id='+encodeURIComponent(secId));
+            }
+            if(dateFrom) params.push('date_from='+encodeURIComponent(dateFrom));
+            if(dateTo) params.push('date_to='+encodeURIComponent(dateTo));
+            if(gender) params.push('gender='+encodeURIComponent(gender));
+            var url='/movements/stats'+(params.length?'?'+params.join('&'):'');
+            var res=await API.get(url);
+            var s=res.data||res;
+            $('mvStatTotal').textContent=s.total_vehicles||0;
+            $('mvStatPrivate').textContent=s.private_vehicles||0;
+            $('mvStatShift').textContent=s.shift_vehicles||0;
+            $('mvStatCheckedOut').textContent=s.checked_out||0;
+            $('mvStatAvailable').textContent=s.available||0;
+            $('mvStatUsedToday').textContent=s.used_in_period||0;
+            $('mvStatUnused').textContent=s.unused_in_period||0;
+            $('mvStatPrivateNotReturned').textContent=s.private_not_returned||0;
+            $('mvStatMovements').textContent=s.total_movements||0;
+            $('mvStatPickup').textContent=s.pickups||0;
+            $('mvStatReturn').textContent=s.returns||0;
+            $('mvStatEmployees').textContent=s.employee_count||0;
+            var cats=s.categories||{};
+            $('mvStatSedan').textContent=cats.sedan||0;
+            $('mvStatPickupCat').textContent=cats.pickup||0;
+            $('mvStatBus').textContent=cats.bus||0;
+            var sts=s.statuses||{};
+            $('mvStatOperational').textContent=sts.operational||0;
+        }catch(e){console.error('loadStats',e);}
     }
 
     function updateStats(){
-        const d=allMovements;
-        $('mvStatTotal').textContent=d.length;
-        $('mvStatPickup').textContent=d.filter(m=>m.operation_type==='pickup').length;
-        $('mvStatReturn').textContent=d.filter(m=>m.operation_type==='return').length;
+        loadStats();
     }
 
     function applyFilters(){
@@ -486,15 +544,16 @@
     }
 
     /* ---- Filters ---- */
+    function applyFiltersAndStats(){applyFilters();loadStats();}
     $('mvSearch').addEventListener('input',applyFilters);
     $('mvFilterType').addEventListener('change',applyFilters);
     $('mvFilterCondition').addEventListener('change',applyFilters);
-    $('mvDateFrom').addEventListener('change',applyFilters);
-    $('mvDateTo').addEventListener('change',applyFilters);
+    $('mvDateFrom').addEventListener('change',applyFiltersAndStats);
+    $('mvDateTo').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
-    $('mvFilterDept').addEventListener('change',applyFilters);
-    $('mvFilterSection').addEventListener('change',applyFilters);
-    $('mvFilterGender').addEventListener('change',applyFilters);
+    $('mvFilterDept').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterSection').addEventListener('change',applyFiltersAndStats);
+    $('mvFilterGender').addEventListener('change',applyFiltersAndStats);
     $('mvFilterVehicle').addEventListener('change',applyFilters);
 
     /* ---- Print Report ---- */
