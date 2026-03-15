@@ -6,58 +6,65 @@
  */
 ?>
 <style>
-.vl-stats{display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-.vl-stat{flex:1;min-width:140px;background:var(--bg-card,#fff);border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.vl-stat .num{font-size:1.8rem;font-weight:700;color:var(--primary-main,#1a5276)}
-.vl-stat .lbl{font-size:.85rem;color:var(--text-secondary,#666);margin-top:4px}
+.vl-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.vl-stat{background:var(--bg-card);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);text-align:center}
+.vl-stat .num{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
+.vl-stat .lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
 .vl-toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
-.vl-toolbar .search-box{flex:1;min-width:200px;position:relative}
-.vl-toolbar .search-box input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
-.vl-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
-.vl-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
+.vl-toolbar .search-box{flex:1;min-width:200px;max-width:360px;position:relative}
+.vl-toolbar .search-box input{width:100%;padding:10px 14px;padding-inline-end:36px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
+.vl-toolbar .search-box input:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
+.vl-toolbar .search-box .ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none}
+.vl-toolbar select{padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
 .vl-toolbar .btn-add{margin-inline-start:auto}
 .vl-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-.vl-filters select{min-width:140px;padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
-.vl-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-.vl-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
-.vl-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
-.vl-table tr:hover td{background:rgba(26,82,118,.04)}
-.vl-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600}
+.vl-filters select{min-width:140px;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
+.vl-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border-default)}
+.vl-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
+.vl-table th,.vl-table td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border-default);font-size:.875rem}
+.vl-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap}
+.vl-table tr:hover{background:var(--bg-main)}
+.vl-table .vl-actions{display:flex;gap:6px;justify-content:center}
+.vl-table .vl-actions .btn-icon{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;transition:all .3s}
+.btn-icon.btn-edit{background:var(--status-info);color:#fff}
+.btn-icon.btn-edit:hover{opacity:.85}
+.btn-icon.btn-delete{background:var(--status-danger);color:#fff}
+.btn-icon.btn-delete:hover{opacity:.85}
+.vl-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
 .vl-badge.operational{background:#d4edda;color:#155724}
 .vl-badge.maintenance{background:#fff3cd;color:#856404}
 .vl-badge.out_of_service{background:#f8d7da;color:#721c24}
-.vl-actions button{background:none;border:none;cursor:pointer;font-size:1.1rem;padding:4px}
-.vl-empty{text-align:center;padding:60px 20px;color:#999}
-.vl-empty .ico{font-size:3rem;margin-bottom:12px}
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center}
+.vl-empty{text-align:center;padding:48px 24px;color:var(--text-secondary)}
+.vl-empty .ico{font-size:3rem;margin-bottom:12px;opacity:.5}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
 .modal-overlay.active{display:flex}
-.modal-box{background:var(--bg-card,#fff);border-radius:16px;padding:24px;width:90%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.modal-box h3{margin:0 0 16px;font-size:1.2rem}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:4px;color:var(--text-secondary,#555)}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
-.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
-.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600}
-.btn-primary{background:var(--primary-main,#1a5276);color:#fff}
-.btn-secondary{background:var(--bg-secondary,#e9ecef);color:var(--text-primary,#333)}
-.btn-danger{background:#dc3545;color:#fff}
+.modal-box{background:var(--bg-card);border-radius:16px;width:90%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-box h3{margin:0;font-size:1.1rem;color:var(--text-primary);padding:20px 24px;border-bottom:1px solid var(--border-default)}
+.modal-box .modal-body{padding:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
+.form-actions{display:flex;gap:12px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border-default)}
+.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .3s}
+.btn-primary{background:var(--primary-main);color:var(--text-light)}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:var(--bg-main);color:var(--text-primary);border:1px solid var(--border-default)}
+.btn-danger{background:var(--status-danger);color:#fff}
+.btn-danger:hover{opacity:.9}
 .btn-sm{padding:6px 12px;font-size:.8rem}
-/* Mobile responsive styles */
 @media(max-width:768px){
     .vl-toolbar{flex-direction:column;align-items:stretch}
     .vl-toolbar .search-box{max-width:100%;min-width:auto}
     .vl-toolbar .btn-add{margin-inline-start:0}
     .vl-filters{flex-direction:column}
     .vl-filters select{min-width:auto;width:100%}
-    .vl-stats{gap:8px}
-    .vl-stat{min-width:calc(50% - 8px);padding:12px}
-    .vl-stat .num{font-size:1.4rem}
-    #vlTableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .vl-stats{grid-template-columns:1fr 1fr;gap:8px}
+    .vl-stat .num{font-size:1.2rem}
     .vl-table th,.vl-table td{padding:8px 10px;font-size:.8rem}
 }
 @media(max-width:480px){
-    .vl-stat{min-width:calc(50% - 4px)}
-    .vl-stat .num{font-size:1.2rem}
+    .vl-stat .num{font-size:1.1rem}
     .vl-stat .lbl{font-size:.75rem}
 }
 </style>
@@ -69,9 +76,9 @@
 <!-- Stats -->
 <div class="vl-stats">
     <div class="vl-stat"><div class="num" id="vlStatTotal">—</div><div class="lbl" id="vlLblTotal" data-label-ar="الإجمالي" data-label-en="Total">الإجمالي</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatOp" style="color:#28a745">—</div><div class="lbl" id="vlLblOp" data-label-ar="تعمل" data-label-en="Operational">تعمل</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatMaint" style="color:#ffc107">—</div><div class="lbl" id="vlLblMaint" data-label-ar="صيانة" data-label-en="Maintenance">صيانة</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatOos" style="color:#dc3545">—</div><div class="lbl" id="vlLblOos" data-label-ar="خارج الخدمة" data-label-en="Out of Service">خارج الخدمة</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatOp" style="color:var(--status-success)">—</div><div class="lbl" id="vlLblOp" data-label-ar="تعمل" data-label-en="Operational">تعمل</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatMaint" style="color:var(--status-warning)">—</div><div class="lbl" id="vlLblMaint" data-label-ar="صيانة" data-label-en="Maintenance">صيانة</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatOos" style="color:var(--status-danger)">—</div><div class="lbl" id="vlLblOos" data-label-ar="خارج الخدمة" data-label-en="Out of Service">خارج الخدمة</div></div>
 </div>
 
 <!-- Toolbar -->
@@ -106,7 +113,7 @@
 </div>
 
 <!-- Data Table -->
-<div id="vlTableWrap">
+<div class="vl-table-wrap" id="vlTableWrap">
     <table class="vl-table" id="vlTable">
         <thead>
             <tr>
@@ -137,6 +144,7 @@
 <div class="modal-overlay" id="vlModal">
     <div class="modal-box">
         <h3 id="vlModalTitle" data-label-ar="إضافة مركبة" data-label-en="Add Vehicle">إضافة مركبة</h3>
+        <div class="modal-body">
         <input type="hidden" id="vlEditId">
         <div class="form-group">
             <label id="vlLblCode" data-label-ar="كود المركبة" data-label-en="Vehicle Code">كود المركبة *</label>
@@ -212,6 +220,7 @@
             <label id="vlLblNotes" data-label-ar="ملاحظات" data-label-en="Notes">ملاحظات</label>
             <textarea id="vlFldNotes" rows="3"></textarea>
         </div>
+        </div><!-- end modal-body -->
         <div class="form-actions">
             <button class="btn btn-secondary" id="vlCancelBtn" onclick="VLForm.hide()">إلغاء</button>
             <button class="btn btn-primary" id="vlSaveBtn" onclick="VLForm.save()">💾 حفظ</button>
@@ -427,8 +436,8 @@
             if(v.section_id){var ss=(vlRefs.sections||[]).find(function(s){return s.section_id==v.section_id;});if(ss) sectName=(isEn?(ss.name_en||ss.name_ar):(ss.name_ar||ss.name_en))||'—';}
             if(v.division_id){var dv=(vlRefs.divisions||[]).find(function(d){return d.division_id==v.division_id;});if(dv) divName=(isEn?(dv.name_en||dv.name_ar):(dv.name_ar||dv.name_en))||'—';}
             var actions='';
-            if(canEdit) actions+='<button onclick="VLForm.showEdit('+v.id+')" title="Edit">✏️</button>';
-            if(canDelete) actions+='<button onclick="VLForm.showDelete('+v.id+')" title="Delete">🗑️</button>';
+            if(canEdit) actions+='<button class="btn-icon btn-edit" onclick="VLForm.showEdit('+v.id+')" title="Edit">✏️</button>';
+            if(canDelete) actions+='<button class="btn-icon btn-delete" onclick="VLForm.showDelete('+v.id+')" title="Delete">🗑️</button>';
             html+='<tr>'
                 +'<td>'+(i+1)+'</td>'
                 +'<td>'+(v.vehicle_code||'—')+'</td>'

@@ -54,12 +54,33 @@ if (strlen($password) < 6) {
 }
 
 try {
+    // ensure sectors infrastructure exists (auto-migration like user_activations)
+    $conn->query("CREATE TABLE IF NOT EXISTS `sectors` (
+        `id` INT(11) NOT NULL AUTO_INCREMENT,
+        `sector_code` VARCHAR(50) NOT NULL,
+        `name` VARCHAR(255) NOT NULL,
+        `name_en` VARCHAR(255) DEFAULT NULL,
+        `description` MEDIUMTEXT DEFAULT NULL,
+        `manager_user_id` INT(11) DEFAULT NULL,
+        `is_active` TINYINT(1) DEFAULT 1,
+        `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `uk_sector_code` (`sector_code`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // ensure sector_id column exists on users table
+    $colCheck = $conn->query("SHOW COLUMNS FROM `users` LIKE 'sector_id'");
+    if ($colCheck && $colCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE `users` ADD COLUMN `sector_id` INT(11) DEFAULT NULL AFTER `role_id`");
+    }
+
     // helper to check existence of optional references
     function existsRef($conn, $table, $pkName, $id) {
         if ($id === null) return false;
         $sql = "SELECT 1 FROM `{$table}` WHERE `{$pkName}` = ? LIMIT 1";
         $st = $conn->prepare($sql);
-        if ($st === false) throw new Exception("Prepare failed for {$table}: " . $conn->error);
+        if ($st === false) return false; // table may not exist — treat as invalid
         $st->bind_param('i', $id);
         $st->execute();
         $res = $st->get_result();
