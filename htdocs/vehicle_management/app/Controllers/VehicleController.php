@@ -288,7 +288,7 @@ class VehicleController extends BaseController
             error_log("VehicleController::myVehicles error: " . $e->getMessage());
             Response::json([
                 'success' => false,
-                'message' => 'Failed to load vehicles: ' . $e->getMessage(),
+                'message' => 'Failed to load vehicles',
                 'data'    => [
                     'private'             => [],
                     'shift_next'          => null,
