@@ -13,9 +13,13 @@
  */
 
 // Prevent caching so that ?page= parameter is always respected
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+// Critical for InfinityFree and other hosting that may cache PHP output ignoring query params
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
 header('Pragma: no-cache');
-header('Expires: 0');
+header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
+header('Vary: *');
+header('Surrogate-Control: no-store');
+header('X-Accel-Expires: 0');
 
 // Determine which fragment to load — validate against allowlist
 $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page']) : 'dashboard';
@@ -56,7 +60,7 @@ $requiredPerm = $meta['perm'] ?? null;
 include __DIR__ . '/includes/header.php';
 ?>
 <!-- Page-level permission gate: wraps fragment content -->
-<div id="pageContent" data-required-perm="<?= htmlspecialchars($requiredPerm ?? '') ?>" style="<?= $requiredPerm ? 'display:none' : '' ?>">
+<div id="pageContent" data-required-perm="<?= htmlspecialchars($requiredPerm ?? '') ?>" data-page="<?= htmlspecialchars($page) ?>" style="<?= $requiredPerm ? 'display:none' : '' ?>">
 <?php
 // Include the fragment (renders main content only)
 include $fragmentFile;

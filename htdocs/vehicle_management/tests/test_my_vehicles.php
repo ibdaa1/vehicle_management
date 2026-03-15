@@ -143,9 +143,34 @@ if (file_exists($dashboardPath)) {
         'my_vehicles has perm => null (no permission required)',
         'my_vehicles page may have a permission restriction'
     );
+    assert_true(
+        str_contains($dashboardContent, 'data-page'),
+        'dashboard.php has data-page attribute for cache-mismatch detection',
+        'data-page attribute missing from dashboard.php pageContent div'
+    );
 } else {
     test_fail('dashboard.php exists', 'File not found');
 }
+
+// Test: Footer.php has cache-mismatch detection script
+$footerPath = $BASE_DIR . '/public/includes/footer.php';
+if (file_exists($footerPath)) {
+    $footerContent = file_get_contents($footerPath);
+    assert_true(
+        str_contains($footerContent, 'renderedPage') && str_contains($footerContent, 'requestedPage'),
+        'Footer has cache-mismatch detection script',
+        'Cache-mismatch detection script not found in footer.php'
+    );
+} else {
+    test_fail('footer.php exists', 'File not found');
+}
+
+// Test: Dashboard.php has aggressive cache-prevention headers
+assert_true(
+    str_contains($dashboardContent, 'Vary') && str_contains($dashboardContent, 'Surrogate-Control'),
+    'dashboard.php has Vary and Surrogate-Control cache headers',
+    'Missing Vary or Surrogate-Control headers in dashboard.php'
+);
 
 // Test: Route is registered in routes.php
 $routesPath = $BASE_DIR . '/config/routes.php';

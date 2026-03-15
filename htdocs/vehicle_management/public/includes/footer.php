@@ -5,6 +5,35 @@
         <span id="footerText" data-footer-ar="<?= htmlspecialchars($footerAr ?? '© 2025 بلدية مدينة الشارقة') ?>" data-footer-en="<?= htmlspecialchars($footerEn ?? '© 2025 Sharjah City Municipality') ?>"><?= htmlspecialchars($footerAr ?? '© 2025 بلدية مدينة الشارقة') ?></span>
     </footer>
 
+    <!-- Cache-mismatch detection: fix for hosting that caches PHP output ignoring query params -->
+    <script>
+    (function(){
+        var pc = document.getElementById('pageContent');
+        if (!pc) return;
+        var renderedPage = pc.getAttribute('data-page');
+        if (!renderedPage) return;
+        var params = new URLSearchParams(window.location.search);
+        var requestedPage = params.get('page') || 'dashboard';
+        if (renderedPage !== requestedPage) {
+            // Server rendered a different page than what URL requested (caching issue)
+            // Force reload with cache-bust parameter (only once to prevent loops)
+            if (!params.has('_cb')) {
+                params.set('_cb', Date.now());
+                window.location.replace(window.location.pathname + '?' + params.toString());
+                return;
+            }
+        }
+        // Clean up _cb parameter from URL (cosmetic, using replaceState)
+        if (params.has('_cb') && renderedPage === requestedPage) {
+            params.delete('_cb');
+            var cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', cleanUrl);
+            }
+        }
+    })();
+    </script>
+
     <!-- Shared JS -->
     <script src="<?= $publicUrl ?>/js/app.js"></script>
     <script>
