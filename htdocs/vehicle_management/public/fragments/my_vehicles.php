@@ -51,7 +51,7 @@
 <!-- Info Banner -->
 <div class="mv-info-banner" id="mvInfoBanner">
     <span class="icon">ℹ️</span>
-    <span id="mvInfoText" data-label-ar="يتم عرض المركبة الخاصة بك فقط، وللورديات يظهر المركبة التي عليها الدور بحسب الجنس" data-label-en="Only your private vehicle is shown. For shifts, the next vehicle in the round-robin rotation for your gender is displayed.">يتم عرض المركبة الخاصة بك فقط، وللورديات يظهر المركبة التي عليها الدور بحسب الجنس</span>
+    <span id="mvInfoText" data-label-ar="يتم عرض المركبات الخاصة بك ومركبات الورديات ومركبات الإدارة المتاحة لك" data-label-en="Your private vehicles, shift vehicles, and available department vehicles are displayed here.">يتم عرض المركبات الخاصة بك ومركبات الورديات ومركبات الإدارة المتاحة لك</span>
 </div>
 
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
@@ -69,9 +69,20 @@
 <div class="mv-section-card" id="mvShiftSection">
     <div class="mv-section-title">
         <span>🔄</span>
-        <span id="mvShiftTitle" data-label-ar="مركبة الوردية التالية (حسب الدور)" data-label-en="Next Shift Vehicle (Round-Robin)">مركبة الوردية التالية (حسب الدور)</span>
+        <span id="mvShiftTitle" data-label-ar="مركبات الورديات" data-label-en="Shift Vehicles">مركبات الورديات</span>
     </div>
     <div id="mvShiftGrid" class="mv-vehicles-grid">
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span>جاري التحميل...</span></div>
+    </div>
+</div>
+
+<!-- ===== DEPARTMENT VEHICLES SECTION ===== -->
+<div class="mv-section-card" id="mvDeptSection">
+    <div class="mv-section-title">
+        <span>🏢</span>
+        <span id="mvDeptTitle" data-label-ar="مركبات الإدارة المتاحة" data-label-en="Available Department Vehicles">مركبات الإدارة المتاحة</span>
+    </div>
+    <div id="mvDeptGrid" class="mv-vehicles-grid">
         <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span>جاري التحميل...</span></div>
     </div>
 </div>
@@ -182,7 +193,8 @@
             var res = await API.get('/vehicles/my-vehicles');
             var data = (res && res.data) || res || {};
             renderPrivate(data.private || []);
-            renderShift(data.shift_next, data.shift_my_current, data.shift_total || 0);
+            renderShift(data.shift_vehicles || [], data.shift_next, data.shift_my_current, data.shift_total || 0);
+            renderDepartment(data.department_vehicles || []);
         } catch (e) {
             console.error('Failed to load my vehicles:', e);
             var errMsg = (e && e.message) || '';
@@ -191,6 +203,7 @@
             }
             renderError('mvPrivateGrid');
             renderError('mvShiftGrid');
+            renderError('mvDeptGrid');
         }
     }
 
@@ -217,8 +230,8 @@
         container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
     }
 
-    /* ---------- Render shift vehicles (next-in-turn only) ---------- */
-    function renderShift(nextVehicle, myCurrentVehicle, totalShift) {
+    /* ---------- Render shift vehicles (all available) ---------- */
+    function renderShift(shiftVehicles, nextVehicle, myCurrentVehicle, totalShift) {
         var container = document.getElementById('mvShiftGrid');
         if (!container) return;
         var cards = '';
@@ -228,9 +241,18 @@
             cards += buildCard(myCurrentVehicle, { turnOrder: null });
         }
 
-        // Show the next-in-turn vehicle (for pickup)
-        if (nextVehicle && (!myCurrentVehicle || String(nextVehicle.vehicle_code) != String(myCurrentVehicle.vehicle_code))) {
-            cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
+        // Show all available shift vehicles
+        var nextCode = nextVehicle ? String(nextVehicle.vehicle_code) : '';
+        var currentCode = myCurrentVehicle ? String(myCurrentVehicle.vehicle_code) : '';
+
+        if (shiftVehicles && shiftVehicles.length) {
+            for (var i = 0; i < shiftVehicles.length; i++) {
+                var sv = shiftVehicles[i];
+                // Skip the one already shown as myCurrentVehicle
+                if (currentCode && String(sv.vehicle_code) === currentCode) continue;
+                var isNext = nextCode && String(sv.vehicle_code) === nextCode;
+                cards += buildCard(sv, { turnOrder: isNext ? (sv.turn_order || nextVehicle.turn_order || i + 1) : null });
+            }
         }
 
         if (!cards) {
@@ -244,6 +266,18 @@
             return;
         }
         container.innerHTML = cards;
+    }
+
+    /* ---------- Render department vehicles ---------- */
+    function renderDepartment(vehicles) {
+        var container = document.getElementById('mvDeptGrid');
+        if (!container) return;
+        if (!vehicles || !vehicles.length) {
+            container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' +
+                t('لا توجد مركبات متاحة في إدارتك', 'No vehicles available in your department') + '</p></div>';
+            return;
+        }
+        container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
     }
 
     /* ---------- Pickup action ---------- */

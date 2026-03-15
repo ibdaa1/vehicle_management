@@ -168,8 +168,11 @@ class VehicleController extends BaseController
         $user = $this->requireAuth($request);
         if (Response::isSent()) return;
 
-        $userEmpId  = $user['emp_id'] ?? '';
-        $userGender = $user['gender'] ?? null;
+        $userEmpId      = $user['emp_id'] ?? '';
+        $userGender     = $user['gender'] ?? null;
+        $userDeptId     = $user['department_id'] ?? null;
+        $userSectionId  = $user['section_id'] ?? null;
+        $userDivisionId = $user['division_id'] ?? null;
 
         try {
             $allVehicles     = $this->vehicleModel->allWithRelations([]);
@@ -211,7 +214,6 @@ class VehicleController extends BaseController
             $myCheckedOutShift = null;
 
             if (!empty($shiftVehicles)) {
-                // FIX: compare with emp_id (FK → users.emp_id)
                 foreach ($shiftVehicles as $v) {
                     if (!$v['available'] && ($v['last_holder'] ?? '') === $userEmpId) {
                         $myCheckedOutShift = $v;
@@ -219,7 +221,6 @@ class VehicleController extends BaseController
                     }
                 }
 
-                // FIX: only calculate next vehicle if user has no checked-out shift vehicle
                 if ($myCheckedOutShift === null) {
                     $shiftCodes     = array_column($shiftVehicles, 'vehicle_code');
                     $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($shiftCodes);
@@ -243,7 +244,6 @@ class VehicleController extends BaseController
                         }
                     }
 
-                    // No history yet → first available
                     if (!$nextShiftVehicle) {
                         foreach ($shiftVehicles as $i => $v) {
                             if ($v['available']) {
@@ -254,16 +254,33 @@ class VehicleController extends BaseController
                         }
                     }
                 }
-                // If $myCheckedOutShift !== null → $nextShiftVehicle stays null (no pickup shown)
+            }
+
+            // Department vehicles: all operational vehicles from user's department
+            // that match gender, giving the user vehicles to choose from
+            $departmentVehicles = [];
+            if ($userDeptId) {
+                $departmentVehicles = array_values(array_filter($allVehicles, function ($v) use ($userDeptId, $userSectionId, $userGender, $userEmpId) {
+                    $deptMatch = ((int)($v['department_id'] ?? 0)) === $userDeptId;
+                    $statusOk  = ($v['status'] ?? '') === 'operational';
+                    $genderOk  = (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
+                    // Exclude vehicles already shown in private section
+                    $isMyPrivate = ($v['vehicle_mode'] ?? '') === 'private'
+                        && trim($v['emp_id'] ?? '') !== ''
+                        && trim($v['emp_id'] ?? '') === trim($userEmpId);
+                    return $deptMatch && $statusOk && $genderOk && !$isMyPrivate;
+                }));
             }
 
             Response::json([
                 'success' => true,
                 'data'    => [
-                    'private'          => $privateVehicles,
-                    'shift_next'       => $nextShiftVehicle,
-                    'shift_my_current' => $myCheckedOutShift,
-                    'shift_total'      => count($shiftVehicles),
+                    'private'             => $privateVehicles,
+                    'shift_next'          => $nextShiftVehicle,
+                    'shift_my_current'    => $myCheckedOutShift,
+                    'shift_total'         => count($shiftVehicles),
+                    'shift_vehicles'      => $shiftVehicles,
+                    'department_vehicles' => $departmentVehicles,
                 ],
             ]);
 
@@ -272,10 +289,12 @@ class VehicleController extends BaseController
             Response::json([
                 'success' => true,
                 'data'    => [
-                    'private'          => [],
-                    'shift_next'       => null,
-                    'shift_my_current' => null,
-                    'shift_total'      => 0,
+                    'private'             => [],
+                    'shift_next'          => null,
+                    'shift_my_current'    => null,
+                    'shift_total'         => 0,
+                    'shift_vehicles'      => [],
+                    'department_vehicles' => [],
                 ],
             ]);
         }
