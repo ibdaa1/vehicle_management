@@ -21,10 +21,10 @@
  * 
  * Usage (HTTP - Integration Tests via built-in server):
  *   1. Start server:
- *      DB_HOST=127.0.0.1:3307 DB_USER=root DB_PASS=root DB_NAME=vehicle_management \
+ *      DB_HOST=127.0.0.1:3307 DB_USER=your_user DB_PASS=your_pass DB_NAME=vehicle_management \
  *      APP_BASE_URL="" php -S 0.0.0.0:8770 router.php
  *   2. Run:
- *      php tests/test_my_vehicles.php --http http://localhost:8770
+ *      TEST_USER=admin TEST_PASS=secret php tests/test_my_vehicles.php --http http://localhost:8770
  * 
  * ===================================================================
  */
@@ -348,10 +348,12 @@ if ($httpBase) {
     echo "🌐 Section 4: HTTP Integration Tests (server: {$httpBase})\n" . str_repeat('-', 40) . "\n";
 
     // Step 1: Login to get token
+    $testUser = getenv('TEST_USER') ?: 'admin';
+    $testPass = getenv('TEST_PASS') ?: 'admin123';
     echo "  → Attempting login...\n";
     $loginRes = http_request('POST', $httpBase . '/api/v1/auth/login', [
-        'username' => 'admin',
-        'password' => 'admin123',
+        'username' => $testUser,
+        'password' => $testPass,
     ]);
 
     $token = $loginRes['json']['token'] ?? null;
