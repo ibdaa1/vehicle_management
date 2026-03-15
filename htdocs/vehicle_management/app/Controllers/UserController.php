@@ -53,6 +53,14 @@ class UserController extends BaseController
             $binds[] = (int)$deptId;
         }
 
+        // Filter by sector
+        $sectorId = $request->query('sector_id');
+        if ($sectorId !== null && $sectorId !== '') {
+            $where[] = 'u.sector_id = ?';
+            $types .= 'i';
+            $binds[] = (int)$sectorId;
+        }
+
         // Filter by gender
         $gender = $request->query('gender');
         if ($gender !== null && $gender !== '') {

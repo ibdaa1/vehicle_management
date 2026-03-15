@@ -172,6 +172,9 @@
         <div class="filter-bar">
             <label for="empIdFilter" style="font-weight:600; margin:0;">Filter by Employee ID:</label>
             <input type="text" id="empIdFilter" placeholder="Enter Employee ID (exact match)">
+            <select id="sectorFilterSelect" style="padding:8px 10px;border:1px solid var(--border);border-radius:8px;min-width:150px;">
+                <option value="">All Sectors</option>
+            </select>
             <button id="applyFilterBtn" class="btn" title="Apply Filter"><i class="fa fa-filter"></i> Filter</button>
             <button id="clearFilterBtn" class="btn ghost" title="Clear Filter" style="color:red"><i class="fa fa-times"></i> Clear</button>
         </div>
@@ -187,6 +190,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Role</th>
+                        <th>Sector</th>
                         <th>Department</th>
                         <th>Section</th>
                         <th>Division</th>
@@ -244,12 +248,14 @@ const AdminUsers = (function(){
     const REFS_HELPER = '/vehicle_management/api/helper/get_references.php';
     
     let currentRoles = [];
+    let currentSectors = [];
     let currentLang = 'ar';
     let currentPage = 1;
     let perPage = 50;
     let totalPages = 1;
     let totalUsers = 0;
     let currentFilter = '';
+    let currentSectorFilter = '';
     
     function log(...a) {
         try {
@@ -408,6 +414,24 @@ const AdminUsers = (function(){
         return [];
     }
     
+    async function fetchSectors() {
+        try {
+            const res = await fetch(REFS_HELPER + '?type=sectors&lang=' + encodeURIComponent(currentLang), {credentials: 'same-origin'});
+            const j = await res.json();
+            if(j && j.success) return j.sectors || [];
+        } catch(e) {
+            log('fetchSectors error', e);
+        }
+        return [];
+    }
+    
+    function sectorLabel(sectorId) {
+        const sid = parseInt(sectorId, 10);
+        if(!sid) return '';
+        const s = currentSectors.find(x => parseInt(x.id, 10) === sid);
+        return s ? (s.name || ('#' + sid)) : ('#' + sid);
+    }
+    
     function roleLabel(r) {
         const rId = parseInt(r, 10);
         if(rId === 1) return 'Super Admin';
@@ -483,6 +507,7 @@ const AdminUsers = (function(){
             const depName = currentLang === 'en' ? (u.department_name_en || u.department_name_ar) : (u.department_name_ar || u.department_name_en);
             const secName = currentLang === 'en' ? (u.section_name_en || u.section_name_ar) : (u.section_name_ar || u.section_name_en);
             const divName = currentLang === 'en' ? (u.division_name_en || u.division_name_ar) : (u.division_name_ar || u.division_name_en);
+            const sectorName = u.sector_name || sectorLabel(u.sector_id);
             
             const statusText = currentLang === 'en' ? (isActive ? 'Active' : 'Inactive') : (isActive ? 'مفعل' : 'معطّل');
             const toggleTitle = currentLang === 'en' ? (isActive ? 'Deactivate' : 'Activate') : (isActive ? 'تعطيل' : 'تفعيل');
@@ -494,6 +519,7 @@ const AdminUsers = (function(){
                 <td>${escapeHTML(u.email || '')}</td>
                 <td>${escapeHTML(u.phone || '')}</td>
                 <td>${escapeHTML(roleLabel(u.role_id))}</td>
+                <td>${escapeHTML(sectorName || u.sector_id || '')}</td>
                 <td>${escapeHTML(depName || u.department_id || '')}</td>
                 <td>${escapeHTML(secName || u.section_id || '')}</td>
                 <td>${escapeHTML(divName || u.division_id || '')}</td>
@@ -522,6 +548,7 @@ const AdminUsers = (function(){
             {key: 'preferred_language', label_ar: 'اللغة المفضلة', label_en: 'Preferred Language', type: 'select', options: [{v: 'ar', t: 'عربى'}, {v: 'en', t: 'English'}]},
             {key: 'role_id', label_ar: 'الدور', label_en: 'Role', type: 'select_roles'},
             {key: 'is_active', label_ar: 'مفعل', label_en: 'Is Active', type: 'checkbox'},
+            {key: 'sector_id', label_ar: 'القطاع', label_en: 'Sector', type: 'select_sectors', id: 'sectorSelect'},
             {key: 'department_id', label_ar: 'الإدارة', label_en: 'Department', type: 'select_ref', ref: 'departments', id: 'depSelect'},
             {key: 'section_id', label_ar: 'القسم', label_en: 'Section', type: 'select_ref', ref: 'sections', id: 'secSelect'},
             {key: 'division_id', label_ar: 'الوحدة', label_en: 'Division', type: 'select_ref', ref: 'divisions', id: 'divSelect'}
@@ -597,6 +624,25 @@ const AdminUsers = (function(){
                 chk.name = f.key;
                 chk.checked = (parseInt(initialValue || 0, 10) === 1);
                 controlWrap.appendChild(chk);
+            } else if(f.type === 'select_sectors') {
+                const sel = document.createElement('select');
+                sel.name = f.key;
+                sel.id = f.id;
+                const emptyText = lang === 'en' ? '-- Select Sector --' : '-- اختر القطاع --';
+                const emptyOpt = document.createElement('option');
+                emptyOpt.value = '';
+                emptyOpt.textContent = emptyText;
+                sel.appendChild(emptyOpt);
+                
+                (currentSectors || []).forEach(s => {
+                    const o = document.createElement('option');
+                    o.value = s.id;
+                    o.textContent = s.name || ('#' + s.id);
+                    if(parseInt(user.sector_id || 0, 10) === parseInt(s.id, 10)) o.selected = true;
+                    sel.appendChild(o);
+                });
+                
+                controlWrap.appendChild(sel);
             } else if(f.type === 'select_ref') {
                 const sel = document.createElement('select');
                 sel.name = f.key;
@@ -735,6 +781,7 @@ const AdminUsers = (function(){
                 
                 try {
                     currentRoles = await fetchRoles();
+                    currentSectors = await fetchSectors();
                     const userRes = await api('get.php?id=' + encodeURIComponent(id));
                     if(!userRes || !userRes.success) {
                         const errMsg = currentLang === 'en' ? 
@@ -796,14 +843,33 @@ const AdminUsers = (function(){
                 }
             }
             currentRoles = await fetchRoles();
+            currentSectors = await fetchSectors();
+            
+            // Populate sector filter dropdown
+            const sectorFilterSel = document.getElementById('sectorFilterSelect');
+            if(sectorFilterSel && currentSectors.length > 0) {
+                const firstOpt = sectorFilterSel.options[0];
+                sectorFilterSel.innerHTML = '';
+                sectorFilterSel.appendChild(firstOpt);
+                currentSectors.forEach(s => {
+                    const o = document.createElement('option');
+                    o.value = s.id;
+                    o.textContent = s.name || ('#' + s.id);
+                    sectorFilterSel.appendChild(o);
+                });
+            }
         } catch(e) {
             currentRoles = [];
+            currentSectors = [];
         }
         
         // بناء URL مع معلمات التقسيم والتصفية
         let url = `list.php?page=${page}&per_page=${perPage}`;
         if (filterEmpId) {
             url += `&emp_id=${encodeURIComponent(filterEmpId)}`;
+        }
+        if (currentSectorFilter) {
+            url += `&sector_id=${encodeURIComponent(currentSectorFilter)}`;
         }
         
         const res = await api(url);
@@ -948,7 +1014,19 @@ const AdminUsers = (function(){
         if(clearFilterBtn && empIdFilter) {
             clearFilterBtn.addEventListener('click', () => {
                 empIdFilter.value = '';
+                const sectorFilterSel = document.getElementById('sectorFilterSelect');
+                if(sectorFilterSel) sectorFilterSel.value = '';
+                currentSectorFilter = '';
                 filterList('');
+            });
+        }
+        
+        // Sector filter event
+        const sectorFilterSel = document.getElementById('sectorFilterSelect');
+        if(sectorFilterSel) {
+            sectorFilterSel.addEventListener('change', () => {
+                currentSectorFilter = sectorFilterSel.value;
+                load(currentFilter, 1);
             });
         }
         
