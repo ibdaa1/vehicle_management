@@ -107,6 +107,9 @@
       <div class="search-section">
         <div class="search-row">
           <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="🔍 بحث: رقم المركبة، الرمز الوظيفي، اسم السائق، هاتف السائق..." />
+          <select id="sectorFilter" class="filter-select">
+            <option value="" data-i18n="sectorFilterPlaceholder">كل القطاعات</option>
+          </select>
           <select id="deptFilter" class="filter-select">
             <option value="" data-i18n="deptFilterPlaceholder">كل الإدارات</option>
           </select>
@@ -138,6 +141,7 @@
                 <th data-i18n="thDriver" data-label="السائق">السائق</th>
                 <th data-i18n="thDriverPhone" data-label="هاتف السائق">هاتف السائق</th>
                 <th data-i18n="thEmpId" data-label="الرمز الوظيفي">الرمز الوظيفي</th>
+                <th data-i18n="thSector" data-label="القطاع">القطاع</th>
                 <th data-i18n="thDepartment" data-label="الإدارة">الإدارة</th>
                 <th data-i18n="thSection" data-label="القسم">القسم</th>
                 <th data-i18n="thDivision" data-label="الشعبة">الشعبة</th>
@@ -196,11 +200,14 @@
         </div>
         <hr style="margin:14px 0;border-top:1px solid var(--border)">
         <div class="form-row select-row">
+          <select id="sector_id" name="sector_id" class="form-control" data-i18n-placeholder="sectorSelPlaceholder"></select>
           <select id="department_id" name="department_id" class="form-control" data-i18n-placeholder="deptSelPlaceholder"></select>
-          <select id="section_id" name="section_id" class="form-control" data-i18n-placeholder="sectionSelPlaceholder"></select>
         </div>
         <div class="form-row select-row" style="margin-top:10px">
+          <select id="section_id" name="section_id" class="form-control" data-i18n-placeholder="sectionSelPlaceholder"></select>
           <select id="division_id" name="division_id" class="form-control" data-i18n-placeholder="divisionSelPlaceholder"></select>
+        </div>
+        <div class="form-row select-row" style="margin-top:10px">
           <select id="status" name="status" class="form-control" data-i18n-placeholder="statusSelPlaceholder"></select>
         </div>
         <div class="form-row">

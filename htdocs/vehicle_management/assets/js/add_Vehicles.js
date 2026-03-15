@@ -14,6 +14,7 @@
   const deptSel = document.getElementById('department_id');
   const sectionSel = document.getElementById('section_id');
   const divisionSel = document.getElementById('division_id');
+  const sectorSel = document.getElementById('sector_id');
   const vmSel = document.getElementById('vehicle_mode');
   const statusSel = document.getElementById('status');
   const empInput = document.getElementById('emp_id');
@@ -23,6 +24,7 @@
   const loggedUserEl = document.getElementById('loggedUser');
   const orgNameEl = document.getElementById('orgName');
   const searchInput = document.getElementById('searchInput');
+  const sectorFilter = document.getElementById('sectorFilter');
   const deptFilter = document.getElementById('deptFilter');
   const sectionFilter = document.getElementById('sectionFilter');
   const statusFilter = document.getElementById('statusFilter');
@@ -56,6 +58,7 @@
       orgName: "HCS Department",
       searchPlaceholder: '🔍 بحث: رقم المركبة، الرمز الوظيفي، اسم السائق، هاتف السائق...',
       deptFilterPlaceholder: 'كل الإدارات',
+      sectorFilterPlaceholder: 'كل القطاعات',
       sectionFilterPlaceholder: 'كل الأقسام',
       statusFilterPlaceholder: 'كل الحالات',
       searchBtnTitle: 'بحث',
@@ -67,6 +70,7 @@
       thDriver: 'السائق',
       thDriverPhone: 'هاتف السائق',
       thEmpId: 'الرمز الوظيفي',
+      thSector: 'القطاع',
       thDepartment: 'الإدارة',
       thSection: 'القسم',
       thDivision: 'الشعبة',
@@ -89,6 +93,7 @@
       label_driver_phone: "هاتف السائق",
       driverPhonePlaceholder: 'هاتف السائق',
       deptSelPlaceholder: 'اختر الإدارة',
+      sectorSelPlaceholder: 'اختر القطاع',
       sectionSelPlaceholder: 'اختر القسم',
       divisionSelPlaceholder: 'اختر الشعبة',
       statusSelPlaceholder: 'اختر الحالة',
@@ -128,6 +133,7 @@
       orgName: "HCS Department",
       searchPlaceholder: '🔍 Search: Vehicle Number, Employee ID, Driver Name, Driver Phone...',
       deptFilterPlaceholder: 'All Departments',
+      sectorFilterPlaceholder: 'All Sectors',
       sectionFilterPlaceholder: 'All Sections',
       statusFilterPlaceholder: 'All Statuses',
       searchBtnTitle: 'Search',
@@ -139,6 +145,7 @@
       thDriver: 'Driver',
       thDriverPhone: 'Driver Phone',
       thEmpId: 'Employee ID',
+      thSector: 'Sector',
       thDepartment: 'Department',
       thSection: 'Section',
       thDivision: 'Division',
@@ -161,6 +168,7 @@
       label_driver_phone: "Driver Phone",
       driverPhonePlaceholder: 'Driver Phone',
       deptSelPlaceholder: 'Select Department',
+      sectorSelPlaceholder: 'Select Sector',
       sectionSelPlaceholder: 'Select Section',
       divisionSelPlaceholder: 'Select Division',
       statusSelPlaceholder: 'Select Status',
@@ -220,7 +228,8 @@
       if (statusFilter.options[2]) statusFilter.options[2].textContent = t.statusMaintenance;
       if (statusFilter.options[3]) statusFilter.options[3].textContent = t.statusOutOfService;
     }
-    // تحديث خيارات deptFilter و sectionFilter الأولى
+    // تحديث خيارات deptFilter و sectionFilter و sectorFilter الأولى
+    if (sectorFilter && sectorFilter.options[0]) sectorFilter.options[0].textContent = t.sectorFilterPlaceholder;
     if (deptFilter && deptFilter.options[0]) deptFilter.options[0].textContent = t.deptFilterPlaceholder;
     if (sectionFilter && sectionFilter.options[0]) sectionFilter.options[0].textContent = t.sectionFilterPlaceholder;
     // تحديث الاتجاه
@@ -305,6 +314,7 @@
   }
   async function loadVehicles(page = 1) {
     const q = searchInput.value.trim();
+    const sector = sectorFilter.value;
     const dept = deptFilter.value;
     const section = sectionFilter.value;
     const status = statusFilter.value;
@@ -312,6 +322,7 @@
  
     const params = new URLSearchParams();
     if (q) params.append('q', q);
+    if (sector) params.append('sector_id', sector);
     if (dept) params.append('department_id', dept);
     if (section) params.append('section_id', section);
     if (status) params.append('status', status);
@@ -332,10 +343,11 @@
     const t = translations[currentLang];
     const nameField = currentLang === 'ar' ? 'name_ar' : 'name_en';
     const vehiclesWithNames = (data.vehicles || []).map(v => {
+      const sectorName = currentReferences?.sectors?.find(sc => String(sc.id) === String(v.sector_id))?.name || v.sector_name || t.notSpecified;
       const deptName = currentReferences?.departments?.find(d => String(d.id) === String(v.department_id))?.[nameField] || v.department_name || t.notSpecified;
       const secName = currentReferences?.sections?.find(s => String(s.id) === String(v.section_id))?.[nameField] || v.section_name || t.notSpecified;
       const divName = currentReferences?.divisions?.find(d => String(d.id) === String(v.division_id))?.[nameField] || v.division_name || t.notSpecified;
-      return { ...v, department_name: deptName, section_name: secName, division_name: divName };
+      return { ...v, sector_name: sectorName, department_name: deptName, section_name: secName, division_name: divName };
     });
  
     renderVehiclesTable(vehiclesWithNames);
@@ -346,7 +358,7 @@
     vehiclesTableBody.innerHTML = '';
  
     if (vehicles.length === 0) {
-      vehiclesTableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted)">${t.noResults}</td></tr>`;
+      vehiclesTableBody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:var(--muted)">${t.noResults}</td></tr>`;
       return;
     }
  
@@ -363,6 +375,7 @@
         <td data-label="${t.thDriver}">${v.driver_name || '-'}</td>
         <td data-label="${t.thDriverPhone}">${v.driver_phone || '-'}</td>
         <td data-label="${t.thEmpId}">${v.emp_id || '-'}</td>
+        <td data-label="${t.thSector}">${v.sector_name || '-'}</td>
         <td data-label="${t.thDepartment}">${v.department_name}</td>
         <td data-label="${t.thSection}">${v.section_name}</td>
         <td data-label="${t.thDivision}">${v.division_name}</td>
@@ -453,6 +466,9 @@
       const t = translations[currentLang];
       const nameField = currentLang === 'ar' ? 'name_ar' : 'name_en';
    
+      if (v.sector_id && sectorSel) {
+        setPreselected(sectorSel, String(v.sector_id));
+      }
       if (v.department_id) {
         setPreselected(deptSel, String(v.department_id));
         const filteredSections = refs.sections.filter(s => String(s.department_id ?? '') === String(v.department_id));
@@ -497,11 +513,16 @@
   }
   async function loadReferences(lang) {
     const res = await fetchJson(API_HELPER + '?lang=' + encodeURIComponent(lang), { method: 'GET' });
-    let deps = [], secs = [], divs = [];
+    let sectors = [], deps = [], secs = [], divs = [];
     if (res.ok && res.json) {
+      sectors = res.json.sectors || [];
       deps = res.json.departments || [];
       secs = res.json.sections || [];
       divs = res.json.divisions || [];
+    }
+    if (!Array.isArray(sectors) || sectors.length === 0) {
+      const rsc = await fetchJson(API_HELPER + '?type=sectors&lang=' + encodeURIComponent(lang));
+      sectors = (rsc.json && rsc.json.sectors) || [];
     }
     if (!Array.isArray(deps) || deps.length === 0) {
       const rd = await fetchJson(API_HELPER + '?type=departments&lang=' + encodeURIComponent(lang));
@@ -515,9 +536,9 @@
       const rv = await fetchJson(API_HELPER + '?type=divisions&lang=' + encodeURIComponent(lang));
       divs = (rv.json && rv.json.divisions) || [];
     }
-    currentReferences = { departments: deps, sections: secs, divisions: divs };
+    currentReferences = { sectors: sectors, departments: deps, sections: secs, divisions: divs };
     clearMsg();
-    return { departments: deps, sections: secs, divisions: divs };
+    return { sectors: sectors, departments: deps, sections: secs, divisions: divs };
   }
   function populateFilterSelect(sel, items, lang, placeholder) {
     sel.innerHTML = `<option value="">${placeholder}</option>`;
@@ -599,11 +620,13 @@
   }
   function openReport() {
     const q = searchInput.value.trim();
+    const sector = sectorFilter.value;
     const dept = deptFilter.value;
     const section = sectionFilter.value;
     const status = statusFilter.value;
     const params = new URLSearchParams();
     if (q) params.append('q', q);
+    if (sector) params.append('sector_id', sector);
     if (dept) params.append('department_id', dept);
     if (section) params.append('section_id', section);
     if (status) params.append('status', status);
@@ -624,6 +647,9 @@
  
     const refs = await loadReferences(currentLang);
     const t = translations[currentLang];
+    populateSelectSingleLanguage(sectorSel, refs.sectors, currentLang, t.sectorSelPlaceholder);
+    const preSector = (sess.user && sess.user.sector_id) || '';
+    if (preSector) setPreselected(sectorSel, String(preSector));
     populateSelectSingleLanguage(deptSel, refs.departments, currentLang, t.deptSelPlaceholder);
     const preDep = form.getAttribute('data-department-id') || (sess.user && sess.user.department_id) || DEFAULT_DEPARTMENT;
     setPreselected(deptSel, String(preDep));
@@ -683,11 +709,13 @@
         statusSel.appendChild(o);
       });
     }
+    populateFilterSelect(sectorFilter, refs.sectors, currentLang, t.sectorFilterPlaceholder);
     populateFilterSelect(deptFilter, refs.departments, currentLang, t.deptFilterPlaceholder);
     populateFilterSelect(sectionFilter, refs.sections, currentLang, t.sectionFilterPlaceholder);
  
     searchBtn.addEventListener('click', () => loadVehicles(1));
     searchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadVehicles(1); });
+    sectorFilter.addEventListener('change', () => loadVehicles(1));
     deptFilter.addEventListener('change', () => {
       const selectedDept = deptFilter.value;
       const filteredSections = refs.sections.filter(s => String(s.department_id ?? '') === String(selectedDept));
