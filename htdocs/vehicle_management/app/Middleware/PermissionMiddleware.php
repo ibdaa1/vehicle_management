@@ -136,10 +136,51 @@ class PermissionMiddleware
             }
         }
 
+        // Superadmin fallback: if DB returned empty resources, provide full-access defaults
+        if ($roleId === 1 && empty($resources)) {
+            $resources = self::getDefaultSuperadminResources();
+        }
+
         return [
             'permissions' => $permissions,
             'resources'   => $resources,
         ];
+    }
+
+    /**
+     * Generate default full-access resource permissions for superadmin.
+     * Used as fallback when the resource_permissions table has no data for role 1.
+     *
+     * @return array
+     */
+    public static function getDefaultSuperadminResources(): array
+    {
+        $resourceTypes = [
+            'users'       => 'manage_users',
+            'vehicles'    => 'manage_vehicles',
+            'movements'   => 'manage_movements',
+            'violations'  => 'manage_violations',
+            'maintenance' => 'manage_maintenance',
+        ];
+
+        $resources = [];
+        foreach ($resourceTypes as $type => $permKey) {
+            $resources[] = [
+                'resource_type'   => $type,
+                'can_view_all'    => true,
+                'can_view_own'    => true,
+                'can_view_tenant' => true,
+                'can_create'      => true,
+                'can_edit_all'    => true,
+                'can_edit_own'    => true,
+                'can_delete_all'  => true,
+                'can_delete_own'  => true,
+                'permission_key'  => $permKey,
+                'permission_name' => $permKey,
+            ];
+        }
+
+        return $resources;
     }
 
     /**

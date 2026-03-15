@@ -85,8 +85,8 @@ class AuthController extends BaseController
         // Load permissions for the user (same logic as check())
         $permissions = [];
         $resources = [];
+        $roleId = (int)($user['role_id'] ?? 0);
         try {
-            $roleId = (int)($user['role_id'] ?? 0);
             if ($roleId === 1) {
                 $permissions = ['*'];
                 // Also load resource permissions for superadmin
@@ -105,6 +105,13 @@ class AuthController extends BaseController
             }
         } catch (\Throwable $e) {
             error_log("AuthController::login permissions error: " . $e->getMessage());
+            // Superadmin fallback: ensure full access even if DB query fails
+            if ($roleId === 1) {
+                $permissions = ['*'];
+                if (empty($resources)) {
+                    $resources = \App\Middleware\PermissionMiddleware::getDefaultSuperadminResources();
+                }
+            }
         }
 
         // Store in PHP session as well
@@ -159,9 +166,8 @@ class AuthController extends BaseController
             // Load permissions for the user
             $permissions = [];
             $resources = [];
+            $roleId = (int)($user['role_id'] ?? 0);
             try {
-                $roleId = (int)($user['role_id'] ?? 0);
-
                 // Look up role name
                 $db = \App\Core\Database::getInstance();
                 $roleRow = $db->fetchOne(
@@ -192,6 +198,13 @@ class AuthController extends BaseController
                 }
             } catch (\Throwable $e) {
                 error_log("AuthController::check permissions error: " . $e->getMessage());
+                // Superadmin fallback: ensure full access even if DB query fails
+                if ($roleId === 1) {
+                    $permissions = ['*'];
+                    if (empty($resources)) {
+                        $resources = \App\Middleware\PermissionMiddleware::getDefaultSuperadminResources();
+                    }
+                }
             }
 
             $user['permissions'] = $permissions;
