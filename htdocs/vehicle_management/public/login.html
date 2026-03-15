@@ -485,7 +485,7 @@
     if(!s) return; const t=i18n[lang]||{}, prev=s.value; s.innerHTML='';
     const o=document.createElement('option'); o.value=''; o.textContent=t[phKey]||''; s.appendChild(o);
     (items||[]).forEach(it => {
-      const id=it.id??it.department_id??it.section_id??it.division_id; if(id==null) return;
+      const id=it.id??it.division_id??it.section_id??it.department_id; if(id==null) return;
       const opt=document.createElement('option'); opt.value=id;
       opt.textContent=lang==='en'?(it.name_en||it.name||it.name_ar):(it.name_ar||it.name||it.name_en);
       s.appendChild(opt);
