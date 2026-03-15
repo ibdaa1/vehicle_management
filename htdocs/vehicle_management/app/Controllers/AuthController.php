@@ -143,6 +143,7 @@ class AuthController extends BaseController
                 'gender'             => $user['gender'] ?? null,
                 'role_id'            => (int)$user['role_id'],
                 'preferred_language' => $user['preferred_language'] ?? 'ar',
+                'sector_id'          => $user['sector_id'] ? (int)$user['sector_id'] : null,
                 'department_id'      => $user['department_id'] ? (int)$user['department_id'] : null,
                 'section_id'         => $user['section_id'] ? (int)$user['section_id'] : null,
                 'division_id'        => $user['division_id'] ? (int)$user['division_id'] : null,

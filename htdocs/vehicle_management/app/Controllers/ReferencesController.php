@@ -1,6 +1,6 @@
 <?php
 /**
- * References Controller – departments, sections, divisions (public data for forms).
+ * References Controller – sectors, departments, sections, divisions (public data for forms).
  */
 
 namespace App\Controllers;
@@ -8,19 +8,22 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Models\Department;
+use App\Models\Sector;
 
 class ReferencesController extends BaseController
 {
     private Department $deptModel;
+    private Sector $sectorModel;
 
     public function __construct()
     {
         $this->deptModel = new Department();
+        $this->sectorModel = new Sector();
     }
 
     /**
      * GET /api/v1/references
-     * Returns all departments, sections, divisions – no auth required (for login/register forms).
+     * Returns all sectors, departments, sections, divisions – no auth required (for login/register forms).
      */
     public function index(Request $request, array $params = []): void
     {
@@ -28,12 +31,27 @@ class ReferencesController extends BaseController
             $refs = $this->deptModel->getAllReferences();
         } catch (\Throwable $e) {
             error_log("ReferencesController::index error: " . $e->getMessage());
-            $refs = ['departments' => [], 'sections' => [], 'divisions' => []];
+            $refs = ['sectors' => [], 'departments' => [], 'sections' => [], 'divisions' => []];
         }
         Response::json([
             'success' => true,
             'data' => $refs,
         ]);
+        return;
+    }
+
+    /**
+     * GET /api/v1/references/sectors
+     */
+    public function sectors(Request $request, array $params = []): void
+    {
+        try {
+            $sectors = $this->sectorModel->allSectors();
+        } catch (\Throwable $e) {
+            error_log("ReferencesController::sectors error: " . $e->getMessage());
+            $sectors = [];
+        }
+        Response::json(['success' => true, 'data' => $sectors]);
         return;
     }
 

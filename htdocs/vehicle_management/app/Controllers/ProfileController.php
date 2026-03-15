@@ -30,14 +30,16 @@ class ProfileController extends BaseController
             $row = $db->fetchOne(
                 "SELECT u.id, u.emp_id, u.username, u.email, u.phone, u.gender,
                         u.role_id, u.is_active, u.preferred_language,
-                        u.department_id, u.section_id, u.division_id,
+                        u.sector_id, u.department_id, u.section_id, u.division_id,
                         u.profile_image, u.created_at, u.updated_at,
                         r.display_name AS role_name,
+                        sec.name AS sector_name, sec.name_en AS sector_name_en,
                         d.name_ar AS department_name_ar,
                         s.name_ar AS section_name_ar,
                         dv.name_ar AS division_name_ar
                  FROM users u
                  LEFT JOIN roles r ON r.id = u.role_id
+                 LEFT JOIN sectors sec ON sec.id = u.sector_id
                  LEFT JOIN Departments d ON d.department_id = u.department_id
                  LEFT JOIN Sections s ON s.section_id = u.section_id
                  LEFT JOIN Divisions dv ON dv.division_id = u.division_id

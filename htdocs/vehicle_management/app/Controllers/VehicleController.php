@@ -30,7 +30,7 @@ class VehicleController extends BaseController
         $this->requirePermission($request, 'manage_vehicles');
         if (Response::isSent()) return;
 
-        $filters = $request->only(['status', 'vehicle_mode', 'department_id', 'gender']);
+        $filters = $request->only(['status', 'vehicle_mode', 'sector_id', 'department_id', 'gender']);
         try {
             $vehicles        = $this->vehicleModel->allWithRelations($filters);
             $latestMovements = $this->movementModel->getLatestByVehicle();
@@ -81,7 +81,7 @@ class VehicleController extends BaseController
 
         $data = $request->only([
             'vehicle_code', 'type', 'vehicle_category', 'manufacture_year', 'emp_id',
-            'driver_name', 'driver_phone', 'status', 'department_id',
+            'driver_name', 'driver_phone', 'status', 'sector_id', 'department_id',
             'section_id', 'division_id', 'vehicle_mode', 'gender', 'notes',
         ]);
 
@@ -118,7 +118,7 @@ class VehicleController extends BaseController
 
         $data = $request->only([
             'vehicle_code', 'type', 'vehicle_category', 'manufacture_year', 'emp_id',
-            'driver_name', 'driver_phone', 'status', 'department_id',
+            'driver_name', 'driver_phone', 'status', 'sector_id', 'department_id',
             'section_id', 'division_id', 'vehicle_mode', 'gender', 'notes',
         ]);
         $data = array_filter($data, fn($v) => $v !== null && $v !== '');
@@ -175,6 +175,7 @@ class VehicleController extends BaseController
 
         $userEmpId      = $user['emp_id'] ?? '';
         $userGender     = $user['gender'] ?? null;
+        $userSectorId   = $user['sector_id'] ?? null;
         $userDeptId     = $user['department_id'] ?? null;
         $userSectionId  = $user['section_id'] ?? null;
         $userDivisionId = $user['division_id'] ?? null;
@@ -234,22 +235,28 @@ class VehicleController extends BaseController
                 $shiftVehicles = $this->assignTurnOrder($shiftVehicles, $nextShiftVehicle, $myCheckedOutShift, $userEmpId);
             }
 
-            // Department vehicles: filter by dept/section/division + gender,
+            // Department vehicles: filter by sector/dept/section/division + gender,
             // exclude private vehicles already shown, then pick ONE in round-robin
             $departmentVehicles = [];
             $nextDeptVehicle    = null;
             $myCheckedOutDept   = null;
             $deptTotal          = 0;
 
-            if ($userDeptId) {
-                $departmentVehicles = array_values(array_filter($allVehicles, function ($v) use ($userDeptId, $userSectionId, $userDivisionId, $userGender, $userEmpId) {
-                    $deptMatch = ((int)($v['department_id'] ?? 0)) === (int)$userDeptId;
-                    // Also match section/division when available
-                    if ($userSectionId && !empty($v['section_id'])) {
-                        $deptMatch = $deptMatch && ((int)($v['section_id'] ?? 0)) === (int)$userSectionId;
+            if ($userSectorId || $userDeptId) {
+                $departmentVehicles = array_values(array_filter($allVehicles, function ($v) use ($userSectorId, $userDeptId, $userSectionId, $userDivisionId, $userGender, $userEmpId) {
+                    // Match by sector if user has one; otherwise fall back to department match
+                    $orgMatch = false;
+                    if ($userSectorId && !empty($v['sector_id'])) {
+                        $orgMatch = ((int)($v['sector_id'] ?? 0)) === (int)$userSectorId;
+                    } elseif ($userDeptId) {
+                        $orgMatch = ((int)($v['department_id'] ?? 0)) === (int)$userDeptId;
                     }
-                    if ($userDivisionId && !empty($v['division_id'])) {
-                        $deptMatch = $deptMatch && ((int)($v['division_id'] ?? 0)) === (int)$userDivisionId;
+                    // Also match section/division when available
+                    if ($orgMatch && $userSectionId && !empty($v['section_id'])) {
+                        $orgMatch = $orgMatch && ((int)($v['section_id'] ?? 0)) === (int)$userSectionId;
+                    }
+                    if ($orgMatch && $userDivisionId && !empty($v['division_id'])) {
+                        $orgMatch = $orgMatch && ((int)($v['division_id'] ?? 0)) === (int)$userDivisionId;
                     }
                     $statusOk  = ($v['status'] ?? '') === 'operational';
                     $genderOk  = (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
@@ -259,7 +266,7 @@ class VehicleController extends BaseController
                         && trim($v['emp_id'] ?? '') === trim($userEmpId);
                     // Exclude shift vehicles (shown in shift section)
                     $isShift = ($v['vehicle_mode'] ?? '') === 'shift';
-                    return $deptMatch && $statusOk && $genderOk && !$isMyPrivate && !$isShift;
+                    return $orgMatch && $statusOk && $genderOk && !$isMyPrivate && !$isShift;
                 }));
 
                 usort($departmentVehicles, fn($a, $b) => strcmp($a['vehicle_code'] ?? '', $b['vehicle_code'] ?? ''));
@@ -492,13 +499,16 @@ class VehicleController extends BaseController
                     v.status,
                     v.vehicle_mode,
                     v.gender,
+                    v.sector_id,
                     v.department_id,
                     v.section_id,
                     v.division_id,
+                    COALESCE(sec.name, '')  AS sector_name,
                     COALESCE(d.name_ar,  '') AS department_name,
                     COALESCE(s.name_ar,  '') AS section_name,
                     COALESCE(dv.name_ar, '') AS division_name
                 FROM vehicles v
+                LEFT JOIN sectors     sec ON sec.id           = v.sector_id
                 LEFT JOIN Departments d  ON d.department_id  = v.department_id
                 LEFT JOIN Sections    s  ON s.section_id     = v.section_id
                 LEFT JOIN Divisions   dv ON dv.division_id   = v.division_id

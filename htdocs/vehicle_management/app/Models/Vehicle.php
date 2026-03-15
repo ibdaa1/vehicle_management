@@ -18,12 +18,14 @@ class Vehicle extends BaseModel
     {
         $db = Database::getInstance();
         $sql = "SELECT v.*, 
+                       sec.name AS sector_name, sec.name_en AS sector_name_en,
                        dept.name_ar AS department_name_ar, dept.name_en AS department_name_en,
-                       sec.name_ar AS section_name_ar, sec.name_en AS section_name_en,
+                       s.name_ar AS section_name_ar, s.name_en AS section_name_en,
                        dv.name_ar AS division_name_ar, dv.name_en AS division_name_en
                 FROM vehicles v
+                LEFT JOIN sectors sec ON v.sector_id = sec.id
                 LEFT JOIN Departments dept ON v.department_id = dept.department_id
-                LEFT JOIN Sections sec ON v.section_id = sec.section_id
+                LEFT JOIN Sections s ON v.section_id = s.section_id
                 LEFT JOIN Divisions dv ON v.division_id = dv.division_id
                 WHERE 1=1";
 
@@ -39,6 +41,11 @@ class Vehicle extends BaseModel
             $sql .= " AND v.vehicle_mode = ?";
             $types .= 's';
             $params[] = $filters['vehicle_mode'];
+        }
+        if (!empty($filters['sector_id'])) {
+            $sql .= " AND v.sector_id = ?";
+            $types .= 'i';
+            $params[] = (int)$filters['sector_id'];
         }
         if (!empty($filters['department_id'])) {
             $sql .= " AND v.department_id = ?";

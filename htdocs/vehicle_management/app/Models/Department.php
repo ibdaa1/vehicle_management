@@ -46,12 +46,13 @@ class Department extends BaseModel
     }
 
     /**
-     * Get all references (departments + sections + divisions).
+     * Get all references (sectors + departments + sections + divisions).
      */
     public function getAllReferences(): array
     {
         $db = Database::getInstance();
         return [
+            'sectors' => $db->fetchAll("SELECT * FROM sectors WHERE is_active = 1 ORDER BY id"),
             'departments' => $db->fetchAll("SELECT * FROM Departments ORDER BY department_id"),
             'sections' => $db->fetchAll("SELECT * FROM Sections ORDER BY section_id"),
             'divisions' => $db->fetchAll("SELECT * FROM Divisions ORDER BY division_id"),

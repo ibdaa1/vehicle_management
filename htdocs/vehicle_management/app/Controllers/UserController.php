@@ -79,12 +79,14 @@ class UserController extends BaseController
             $rows = $db->fetchAll(
                 "SELECT u.id, u.emp_id, u.username, u.email, u.phone, u.gender,
                         u.role_id, u.is_active, u.preferred_language,
-                        u.department_id, u.section_id, u.division_id,
+                        u.sector_id, u.department_id, u.section_id, u.division_id,
                         u.profile_image, u.created_at, u.updated_at,
                         r.display_name AS role_name,
+                        sec.name AS sector_name, sec.name_en AS sector_name_en,
                         d.name_ar AS department_name_ar
                  FROM users u
                  LEFT JOIN roles r ON r.id = u.role_id
+                 LEFT JOIN sectors sec ON sec.id = u.sector_id
                  LEFT JOIN Departments d ON d.department_id = u.department_id
                  WHERE {$whereStr}
                  ORDER BY u.id DESC",
@@ -120,7 +122,7 @@ class UserController extends BaseController
             $row = $db->fetchOne(
                 "SELECT u.id, u.emp_id, u.username, u.email, u.phone, u.gender,
                         u.role_id, u.is_active, u.preferred_language,
-                        u.department_id, u.section_id, u.division_id,
+                        u.sector_id, u.department_id, u.section_id, u.division_id,
                         u.profile_image, u.created_at, u.updated_at,
                         r.display_name AS role_name
                  FROM users u
@@ -173,6 +175,7 @@ class UserController extends BaseController
         $roleId = (int)($data['role_id'] ?? 3);
         $isActive = isset($data['is_active']) ? (int)$data['is_active'] : 1;
         $prefLang = $data['preferred_language'] ?? 'ar';
+        $sectorId = !empty($data['sector_id']) ? (int)$data['sector_id'] : null;
         $deptId = !empty($data['department_id']) ? (int)$data['department_id'] : null;
         $secId = !empty($data['section_id']) ? (int)$data['section_id'] : null;
         $divId = !empty($data['division_id']) ? (int)$data['division_id'] : null;
@@ -234,6 +237,12 @@ class UserController extends BaseController
             $types = 'sssssssis';
             $placeholders = ['?', '?', '?', '?', '?', '?', '?', '?', '?', 'NOW()'];
 
+            if ($sectorId !== null) {
+                $cols[] = 'sector_id';
+                $placeholders[] = '?';
+                $types .= 'i';
+                $vals[] = $sectorId;
+            }
             if ($deptId !== null) {
                 $cols[] = 'department_id';
                 $placeholders[] = '?';
@@ -349,7 +358,7 @@ class UserController extends BaseController
         }
 
         // Integer fields
-        $intFields = ['role_id', 'is_active', 'department_id', 'section_id', 'division_id'];
+        $intFields = ['role_id', 'is_active', 'sector_id', 'department_id', 'section_id', 'division_id'];
         foreach ($intFields as $field) {
             if (array_key_exists($field, $data)) {
                 $sets[] = "{$field} = ?";

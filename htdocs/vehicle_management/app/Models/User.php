@@ -47,7 +47,7 @@ class User extends BaseModel
     {
         $row = $this->db->fetchOne(
             "SELECT id, emp_id, username, email, phone, role_id, preferred_language,
-                    gender, profile_image, is_active, department_id, section_id, division_id,
+                    gender, profile_image, is_active, sector_id, department_id, section_id, division_id,
                     created_at, updated_at
              FROM users WHERE id = ? LIMIT 1",
             'i',
@@ -61,6 +61,7 @@ class User extends BaseModel
         $row['id'] = (int)$row['id'];
         $row['role_id'] = (int)$row['role_id'];
         $row['is_active'] = (bool)$row['is_active'];
+        $row['sector_id'] = $row['sector_id'] ? (int)$row['sector_id'] : null;
         $row['department_id'] = $row['department_id'] ? (int)$row['department_id'] : null;
         $row['section_id'] = $row['section_id'] ? (int)$row['section_id'] : null;
         $row['division_id'] = $row['division_id'] ? (int)$row['division_id'] : null;

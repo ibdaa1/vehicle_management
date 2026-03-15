@@ -123,6 +123,7 @@
                     <th id="thEmail">Email</th>
                     <th id="thPhone">Phone</th>
                     <th id="thRole">Role</th>
+                    <th id="thSector">Sector</th>
                     <th id="thDept">Department</th>
                     <th id="thSection">Section</th>
                     <th id="thDivision">Division</th>
@@ -133,7 +134,7 @@
                 </tr>
             </thead>
             <tbody id="usersBody">
-                <tr><td colspan="10" class="empty-state"><div class="empty-icon">👥</div><p>Loading...</p></td></tr>
+                <tr><td colspan="14" class="empty-state"><div class="empty-icon">👥</div><p>Loading...</p></td></tr>
             </tbody>
         </table>
     </div>
@@ -180,6 +181,10 @@
                 <div class="form-group">
                     <label id="lblRole">Role</label>
                     <select id="fRoleId"></select>
+                </div>
+                <div class="form-group">
+                    <label id="lblFormSector">Sector</label>
+                    <select id="fSectorId"><option value="">-- All --</option></select>
                 </div>
                 <div class="form-group">
                     <label id="lblFormDept">Department</label>
@@ -246,12 +251,17 @@
         });
     }
 
-    let uRefs = {departments:[],sections:[],divisions:[]};
+    let uRefs = {sectors:[],departments:[],sections:[],divisions:[]};
     async function loadUserRefs() {
         try {
             const res = await API.get('/references');
-            uRefs = (res && res.data) || res || {departments:[],sections:[],divisions:[]};
-        } catch(e) { uRefs = {departments:[],sections:[],divisions:[]}; }
+            uRefs = (res && res.data) || res || {sectors:[],departments:[],sections:[],divisions:[]};
+        } catch(e) { uRefs = {sectors:[],departments:[],sections:[],divisions:[]}; }
+        var sd = document.getElementById('fSectorId');
+        sd.innerHTML = '<option value="">--</option>';
+        (uRefs.sectors||[]).forEach(function(s){
+            sd.innerHTML += '<option value="'+s.id+'">'+(s.name||s.name_en)+'</option>';
+        });
         var dd = document.getElementById('fDeptId');
         dd.innerHTML = '<option value="">--</option>';
         (uRefs.departments||[]).forEach(function(d){
@@ -316,7 +326,7 @@
 
         const tbody = document.getElementById('usersBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="13" class="empty-state"><div class="empty-icon">👥</div><p>' + i18n.t('no_users') + '</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="14" class="empty-state"><div class="empty-icon">👥</div><p>' + i18n.t('no_users') + '</p></td></tr>';
             renderUsersPagination(0, 0);
             return;
         }
@@ -333,7 +343,8 @@
                 '<input type="checkbox" ' + (isActive ? 'checked' : '') + ' onchange="UsersPage.toggleActive(' + parseInt(u.id) + ', this.checked)">' +
                 '<span class="toggle-slider"></span></label>';
             const roleBadge = '<span class="badge badge-role">' + (u.role_name || '\u2014') + '</span>';
-            var deptName = '\u2014', sectName = '\u2014', divName = '\u2014';
+            var deptName = '\u2014', sectName = '\u2014', divName = '\u2014', sectorName = '\u2014';
+            if (u.sector_id) { var sc = (uRefs.sectors||[]).find(function(s){ return s.id == u.sector_id; }); if (sc) sectorName = sc.name || sc.name_en; }
             if (u.department_id) { var dd = (uRefs.departments||[]).find(function(d){ return d.department_id == u.department_id; }); if (dd) deptName = dd.name_ar || dd.name_en; }
             if (u.section_id) { var ss = (uRefs.sections||[]).find(function(s){ return s.section_id == u.section_id; }); if (ss) sectName = ss.name_ar || ss.name_en; }
             if (u.division_id) { var dv = (uRefs.divisions||[]).find(function(d){ return d.division_id == u.division_id; }); if (dv) divName = dv.name_ar || dv.name_en; }
@@ -346,6 +357,7 @@
                 '<td data-label="' + i18n.t('email') + '">' + escHtml(u.email || '\u2014') + '</td>' +
                 '<td data-label="' + i18n.t('phone') + '">' + escHtml(u.phone || '\u2014') + '</td>' +
                 '<td data-label="' + i18n.t('role') + '">' + roleBadge + '</td>' +
+                '<td data-label="' + i18n.t('sector') + '">' + escHtml(sectorName) + '</td>' +
                 '<td data-label="' + i18n.t('department') + '">' + escHtml(deptName) + '</td>' +
                 '<td data-label="' + i18n.t('section') + '">' + escHtml(sectName) + '</td>' +
                 '<td data-label="' + i18n.t('division') + '">' + escHtml(divName) + '</td>' +
@@ -425,6 +437,7 @@
         document.getElementById('userForm').reset();
         document.getElementById('fActive').value = '1';
         document.getElementById('fLang').value = 'ar';
+        document.getElementById('fSectorId').value = '';
         document.getElementById('fDeptId').value = '';
         cascadeSection('');
         document.getElementById('formModal').classList.add('active');
@@ -446,6 +459,7 @@
         document.getElementById('fGender').value = u.gender || '';
         document.getElementById('fLang').value = u.preferred_language || 'ar';
         document.getElementById('fActive').value = u.is_active != null ? String(u.is_active) : '1';
+        document.getElementById('fSectorId').value = u.sector_id || '';
         document.getElementById('fDeptId').value = u.department_id || '';
         cascadeSection(u.department_id || '');
         setTimeout(function(){ document.getElementById('fSectionId').value = u.section_id || ''; cascadeDivision(u.section_id || ''); setTimeout(function(){ document.getElementById('fDivisionId').value = u.division_id || ''; },50); },50);
@@ -455,7 +469,8 @@
     window.viewUser = function(id) {
         const u = allUsers.find(x => x.id == id);
         if (!u) return;
-        var deptName = '\u2014', sectName = '\u2014', divName = '\u2014';
+        var deptName = '\u2014', sectName = '\u2014', divName = '\u2014', sectorName = '\u2014';
+        if(u.sector_id) { var sc=(uRefs.sectors||[]).find(function(s){return s.id==u.sector_id;}); if(sc) sectorName=sc.name||sc.name_en; }
         if(u.department_id) { var dd=(uRefs.departments||[]).find(function(d){return d.department_id==u.department_id;}); if(dd) deptName=dd.name_ar||dd.name_en; }
         if(u.section_id) { var ss=(uRefs.sections||[]).find(function(s){return s.section_id==u.section_id;}); if(ss) sectName=ss.name_ar||ss.name_en; }
         if(u.division_id) { var dv=(uRefs.divisions||[]).find(function(d){return d.division_id==u.division_id;}); if(dv) divName=dv.name_ar||dv.name_en; }
@@ -467,6 +482,7 @@
             '<div class="detail-item"><div class="detail-label">' + i18n.t('email') + '</div><div class="detail-value">' + escHtml(u.email || '\u2014') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('phone') + '</div><div class="detail-value">' + escHtml(u.phone || '\u2014') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('role') + '</div><div class="detail-value"><span class="badge badge-role">' + escHtml(u.role_name || '\u2014') + '</span></div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + i18n.t('sector') + '</div><div class="detail-value">' + escHtml(sectorName) + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('department') + '</div><div class="detail-value">' + escHtml(deptName) + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('section') + '</div><div class="detail-value">' + escHtml(sectName) + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + i18n.t('division') + '</div><div class="detail-value">' + escHtml(divName) + '</div></div>' +
@@ -489,6 +505,7 @@
             gender: document.getElementById('fGender').value || null,
             preferred_language: document.getElementById('fLang').value || 'ar',
             is_active: parseInt(document.getElementById('fActive').value),
+            sector_id: document.getElementById('fSectorId').value ? parseInt(document.getElementById('fSectorId').value) : null,
             department_id: document.getElementById('fDeptId').value ? parseInt(document.getElementById('fDeptId').value) : null,
             section_id: document.getElementById('fSectionId').value ? parseInt(document.getElementById('fSectionId').value) : null,
             division_id: document.getElementById('fDivisionId').value ? parseInt(document.getElementById('fDivisionId').value) : null,
@@ -571,6 +588,7 @@
             'thEmail': 'email',
             'thPhone': 'phone',
             'thRole': 'role',
+            'thSector': 'sector',
             'thDept': 'department',
             'thSection': 'section',
             'thDivision': 'division',
@@ -585,6 +603,7 @@
             'lblEmail': 'email',
             'lblPhone': 'phone',
             'lblRole': 'role',
+            'lblFormSector': 'sector',
             'lblFormDept': 'department',
             'lblFormSection': 'section',
             'lblFormDivision': 'division',

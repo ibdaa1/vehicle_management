@@ -85,6 +85,10 @@
                 <input type="text" id="pfRole" disabled>
             </div>
             <div class="fg">
+                <label id="pfLblSector" data-label-ar="القطاع" data-label-en="Sector">القطاع</label>
+                <input type="text" id="pfSector" disabled>
+            </div>
+            <div class="fg">
                 <label id="pfLblDept" data-label-ar="الإدارة" data-label-en="Department">الإدارة</label>
                 <input type="text" id="pfDept" disabled>
             </div>
@@ -252,6 +256,7 @@
         var genderMap = { male: t('ذكر', 'Male'), female: t('أنثى', 'Female') };
         $('pfGender').value = genderMap[data.gender] || data.gender || '';
 
+        $('pfSector').value = data.sector_name || data.sector_name_en || t('غير محدد', 'Not set');
         $('pfDept').value = data.department_name_ar || t('غير محدد', 'Not set');
         $('pfSection').value = data.section_name_ar || t('غير محدد', 'Not set');
         $('pfDivision').value = data.division_name_ar || t('غير محدد', 'Not set');

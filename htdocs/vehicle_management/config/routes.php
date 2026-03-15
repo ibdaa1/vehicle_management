@@ -108,8 +108,9 @@ $router->post('api/v1/vehicles', VehicleController::class, 'store');
 $router->put('api/v1/vehicles/{id}', VehicleController::class, 'update');
 $router->delete('api/v1/vehicles/{id}', VehicleController::class, 'destroy');
 
-// === References Routes (departments, sections, divisions) ===
+// === References Routes (sectors, departments, sections, divisions) ===
 $router->get('api/v1/references', ReferencesController::class, 'index');
+$router->get('api/v1/references/sectors', ReferencesController::class, 'sectors');
 $router->get('api/v1/references/departments', ReferencesController::class, 'departments');
 $router->get('api/v1/references/sections/{departmentId}', ReferencesController::class, 'sections');
 $router->get('api/v1/references/divisions/{sectionId}', ReferencesController::class, 'divisions');

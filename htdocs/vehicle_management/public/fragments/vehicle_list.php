@@ -77,6 +77,7 @@
                 <th>#</th>
                 <th data-label-ar="كود المركبة" data-label-en="Vehicle Code">كود المركبة</th>
                 <th data-label-ar="النوع" data-label-en="Type">النوع</th>
+                <th data-label-ar="القطاع" data-label-en="Sector">القطاع</th>
                 <th data-label-ar="القسم" data-label-en="Department">القسم</th>
                 <th data-label-ar="الحالة" data-label-en="Status">الحالة</th>
                 <th data-label-ar="النمط" data-label-en="Mode">النمط</th>
@@ -133,6 +134,10 @@
                 <option value="men">ذكر / Male</option>
                 <option value="women">أنثى / Female</option>
             </select>
+        </div>
+        <div class="form-group">
+            <label id="vlLblSector" data-label-ar="القطاع" data-label-en="Sector">القطاع</label>
+            <select id="vlFldSector"><option value="">—</option></select>
         </div>
         <div class="form-group">
             <label id="vlLblDept" data-label-ar="القسم" data-label-en="Department">القسم</label>
@@ -241,6 +246,7 @@
                 +'<td>'+(i+1)+'</td>'
                 +'<td>'+(v.vehicle_code||'—')+'</td>'
                 +'<td>'+(v.type||v.vehicle_type||'—')+'</td>'
+                +'<td>'+(v.sector_name||v.sector_name_en||'—')+'</td>'
                 +'<td>'+(v.department_name_ar||v.department_name||'—')+'</td>'
                 +'<td><span class="vl-badge '+statusCls+'">'+statusTxt+'</span></td>'
                 +'<td>'+modeTxt+'</td>'
@@ -253,6 +259,21 @@
     /* --- Search & Filter events --- */
     $('vlSearch').addEventListener('input', renderTable);
     $('vlFilterStatus').addEventListener('change', renderTable);
+
+    /* --- Load sectors for dropdown --- */
+    function loadSectors(){
+        API.get('/references/sectors').then(function(res){
+            var sectors=res.data||res||[];
+            var sel=$('vlFldSector');
+            var lang=localStorage.getItem('lang')||'ar';
+            sel.innerHTML='<option value="">—</option>';
+            sectors.forEach(function(s){
+                var sId=s.id||'';
+                var sName=(lang==='en'?(s.name_en||s.name):(s.name||s.name_en))||'—';
+                sel.innerHTML+='<option value="'+sId+'">'+sName+'</option>';
+            });
+        }).catch(function(e){ console.error('Load sectors error',e); });
+    }
 
     /* --- Load departments for dropdown --- */
     function loadDepartments(){
@@ -279,6 +300,7 @@
             $('vlFldStatus').value='operational';
             $('vlFldMode').value='private';
             $('vlFldGender').value='men';
+            $('vlFldSector').value='';
             $('vlFldDept').value='';
             $('vlFldYear').value='';
             $('vlModalTitle').textContent='إضافة مركبة';
@@ -294,6 +316,7 @@
             $('vlFldStatus').value=v.status||'operational';
             $('vlFldMode').value=v.vehicle_mode||'private';
             $('vlFldGender').value=v.gender||'men';
+            $('vlFldSector').value=v.sector_id||'';
             $('vlFldDept').value=v.department_id||'';
             $('vlFldYear').value=v.manufacture_year||v.year||'';
             $('vlModalTitle').textContent='تعديل مركبة';
@@ -311,6 +334,7 @@
                 status: $('vlFldStatus').value,
                 vehicle_mode: $('vlFldMode').value,
                 gender: $('vlFldGender').value,
+                sector_id: $('vlFldSector').value||null,
                 department_id: $('vlFldDept').value||null,
                 manufacture_year: $('vlFldYear').value||null
             };
@@ -365,6 +389,7 @@
         canDelete=perms.includes('manage_vehicles')||perms.includes('*');
         if(canCreate){$('vlBtnAdd').style.display='';}
         applyLang();
+        loadSectors();
         loadDepartments();
         loadVehicles();
     })();
