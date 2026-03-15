@@ -302,6 +302,93 @@ class VehicleController extends BaseController
     }
 
     /**
+     * POST /api/v1/vehicles/self-service
+     * Self-service vehicle pickup/return for any authenticated user.
+     * Unlike POST /movements (requires manage_movements), this only needs authentication.
+     * The user can only act for themselves (performed_by = their own emp_id).
+     */
+    public function selfServiceMovement(Request $request, array $params = []): void
+    {
+        $user = $this->requireAuth($request);
+        if (Response::isSent()) return;
+
+        $userEmpId = trim($user['emp_id'] ?? '');
+        if ($userEmpId === '') {
+            Response::error('User has no emp_id configured', 400);
+            return;
+        }
+
+        $data = $request->only(['vehicle_code', 'operation_type']);
+
+        $missing = $this->validateRequired($data, ['vehicle_code', 'operation_type']);
+        if (!empty($missing)) {
+            Response::error('Missing required fields: ' . implode(', ', $missing), 400);
+            return;
+        }
+
+        $operationType = $data['operation_type'];
+        if (!in_array($operationType, ['pickup', 'return'], true)) {
+            Response::error('Invalid operation_type: must be pickup or return', 400);
+            return;
+        }
+
+        $vehicleCode = trim($data['vehicle_code']);
+
+        // Verify the vehicle exists and is operational
+        $vehicle = $this->vehicleModel->findByCode($vehicleCode);
+        if (!$vehicle) {
+            Response::error('Vehicle not found: ' . $vehicleCode, 404);
+            return;
+        }
+        if (($vehicle['status'] ?? '') !== 'operational') {
+            Response::error('Vehicle is not operational', 400);
+            return;
+        }
+
+        // Get latest movement to check availability
+        $latestMovements = $this->movementModel->getLatestByVehicle();
+        $lastMovement = $latestMovements[$vehicleCode] ?? null;
+        $isAvailable = ($lastMovement === null || ($lastMovement['operation_type'] ?? '') === 'return');
+
+        if ($operationType === 'pickup') {
+            if (!$isAvailable) {
+                Response::error('Vehicle is not available for pickup', 400);
+                return;
+            }
+        } else {
+            // Return: verify the user is the one who checked it out
+            if ($isAvailable) {
+                Response::error('Vehicle is not checked out', 400);
+                return;
+            }
+            $lastHolder = trim($lastMovement['performed_by'] ?? '');
+            if ($lastHolder !== $userEmpId) {
+                Response::error('You can only return vehicles you have checked out', 403);
+                return;
+            }
+        }
+
+        try {
+            $recordId = $this->movementModel->create([
+                'vehicle_code'      => $vehicleCode,
+                'operation_type'    => $operationType,
+                'performed_by'      => $userEmpId,
+                'created_by'        => $userEmpId,
+                'movement_datetime' => date('Y-m-d H:i:s'),
+            ]);
+
+            $this->logActivity($user, 'vehicle_self_service', 'vehicle_movements', $recordId,
+                "Self-service {$operationType} for vehicle {$vehicleCode}");
+
+            $record = $this->movementModel->find($recordId);
+            Response::json(['success' => true, 'message' => ucfirst($operationType) . ' successful', 'data' => $record], 201);
+        } catch (\Throwable $e) {
+            error_log("VehicleController::selfServiceMovement error: " . $e->getMessage());
+            Response::error('Failed to process vehicle ' . $operationType, 500);
+        }
+    }
+
+    /**
      * GET /api/v1/vehicles/list
      * Lightweight list for dropdowns and cross-filtering.
      * FIX: queries DB directly to guarantee department_id, section_id, division_id

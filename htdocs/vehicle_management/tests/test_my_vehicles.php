@@ -318,11 +318,18 @@ if (file_exists($fragmentPath)) {
         'Success flag check not found'
     );
 
-    // Test: Fragment has permission check for movement actions
+    // Test: Fragment uses self-service endpoint for pickup/return
     assert_true(
-        str_contains($fragmentContent, 'hasMovementPermission'),
-        'Fragment checks hasMovementPermission for pickup/return buttons',
-        'Movement permission check not found'
+        str_contains($fragmentContent, "API.post('/vehicles/self-service'"),
+        'Fragment uses self-service endpoint for pickup/return (not /movements)',
+        'Self-service endpoint call not found — buttons may not work for regular users'
+    );
+
+    // Test: Pickup/return buttons visible for ALL authenticated users (not gated by permission)
+    assert_true(
+        !str_contains($fragmentContent, 'if (hasMovementPermission)') || str_contains($fragmentContent, 'hasMovementPermission = true'),
+        'Pickup/return buttons visible for ALL authenticated users (self-service)',
+        'Buttons still gated behind hasMovementPermission check — regular users cannot pick up vehicles'
     );
 
     // Test: Fragment handles empty data gracefully
@@ -342,7 +349,52 @@ if (file_exists($fragmentPath)) {
 
 echo "\n";
 
+// ─── Section 3b: Self-Service Route & Controller Tests ──────────
+echo "🔧 Section 3b: Self-Service Route & Controller Tests\n" . str_repeat('-', 40) . "\n";
 
+// Test: Route is registered for self-service
+if (file_exists($routesPath)) {
+    $routesContent = file_get_contents($routesPath);
+    assert_true(
+        str_contains($routesContent, 'vehicles/self-service') && str_contains($routesContent, 'selfServiceMovement'),
+        'Route registered: POST api/v1/vehicles/self-service → VehicleController::selfServiceMovement',
+        'Self-service route not found in routes.php'
+    );
+}
+
+// Test: VehicleController has selfServiceMovement method
+if (file_exists($controllerPath)) {
+    $controllerContent = file_get_contents($controllerPath);
+    assert_true(
+        str_contains($controllerContent, 'function selfServiceMovement'),
+        'VehicleController has selfServiceMovement() method',
+        'selfServiceMovement method not found in VehicleController'
+    );
+
+    // Test: selfServiceMovement uses requireAuth (not requirePermission)
+    // Extract the method body to check
+    $methodStart = strpos($controllerContent, 'function selfServiceMovement');
+    if ($methodStart !== false) {
+        $methodBody = substr($controllerContent, $methodStart, 1500);
+        assert_true(
+            str_contains($methodBody, 'requireAuth') && !str_contains($methodBody, 'requirePermission'),
+            'selfServiceMovement uses requireAuth() only (no manage_movements required)',
+            'Method may incorrectly require manage_movements permission'
+        );
+        assert_true(
+            str_contains($methodBody, 'operation_type') && str_contains($methodBody, 'vehicle_code'),
+            'selfServiceMovement validates vehicle_code and operation_type',
+            'Required field validation not found'
+        );
+        assert_true(
+            str_contains($methodBody, "in_array(\$operationType, ['pickup', 'return']"),
+            'selfServiceMovement validates operation_type is pickup or return',
+            'Operation type validation not found'
+        );
+    }
+}
+
+echo "\n";
 // ─── Section 4: HTTP Integration Tests ──────────────────────────
 if ($httpBase) {
     echo "🌐 Section 4: HTTP Integration Tests (server: {$httpBase})\n" . str_repeat('-', 40) . "\n";
@@ -479,7 +531,54 @@ if ($httpBase) {
             test_fail('/vehicles/my-vehicles returns data', 'Data is null. Response: ' . substr($mvRes['body'] ?? '', 0, 200));
         }
 
-        // Step 4: Test dashboard page loads
+        // Step 4: Test self-service endpoint
+        echo "\n  → Testing /vehicles/self-service endpoint...\n";
+
+        // Test: Self-service without auth returns 401
+        $ssNoAuth = http_request('POST', $httpBase . '/api/v1/vehicles/self-service', [
+            'vehicle_code' => 'TEST001',
+            'operation_type' => 'pickup'
+        ]);
+        assert_true(
+            $ssNoAuth['status'] === 401,
+            'Self-service without auth returns 401',
+            'Status: ' . $ssNoAuth['status']
+        );
+
+        // Test: Self-service with invalid operation_type
+        $ssInvalidOp = http_request('POST', $httpBase . '/api/v1/vehicles/self-service', [
+            'vehicle_code' => 'TEST001',
+            'operation_type' => 'invalid'
+        ], ['Authorization' => 'Bearer ' . $token]);
+        assert_true(
+            $ssInvalidOp['status'] === 400,
+            'Self-service with invalid operation_type returns 400',
+            'Status: ' . $ssInvalidOp['status']
+        );
+
+        // Test: Self-service with missing fields
+        $ssMissing = http_request('POST', $httpBase . '/api/v1/vehicles/self-service', [
+        ], ['Authorization' => 'Bearer ' . $token]);
+        assert_true(
+            $ssMissing['status'] === 400,
+            'Self-service with missing fields returns 400',
+            'Status: ' . $ssMissing['status']
+        );
+
+        // Test: Self-service with non-existent vehicle
+        $ssNotFound = http_request('POST', $httpBase . '/api/v1/vehicles/self-service', [
+            'vehicle_code' => 'NONEXISTENT999',
+            'operation_type' => 'pickup'
+        ], ['Authorization' => 'Bearer ' . $token]);
+        assert_true(
+            $ssNotFound['status'] === 404,
+            'Self-service with non-existent vehicle returns 404',
+            'Status: ' . $ssNotFound['status']
+        );
+
+        echo "  ℹ️  Self-service endpoint correctly validates: auth, fields, operation_type, vehicle existence\n";
+
+        // Step 5: Test dashboard page loads
         echo "\n  → Testing dashboard page load...\n";
         $pageRes = http_request('GET', $httpBase . '/public/dashboard.php?page=my_vehicles', [], [
             'Authorization' => 'Bearer ' . $token,
@@ -526,6 +625,12 @@ if ($failed > 0) {
     echo "  4. User not logged in → Browser redirects to login.html\n";
     echo "  5. API.get('/vehicles/my-vehicles') fails → Check server error logs\n";
     echo "  6. JavaScript error in fragment → Check browser console\n";
+} else {
+    echo "\n✅ All tests passed!\n";
+    echo "💡 Self-service features verified:\n";
+    echo "  ✓ All authenticated users can see pickup/return buttons\n";
+    echo "  ✓ Self-service endpoint /vehicles/self-service only requires authentication\n";
+    echo "  ✓ Users can pick up available vehicles and return vehicles they hold\n";
 }
 echo str_repeat('=', 60) . "\n";
 

@@ -3,7 +3,7 @@
  * My Vehicles Fragment — Employee Self-Service
  * Loaded inside dashboard.php shell.
  * Shows private vehicles (emp_id match) and shift vehicles (round-robin by gender).
- * Pickup/Return buttons only visible with manage_movements permission.
+ * Pickup/Return buttons are available for ALL authenticated users via self-service endpoint.
  */
 ?>
 <style>
@@ -93,7 +93,8 @@
    My Vehicles Fragment — Employee Self-Service
    Round-robin shift vehicles: only shows the
    next-in-turn vehicle for the employee's gender.
-   Pickup/Return buttons require manage_movements permission.
+   Pickup/Return available for ALL authenticated users
+   via /vehicles/self-service endpoint.
    ============================================ */
 (function () {
     'use strict';
@@ -101,6 +102,7 @@
     var currentUser = null;
     var perms = [];
     var hasMovementPermission = false;
+    var hasAdminMovementPermission = false;
 
     /* ---------- Helpers ---------- */
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -168,20 +170,18 @@
             html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + t('المستلم الحالي', 'Current Holder') + ': ' + esc(v.last_holder) + '</div>';
         }
 
-        /* Pickup/Return buttons — only for users with manage_movements permission */
-        if (hasMovementPermission) {
-            html += '<div class="mv-v-actions">';
-            if (canPickup) {
-                html += '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
-                html += '<span>🚗</span> ' + t('استلام', 'Pickup');
-                html += '</button>';
-            } else if (isCheckedByMe) {
-                html += '<button class="btn mv-btn-return" onclick="MyVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
-                html += '<span>↩️</span> ' + t('إرجاع', 'Return');
-                html += '</button>';
-            }
-            html += '</div>';
+        /* Pickup/Return buttons — available for all authenticated users (self-service) */
+        html += '<div class="mv-v-actions">';
+        if (canPickup) {
+            html += '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
+            html += '<span>🚗</span> ' + t('استلام', 'Pickup');
+            html += '</button>';
+        } else if (isCheckedByMe) {
+            html += '<button class="btn mv-btn-return" onclick="MyVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
+            html += '<span>↩️</span> ' + t('إرجاع', 'Return');
+            html += '</button>';
         }
+        html += '</div>';
 
         html += '</div>';
         return html;
@@ -291,17 +291,15 @@
         container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
     }
 
-    /* ---------- Pickup action ---------- */
+    /* ---------- Pickup action (self-service) ---------- */
     async function pickup(vehicleCode) {
-        if (!hasMovementPermission) return;
         var msg = t('هل تريد استلام المركبة', 'Do you want to pick up vehicle') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
-            await API.post('/movements', {
+            await API.post('/vehicles/self-service', {
                 vehicle_code: vehicleCode,
-                operation_type: 'pickup',
-                performed_by: currentUser.emp_id
+                operation_type: 'pickup'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
                 UI.showToast(t('تم استلام المركبة بنجاح', 'Vehicle picked up successfully'), 'success');
@@ -314,17 +312,15 @@
         }
     }
 
-    /* ---------- Return action ---------- */
+    /* ---------- Return action (self-service) ---------- */
     async function returnVehicle(vehicleCode) {
-        if (!hasMovementPermission) return;
         var msg = t('إرجاع المركبة', 'Return Vehicle') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
-            await API.post('/movements', {
+            await API.post('/vehicles/self-service', {
                 vehicle_code: vehicleCode,
-                operation_type: 'return',
-                performed_by: currentUser.emp_id
+                operation_type: 'return'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
                 UI.showToast(t('تم إرجاع المركبة بنجاح', 'Vehicle returned successfully'), 'success');
@@ -356,7 +352,8 @@
         if (!user) { setTimeout(init, 100); return; }
         currentUser = user;
         perms = (currentUser && currentUser.permissions) || [];
-        hasMovementPermission = perms.includes('manage_movements') || perms.includes('*');
+        hasMovementPermission = true; /* All authenticated users can self-service */
+        hasAdminMovementPermission = perms.includes('manage_movements') || perms.includes('*');
 
         applyFragmentLang();
         loadMyVehicles();
