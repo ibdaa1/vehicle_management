@@ -191,6 +191,17 @@
     async function loadMyVehicles() {
         try {
             var res = await API.get('/vehicles/my-vehicles');
+            if (!res || res.success === false) {
+                var errMsg = (res && res.message) || t('تعذر تحميل بيانات المركبات', 'Failed to load vehicle data');
+                console.error('my-vehicles API error:', errMsg);
+                if (typeof UI !== 'undefined' && UI.showToast) {
+                    UI.showToast(errMsg, 'error');
+                }
+                renderError('mvPrivateGrid');
+                renderError('mvShiftGrid');
+                renderError('mvDeptGrid');
+                return;
+            }
             var data = (res && res.data) || res || {};
             renderPrivate(data.private || []);
             renderShift(data.shift_vehicles || [], data.shift_next, data.shift_my_current, data.shift_total || 0);

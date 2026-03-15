@@ -102,7 +102,7 @@ abstract class BaseController
     {
         $db = Database::getInstance();
         $row = $db->fetchOne(
-            "SELECT id, emp_id, username, email, phone, gender, role_id, preferred_language, department_id, section_id, division_id FROM users WHERE id = ? LIMIT 1",
+            "SELECT id, emp_id, username, email, phone, gender, role_id, preferred_language, department_id, section_id, division_id FROM users WHERE id = ? AND is_active = 1 LIMIT 1",
             'i',
             [$userId]
         );

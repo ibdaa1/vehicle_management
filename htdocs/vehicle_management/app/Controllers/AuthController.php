@@ -89,6 +89,11 @@ class AuthController extends BaseController
             $roleId = (int)($user['role_id'] ?? 0);
             if ($roleId === 1) {
                 $permissions = ['*'];
+                // Also load resource permissions for superadmin
+                $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);
+                foreach (($rolePerms['resources'] ?? []) as $r) {
+                    $resources[] = $r;
+                }
             } else {
                 $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);
                 foreach (($rolePerms['permissions'] ?? []) as $p) {
@@ -169,6 +174,11 @@ class AuthController extends BaseController
                 if ($roleId === 1) {
                     // Superadmin has all permissions
                     $permissions = ['*'];
+                    // Also load resource permissions so frontend has full data
+                    $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);
+                    foreach (($rolePerms['resources'] ?? []) as $r) {
+                        $resources[] = $r;
+                    }
                 } else {
                     // Load module-level permissions from role_permissions + permissions tables
                     $rolePerms = \App\Middleware\PermissionMiddleware::getRolePermissions($roleId);

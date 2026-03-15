@@ -287,7 +287,8 @@ class VehicleController extends BaseController
         } catch (\Throwable $e) {
             error_log("VehicleController::myVehicles error: " . $e->getMessage());
             Response::json([
-                'success' => true,
+                'success' => false,
+                'message' => 'Failed to load vehicles: ' . $e->getMessage(),
                 'data'    => [
                     'private'             => [],
                     'shift_next'          => null,
@@ -296,7 +297,7 @@ class VehicleController extends BaseController
                     'shift_vehicles'      => [],
                     'department_vehicles' => [],
                 ],
-            ]);
+            ], 500);
         }
     }
 
