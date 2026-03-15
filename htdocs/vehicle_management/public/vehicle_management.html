@@ -1,446 +1,690 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-lang-key="page_title">إدارة حركات المركبات</title>
-    <link rel="stylesheet" href="/vehicle_management/assets/css/vehicle_management.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css">
+    <title data-lang-key="vehicles">إدارة المركبات</title>
+    <link rel="stylesheet" href="css/theme.css">
     <style>
-        .report-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .report-option-btn {
-            padding: 8px 15px;
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-        .report-option-btn:hover {
-            background: #e9ecef;
-        }
-        .report-option-btn.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
+    /* === Page-Specific Styles === */
+    .toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+    .toolbar .search-box{position:relative;flex:1;min-width:200px;max-width:360px}
+    .toolbar .search-box input{width:100%;padding-inline-end:36px}
+    .toolbar .search-box .search-icon{position:absolute;top:50%;inset-inline-end:12px;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none}
+    .toolbar .filters{display:flex;gap:10px;flex-wrap:wrap}
+    .toolbar .filters select{min-width:140px}
+    .toolbar-end{display:flex;align-items:center;gap:10px;margin-inline-start:auto}
+    .stats-grid{margin-bottom:24px}
+    #vehicleCards .cards-grid{animation:fadeIn .4s ease}
+    .vehicle-card .vehicle-card-body .detail-row .value{font-weight:500;color:var(--text-primary)}
+    #vehicleTable{display:none}
+    .data-table .table-actions .btn-icon{width:30px;height:30px;font-size:.8rem}
+    .pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:24px}
+    .pagination button{min-width:36px;height:36px;border:1px solid var(--border-default);background:var(--bg-card);color:var(--text-primary);border-radius:8px;cursor:pointer;font-size:.85rem;transition:all var(--transition)}
+    .pagination button:hover:not(:disabled){background:var(--primary-main);color:var(--text-light)}
+    .pagination button.active{background:var(--primary-main);color:var(--text-light);border-color:var(--primary-main)}
+    .pagination button:disabled{opacity:.4;cursor:not-allowed}
+    .modal-lg .modal-content{max-width:720px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+    @media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+    .form-grid .full-width{grid-column:1/-1}
+    .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
+    .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
+    @media(max-width:768px){
+        .toolbar{flex-direction:column;align-items:stretch}
+        .toolbar-end{margin-inline-start:0;justify-content:space-between}
+        .toolbar .search-box{max-width:100%}
+    }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <!-- Header Section -->
-    <header class="page-header">
-        <div class="header-content">
-            <div class="header-left">
-                <h1>
-                    <i class="fas fa-history"></i>
-                    <span data-lang-key="page_title">إدارة حركات المركبات</span>
-                </h1>
-                <p class="page-subtitle" data-lang-key="page_subtitle">عرض وتتبع وإدارة جميع حركات المركبات في المؤسسة</p>
-            </div>
-            <div class="header-right">
-                <div class="report-actions">
-                    <div class="report-options">
-                        <button class="report-option-btn active" data-report="all">
-                            <i class="fas fa-list"></i>
-                            <span data-lang-key="report_all">تقرير كامل</span>
-                        </button>
-                        <button class="report-option-btn" data-report="used">
-                            <i class="fas fa-car-side"></i>
-                            <span data-lang-key="report_used">تقرير المستخدمة</span>
-                        </button>
-                        <button class="report-option-btn" data-report="unused">
-                            <i class="fas fa-car-battery"></i>
-                            <span data-lang-key="report_unused">تقرير غير المستخدمة</span>
-                        </button>
-                        <button class="report-option-btn" data-report="pending">
-                            <i class="fas fa-clock"></i>
-                            <span data-lang-key="report_pending">تقرير تحتاج تسليم</span>
-                        </button>
-                        <button class="report-option-btn" data-report="summary">
-                            <i class="fas fa-chart-pie"></i>
-                            <span data-lang-key="report_summary">تقرير إحصائي</span>
-                        </button>
-                    </div>
-                </div>
-                <button id="print-report-btn" class="btn btn-secondary">
-                    <i class="fas fa-print"></i>
-                    <span data-lang-key="print_report">طباعة التقرير</span>
-                </button>
-                <button id="export-report-btn" class="btn btn-secondary">
-                    <i class="fas fa-download"></i>
-                    <span data-lang-key="export_report">تصدير Excel</span>
-                </button>
-                <button id="add-management-btn" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i>
-                    <span data-lang-key="add_management">إضافة حركة جديدة</span>
-                </button>
-                <button id="refresh-btn" class="btn btn-secondary">
-                    <i class="fas fa-sync-alt"></i>
-                    <span data-lang-key="refresh">تحديث</span>
-                </button>
-            </div>
+    <!-- ========== HEADER ========== -->
+    <header class="app-header">
+        <div class="logo-area">
+            <button class="btn btn-ghost btn-icon" data-action="toggle-sidebar-mobile" style="color:var(--text-light)">&#9776;</button>
+            <img src="logo/logo.png" alt="Logo" id="headerLogo" onerror="this.style.display='none'">
+            <h1 id="headerTitle" data-lang-key="system_name">نظام إدارة المركبات</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-ghost btn-icon" data-action="toggle-theme" title="Toggle theme" id="themeBtn">&#9728;&#65039;</button>
+            <button class="btn btn-ghost btn-sm" data-action="toggle-lang" id="langBtn">EN</button>
+            <div class="user-info"></div>
+            <button class="btn btn-ghost btn-sm" data-action="logout" data-lang-key="logout">خروج</button>
         </div>
     </header>
 
-    <!-- Filters Section -->
-    <section class="filters-section">
-        <div class="filters-header">
-            <h3>
-                <i class="fas fa-filter"></i>
-                <span data-lang-key="filters_title">فلاتر البحث</span>
-            </h3>
-            <div class="filters-actions">
-                <button id="reset-filters" class="btn btn-outline" data-lang-key="reset_filters">إعادة تعيين</button>
-                <button id="apply-filters" class="btn btn-primary" data-lang-key="apply_filters">تطبيق الفلاتر</button>
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="app-sidebar">
+        <nav class="menu-list"></nav>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="app-main">
+        <div class="page-header">
+            <h2 data-lang-key="vehicles">إدارة المركبات</h2>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon blue">&#128663;</div>
+                <div class="stat-info"><h4 data-lang-key="total">الإجمالي</h4><div class="stat-value" id="statTotal">&mdash;</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">&#9989;</div>
+                <div class="stat-info"><h4 data-lang-key="operational">تعمل</h4><div class="stat-value" id="statOperational">&mdash;</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold">&#128295;</div>
+                <div class="stat-info"><h4 data-lang-key="maintenance">صيانة</h4><div class="stat-value" id="statMaintenance">&mdash;</div></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red">&#128683;</div>
+                <div class="stat-info"><h4 data-lang-key="out_of_service">خارج الخدمة</h4><div class="stat-value" id="statOutOfService">&mdash;</div></div>
             </div>
         </div>
 
-        <div class="filters-grid">
-            <!-- Date Range Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span data-lang-key="date_range">نطاق التاريخ</span>
-                </label>
-                <div class="input-with-icon">
-                    <input type="text" id="date-range" class="form-input" 
-                           data-lang-key-placeholder="select_date_range" 
-                           placeholder="اختر نطاق التاريخ">
-                    <i class="fas fa-calendar input-icon"></i>
-                </div>
-            </div>
-
-            <!-- Movement Type Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span data-lang-key="management_type">نوع الحركة</span>
-                </label>
-                <select id="management-type" class="form-input">
-                    <option value="" data-lang-key="all_types">جميع الأنواع</option>
-                    <option value="pickup" data-lang-key="pickup">استلام</option>
-                    <option value="return" data-lang-key="return">إرجاع</option>
-                </select>
-            </div>
-
-            <!-- Vehicle Code Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-car"></i>
-                    <span data-lang-key="vehicle_code">رمز المركبة</span>
-                </label>
-                <input type="text" id="vehicle-code" class="form-input" 
-                       data-lang-key-placeholder="enter_vehicle_code" 
-                       placeholder="أدخل رمز المركبة">
-            </div>
-
-            <!-- Employee Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-user"></i>
-                    <span data-lang-key="employee">الموظف</span>
-                </label>
-                <div class="input-with-icon">
-                    <input type="text" id="employee-search" class="form-input" 
-                           data-lang-key-placeholder="search_employee" 
-                           placeholder="ابحث عن موظف">
-                    <i class="fas fa-search input-icon"></i>
-                </div>
-            </div>
-
-            <!-- Department Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-building"></i>
-                    <span data-lang-key="department">الإدارة</span>
-                </label>
-                <select id="department" class="form-input">
-                    <option value="" data-lang-key="all_departments">جميع الإدارات</option>
-                </select>
-            </div>
-
-            <!-- Section Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-sitemap"></i>
-                    <span data-lang-key="section">القسم</span>
-                </label>
-                <select id="section" class="form-input" disabled>
-                    <option value="" data-lang-key="all_sections">جميع الأقسام</option>
-                </select>
-            </div>
-
-            <!-- Division Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-network-wired"></i>
-                    <span data-lang-key="division">الشعبة</span>
-                </label>
-                <select id="division" class="form-input" disabled>
-                    <option value="" data-lang-key="all_divisions">جميع الشعب</option>
-                </select>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-circle"></i>
-                    <span data-lang-key="status">الحالة</span>
-                </label>
-                <select id="status" class="form-input">
-                    <option value="" data-lang-key="all_statuses">جميع الحالات</option>
-                    <option value="operational" data-lang-key="operational">تشغيلية</option>
-                    <option value="out_of_service" data-lang-key="out_of_service">خارج الخدمة</option>
-                    <option value="maintenance" data-lang-key="maintenance">صيانة</option>
-                </select>
-            </div>
-
-            <!-- Vehicle Mode Filter -->
-            <div class="filter-group">
-                <label class="filter-label">
-                    <i class="fas fa-car"></i>
-                    <span data-lang-key="vehicle_mode">نوع السيارة</span>
-                </label>
-                <select id="vehicle-mode" class="form-input">
-                    <option value="" data-lang-key="all_modes">جميع الأنواع</option>
-                    <option value="private" data-lang-key="private">خاصة</option>
-                    <option value="shift" data-lang-key="shift">ورديات</option>
-                </select>
-            </div>
-        </div>
-    </section>
-
-    <!-- Statistics Cards -->
-    <section class="stats-section">
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="total-managements">0</h3>
-                    <p class="stat-label" data-lang-key="total_managements">إجمالي الحركات</p>
-                </div>
-            </div>
-            
-            <div class="stat-card pickup">
-                <div class="stat-icon">
-                    <i class="fas fa-arrow-circle-up"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="pickup-count">0</h3>
-                    <p class="stat-label" data-lang-key="pickup_managements">عمليات الاستلام</p>
-                </div>
-            </div>
-            
-            <div class="stat-card return">
-                <div class="stat-icon">
-                    <i class="fas fa-arrow-circle-down"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="return-count">0</h3>
-                    <p class="stat-label" data-lang-key="return_managements">عمليات الإرجاع</p>
-                </div>
-            </div>
-            
-            <div class="stat-card pending">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="pending-count">0</h3>
-                    <p class="stat-label" data-lang-key="pending_vehicles">مركبات تحتاج تسليم</p>
-                </div>
-            </div>
-            
-            <div class="stat-card used">
-                <div class="stat-icon">
-                    <i class="fas fa-car-side"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="used-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="used_vehicles">السيارات المستخدمة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card unused">
-                <div class="stat-icon">
-                    <i class="fas fa-car-battery"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="unused-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="unused_vehicles">السيارات غير المستخدمة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card private">
-                <div class="stat-icon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="total-private-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="private_vehicles">السيارات الخاصة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card shift">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="total-shift-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="shift_vehicles">السيارات بالورديات</p>
-                </div>
-            </div>
-            
-            <div class="stat-card operational">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="operational-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="operational_vehicles">سيارات تشغيلية</p>
-                </div>
-            </div>
-            
-            <div class="stat-card out_of_service">
-                <div class="stat-icon">
-                    <i class="fas fa-times-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="out-of-service-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="out_of_service_vehicles">سيارات خارج الخدمة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card maintenance">
-                <div class="stat-icon">
-                    <i class="fas fa-tools"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="maintenance-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="maintenance_vehicles">سيارات تحت الصيانة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card used_private">
-                <div class="stat-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="used-private-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="used_private">خاصة مستخدمة</p>
-                </div>
-            </div>
-            
-            <div class="stat-card used_shift">
-                <div class="stat-icon">
-                    <i class="fas fa-car"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-value" id="used-shift-vehicles">0</h3>
-                    <p class="stat-label" data-lang-key="used_shift">ورديات مستخدمة</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Managements Table -->
-    <section class="managements-section">
-        <div class="view-tabs">
-            <button class="tab-btn active" id="tab-all" data-view="all">
-                <i class="fas fa-list"></i>
-                <span data-lang-key="all_movements">جميع الحركات</span>
-            </button>
-            <button class="tab-btn" id="tab-pending" data-view="pending">
-                <i class="fas fa-clock"></i>
-                <span data-lang-key="pending_delivery">السيارات تحتاج تسليم</span>
-                <span class="tab-badge" id="pending-badge">0</span>
-            </button>
-            <button class="tab-btn" id="tab-used" data-view="used">
-                <i class="fas fa-car-side"></i>
-                <span data-lang-key="used_vehicles_list">قائمة المستخدمة</span>
-            </button>
-            <button class="tab-btn" id="tab-unused" data-view="unused">
-                <i class="fas fa-car-battery"></i>
-                <span data-lang-key="unused_vehicles_list">قائمة غير المستخدمة</span>
-            </button>
-        </div>
-        
-        <div class="table-container">
-            <table id="managements-table" class="managements-table" style="width:100%">
-                <thead>
-                    <tr>
-                        <th data-lang-key="management_id">رقم الحركة</th>
-                        <th data-lang-key="vehicle_code">رمز المركبة</th>
-                        <th data-lang-key="operation_type">نوع العملية</th>
-                        <th data-lang-key="employee_name">اسم الموظف</th>
-                        <th data-lang-key="department">الإدارة</th>
-                        <th data-lang-key="section">القسم</th>
-                        <th data-lang-key="division">الشعبة</th>
-                        <th data-lang-key="management_date">تاريخ الحركة</th>
-                        <th data-lang-key="vehicle_type">نوع السيارة</th>
-                        <th data-lang-key="status">الحالة</th>
-                        <th data-lang-key="actions">الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will be loaded by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-    </section>
-</div>
-
-<!-- Employee Search Modal -->
-<div id="employee-search-modal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <h3><i class="fas fa-search"></i> <span data-lang-key="search_employee">بحث عن موظف</span></h3>
-            <button type="button" class="icon-btn close-btn close-search">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
+        <!-- Toolbar -->
+        <div class="toolbar">
             <div class="search-box">
-                <input type="text" id="employee-modal-search" 
-                       data-lang-key-placeholder="search_employee_placeholder" 
-                       placeholder="ابحث بالاسم أو رقم الموظف...">
-                <button type="button" id="search-employee-modal-btn" class="icon-btn">
-                    <i class="fas fa-search"></i>
-                </button>
+                <input type="text" class="form-control" id="searchInput" placeholder="بحث برقم المركبة أو اسم السائق..." data-lang-key="search_placeholder">
+                <span class="search-icon">&#128269;</span>
             </div>
-            <div id="employee-modal-results" class="search-results"></div>
+            <div class="filters">
+                <select class="form-select" id="filterStatus">
+                    <option value="">كل الحالات</option>
+                    <option value="operational">تعمل</option>
+                    <option value="maintenance">صيانة</option>
+                    <option value="out_of_service">خارج الخدمة</option>
+                </select>
+                <select class="form-select" id="filterDepartment">
+                    <option value="">كل الإدارات</option>
+                </select>
+                <select class="form-select" id="filterMode">
+                    <option value="">كل الأنواع</option>
+                    <option value="sedan">سيدان</option>
+                    <option value="suv">دفع رباعي</option>
+                    <option value="pickup">بيك أب</option>
+                    <option value="van">فان</option>
+                    <option value="bus">باص</option>
+                    <option value="truck">شاحنة</option>
+                </select>
+            </div>
+            <div class="toolbar-end">
+                <div class="view-toggle">
+                    <button class="active" id="btnCardView" onclick="toggleView('cards')" title="بطاقات">&#128451;&#65039;</button>
+                    <button id="btnTableView" onclick="toggleView('table')" title="جدول">&#128203;</button>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openAddModal()">&#10133; <span data-lang-key="add_vehicle">إضافة مركبة</span></button>
+            </div>
+        </div>
+
+        <!-- Vehicle Cards View -->
+        <div id="vehicleCards">
+            <div class="cards-grid" id="cardsContainer"></div>
+        </div>
+
+        <!-- Vehicle Table View -->
+        <div id="vehicleTable">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th data-lang-key="vehicle_code">رمز المركبة</th>
+                            <th data-lang-key="vehicle_type">النوع</th>
+                            <th data-lang-key="plate_number">رقم اللوحة</th>
+                            <th data-lang-key="driver">السائق</th>
+                            <th data-lang-key="department">الإدارة</th>
+                            <th data-lang-key="year">السنة</th>
+                            <th data-lang-key="status">الحالة</th>
+                            <th data-lang-key="actions">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+    </main>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="app-footer">
+        <span data-lang-key="footer_text">نظام إدارة المركبات &copy; 2024</span>
+    </footer>
+
+    <!-- ========== ADD / EDIT VEHICLE MODAL ========== -->
+    <div class="modal modal-lg" id="vehicleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="vehicleModalTitle" data-lang-key="add_vehicle">إضافة مركبة</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="vehId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="vehicle_code">رمز المركبة</label>
+                        <input type="text" class="form-control" id="vehCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="plate_number">رقم اللوحة</label>
+                        <input type="text" class="form-control" id="vehPlate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="vehicle_type">النوع / الموديل</label>
+                        <input type="text" class="form-control" id="vehType">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="vehicle_mode">فئة المركبة</label>
+                        <select class="form-select" id="vehMode">
+                            <option value="">اختر</option>
+                            <option value="sedan">سيدان</option>
+                            <option value="suv">دفع رباعي</option>
+                            <option value="pickup">بيك أب</option>
+                            <option value="van">فان</option>
+                            <option value="bus">باص</option>
+                            <option value="truck">شاحنة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="year">سنة الصنع</label>
+                        <input type="number" class="form-control" id="vehYear" min="1990" max="2099">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="color">اللون</label>
+                        <input type="text" class="form-control" id="vehColor">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="driver">اسم السائق</label>
+                        <input type="text" class="form-control" id="vehDriver">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="status">الحالة</label>
+                        <select class="form-select" id="vehStatus">
+                            <option value="operational">تعمل</option>
+                            <option value="maintenance">صيانة</option>
+                            <option value="out_of_service">خارج الخدمة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="department">الإدارة</label>
+                        <select class="form-select" id="vehDepartment" onchange="onDepartmentChange(this.value)">
+                            <option value="">اختر الإدارة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="section">القسم</label>
+                        <select class="form-select" id="vehSection" onchange="onSectionChange(this.value)">
+                            <option value="">اختر القسم</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="division">الشعبة</label>
+                        <select class="form-select" id="vehDivision">
+                            <option value="">اختر الشعبة</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-lang-key="chassis_number">رقم الهيكل</label>
+                        <input type="text" class="form-control" id="vehChassis">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label" data-lang-key="notes">ملاحظات</label>
+                        <textarea class="form-control" id="vehNotes" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveVehicle()" data-lang-key="save">حفظ</button>
+                <button class="btn btn-ghost" data-action="close-modal" data-lang-key="cancel">إلغاء</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Loading Overlay -->
-<div id="loading-overlay" class="loading-overlay">
-    <div class="loading-content">
-        <i class="fas fa-spinner fa-spin fa-3x"></i>
-        <p data-lang-key="loading_data">جاري تحميل البيانات...</p>
+    <!-- ========== VEHICLE DETAILS MODAL ========== -->
+    <div class="modal modal-lg" id="detailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-lang-key="vehicle_details">تفاصيل المركبة</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="detailsBody"></div>
+        </div>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="/vehicle_management/assets/js/vehicle_management.js"></script>
+    <!-- ========== DELETE CONFIRMATION MODAL ========== -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content" style="max-width:400px">
+            <div class="modal-body text-center" style="padding:32px 24px">
+                <div style="font-size:2.5rem;margin-bottom:16px">&#9888;&#65039;</div>
+                <p style="margin-bottom:8px;font-weight:600" data-lang-key="confirm_delete">هل أنت متأكد من حذف هذه المركبة؟</p>
+                <p class="text-muted" style="font-size:.85rem;margin-bottom:24px" data-lang-key="delete_warning">لا يمكن التراجع عن هذا الإجراء</p>
+                <input type="hidden" id="deleteVehicleId">
+                <div class="d-flex align-center gap-1" style="justify-content:center">
+                    <button class="btn btn-danger" onclick="confirmDelete()" data-lang-key="delete">حذف</button>
+                    <button class="btn btn-ghost" data-action="close-modal" data-lang-key="cancel">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script>
+    /* ============================================
+       Vehicle Management Page Controller
+       ============================================ */
+    const VM = {
+        vehicles: [],
+        references: { departments: [], sections: [], divisions: [] },
+        currentView: 'cards',
+        currentPage: 1,
+        perPage: 12,
+        totalPages: 1,
+        filters: {}
+    };
+
+    /* ---------- Initialization ---------- */
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(async function() {
+            try {
+                await Promise.all([loadReferences(), loadStats()]);
+                loadVehicles();
+                bindFilterEvents();
+                updateThemeIcon();
+            } catch (e) {
+                console.error('Init error:', e);
+            }
+        }, 200);
+    });
+
+    function updateThemeIcon() {
+        var btn = document.getElementById('themeBtn');
+        if (btn) btn.textContent = ThemeManager.getMode() === 'dark' ? '\uD83C\uDF19' : '\u2600\uFE0F';
+    }
+
+    /* Observe theme changes */
+    new MutationObserver(function() { updateThemeIcon(); })
+        .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    /* ---------- Load References ---------- */
+    async function loadReferences() {
+        try {
+            var res = await API.get('/references');
+            var data = res.data || res;
+            VM.references.departments = data.departments || [];
+            VM.references.sections = data.sections || [];
+            VM.references.divisions = data.divisions || [];
+            populateDepartments();
+        } catch (e) { /* References might not be available */ }
+    }
+
+    function populateDepartments() {
+        var selectors = [document.getElementById('filterDepartment'), document.getElementById('vehDepartment')];
+        selectors.forEach(function(sel) {
+            if (!sel) return;
+            var first = sel.options[0];
+            sel.innerHTML = '';
+            sel.appendChild(first);
+            VM.references.departments.forEach(function(d) {
+                var opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.name || d.name_ar || d.name_en;
+                sel.appendChild(opt);
+            });
+        });
+    }
+
+    function onDepartmentChange(deptId) {
+        var secSel = document.getElementById('vehSection');
+        var divSel = document.getElementById('vehDivision');
+        secSel.innerHTML = '<option value="">' + (i18n.t('choose_section') || '\u0627\u062E\u062A\u0631 \u0627\u0644\u0642\u0633\u0645') + '</option>';
+        divSel.innerHTML = '<option value="">' + (i18n.t('choose_division') || '\u0627\u062E\u062A\u0631 \u0627\u0644\u0634\u0639\u0628\u0629') + '</option>';
+        if (!deptId) return;
+        VM.references.sections.filter(function(s) { return String(s.department_id) === String(deptId); }).forEach(function(s) {
+            var opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = s.name || s.name_ar || s.name_en;
+            secSel.appendChild(opt);
+        });
+    }
+
+    function onSectionChange(secId) {
+        var divSel = document.getElementById('vehDivision');
+        divSel.innerHTML = '<option value="">' + (i18n.t('choose_division') || '\u0627\u062E\u062A\u0631 \u0627\u0644\u0634\u0639\u0628\u0629') + '</option>';
+        if (!secId) return;
+        VM.references.divisions.filter(function(d) { return String(d.section_id) === String(secId); }).forEach(function(d) {
+            var opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name || d.name_ar || d.name_en;
+            divSel.appendChild(opt);
+        });
+    }
+
+    /* ---------- Load Stats ---------- */
+    async function loadStats() {
+        try {
+            var res = await API.get('/vehicles/stats');
+            var d = res.data || res;
+            document.getElementById('statTotal').textContent = UI.formatNumber(d.total || 0);
+            document.getElementById('statOperational').textContent = UI.formatNumber(d.operational || 0);
+            document.getElementById('statMaintenance').textContent = UI.formatNumber(d.maintenance || 0);
+            document.getElementById('statOutOfService').textContent = UI.formatNumber(d.out_of_service || 0);
+        } catch (e) { /* Stats unavailable */ }
+    }
+
+    /* ---------- Load Vehicles ---------- */
+    async function loadVehicles() {
+        var main = document.querySelector('.app-main');
+        UI.showSpinner(main);
+        try {
+            var query = '?page=' + VM.currentPage + '&per_page=' + VM.perPage;
+            var f = VM.filters;
+            if (f.status) query += '&status=' + encodeURIComponent(f.status);
+            if (f.department_id) query += '&department_id=' + encodeURIComponent(f.department_id);
+            if (f.vehicle_mode) query += '&vehicle_mode=' + encodeURIComponent(f.vehicle_mode);
+            if (f.search) query += '&search=' + encodeURIComponent(f.search);
+
+            var res = await API.get('/vehicles' + query);
+            var payload = res.data || res;
+            VM.vehicles = Array.isArray(payload) ? payload : (payload.data || payload.items || []);
+            VM.totalPages = payload.last_page || payload.total_pages || Math.ceil((payload.total || VM.vehicles.length) / VM.perPage) || 1;
+
+            renderCurrentView();
+            renderPagination();
+        } catch (e) {
+            UI.showToast(i18n.t('error_loading') || '\u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A', 'error');
+        } finally {
+            UI.hideSpinner(main);
+        }
+    }
+
+    /* ---------- Render Helpers ---------- */
+    function renderCurrentView() {
+        if (VM.currentView === 'cards') renderCards(VM.vehicles);
+        else renderTable(VM.vehicles);
+    }
+
+    function statusBadge(status) {
+        var map = {
+            operational: { cls: 'badge-success', label: i18n.t('operational') || '\u062A\u0639\u0645\u0644' },
+            maintenance: { cls: 'badge-warning', label: i18n.t('maintenance') || '\u0635\u064A\u0627\u0646\u0629' },
+            out_of_service: { cls: 'badge-danger', label: i18n.t('out_of_service') || '\u062E\u0627\u0631\u062C \u0627\u0644\u062E\u062F\u0645\u0629' }
+        };
+        var s = map[status] || { cls: 'badge-info', label: status || '\u2014' };
+        return '<span class="badge ' + s.cls + '">' + UI._escapeHtml(s.label) + '</span>';
+    }
+
+    function deptName(id) {
+        var d = VM.references.departments.find(function(dep) { return String(dep.id) === String(id); });
+        return d ? (d.name || d.name_ar || d.name_en) : '\u2014';
+    }
+
+    /* ---------- Card View ---------- */
+    function renderCards(vehicles) {
+        var container = document.getElementById('cardsContainer');
+        if (!vehicles.length) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">\uD83D\uDE97</div><p>' + (i18n.t('no_vehicles') || '\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0631\u0643\u0628\u0627\u062A') + '</p></div>';
+            return;
+        }
+        container.innerHTML = vehicles.map(function(v) {
+            return '<div class="vehicle-card fade-in">' +
+                '<div class="vehicle-card-header">' +
+                    '<h4>' + UI._escapeHtml(v.vehicle_code || v.code || '\u2014') + '</h4>' +
+                    statusBadge(v.status) +
+                '</div>' +
+                '<div class="vehicle-card-body">' +
+                    '<div class="detail-row"><span class="label">' + (i18n.t('vehicle_type') || '\u0627\u0644\u0646\u0648\u0639') + '</span><span class="value">' + UI._escapeHtml(v.type || v.vehicle_type || '\u2014') + '</span></div>' +
+                    '<div class="detail-row"><span class="label">' + (i18n.t('driver') || '\u0627\u0644\u0633\u0627\u0626\u0642') + '</span><span class="value">' + UI._escapeHtml(v.driver_name || v.driver || '\u2014') + '</span></div>' +
+                    '<div class="detail-row"><span class="label">' + (i18n.t('department') || '\u0627\u0644\u0625\u062F\u0627\u0631\u0629') + '</span><span class="value">' + UI._escapeHtml(deptName(v.department_id)) + '</span></div>' +
+                    '<div class="detail-row"><span class="label">' + (i18n.t('year') || '\u0627\u0644\u0633\u0646\u0629') + '</span><span class="value">' + (v.year || '\u2014') + '</span></div>' +
+                    '<div class="detail-row"><span class="label">' + (i18n.t('plate_number') || '\u0627\u0644\u0644\u0648\u062D\u0629') + '</span><span class="value">' + UI._escapeHtml(v.plate_number || '\u2014') + '</span></div>' +
+                '</div>' +
+                '<div class="vehicle-card-footer">' +
+                    '<button class="btn btn-ghost btn-icon btn-sm" onclick="openDetailsModal(' + v.id + ')" title="' + (i18n.t('view') || '\u0639\u0631\u0636') + '">\uD83D\uDC41\uFE0F</button>' +
+                    '<button class="btn btn-ghost btn-icon btn-sm" onclick="openEditModal(' + v.id + ')" title="' + (i18n.t('edit') || '\u062A\u0639\u062F\u064A\u0644') + '">\u270F\uFE0F</button>' +
+                    '<button class="btn btn-ghost btn-icon btn-sm" onclick="deleteVehicle(' + v.id + ')" title="' + (i18n.t('delete') || '\u062D\u0630\u0641') + '" style="color:var(--status-danger)">\uD83D\uDDD1\uFE0F</button>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    /* ---------- Table View ---------- */
+    function renderTable(vehicles) {
+        var tbody = document.getElementById('tableBody');
+        if (!vehicles.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding:32px">' + (i18n.t('no_vehicles') || '\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0631\u0643\u0628\u0627\u062A') + '</td></tr>';
+            return;
+        }
+        tbody.innerHTML = vehicles.map(function(v) {
+            return '<tr>' +
+                '<td data-label="' + (i18n.t('vehicle_code') || '\u0631\u0645\u0632 \u0627\u0644\u0645\u0631\u0643\u0628\u0629') + '">' + UI._escapeHtml(v.vehicle_code || v.code || '\u2014') + '</td>' +
+                '<td data-label="' + (i18n.t('vehicle_type') || '\u0627\u0644\u0646\u0648\u0639') + '">' + UI._escapeHtml(v.type || v.vehicle_type || '\u2014') + '</td>' +
+                '<td data-label="' + (i18n.t('plate_number') || '\u0627\u0644\u0644\u0648\u062D\u0629') + '">' + UI._escapeHtml(v.plate_number || '\u2014') + '</td>' +
+                '<td data-label="' + (i18n.t('driver') || '\u0627\u0644\u0633\u0627\u0626\u0642') + '">' + UI._escapeHtml(v.driver_name || v.driver || '\u2014') + '</td>' +
+                '<td data-label="' + (i18n.t('department') || '\u0627\u0644\u0625\u062F\u0627\u0631\u0629') + '">' + UI._escapeHtml(deptName(v.department_id)) + '</td>' +
+                '<td data-label="' + (i18n.t('year') || '\u0627\u0644\u0633\u0646\u0629') + '">' + (v.year || '\u2014') + '</td>' +
+                '<td data-label="' + (i18n.t('status') || '\u0627\u0644\u062D\u0627\u0644\u0629') + '">' + statusBadge(v.status) + '</td>' +
+                '<td data-label="' + (i18n.t('actions') || '\u0625\u062C\u0631\u0627\u0621\u0627\u062A') + '">' +
+                    '<div class="table-actions">' +
+                        '<button class="btn btn-ghost btn-icon btn-sm" onclick="openDetailsModal(' + v.id + ')" title="' + (i18n.t('view') || '\u0639\u0631\u0636') + '">\uD83D\uDC41\uFE0F</button>' +
+                        '<button class="btn btn-ghost btn-icon btn-sm" onclick="openEditModal(' + v.id + ')" title="' + (i18n.t('edit') || '\u062A\u0639\u062F\u064A\u0644') + '">\u270F\uFE0F</button>' +
+                        '<button class="btn btn-ghost btn-icon btn-sm" onclick="deleteVehicle(' + v.id + ')" title="' + (i18n.t('delete') || '\u062D\u0630\u0641') + '" style="color:var(--status-danger)">\uD83D\uDDD1\uFE0F</button>' +
+                    '</div>' +
+                '</td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    /* ---------- Toggle View ---------- */
+    function toggleView(mode) {
+        VM.currentView = mode;
+        var cardsEl = document.getElementById('vehicleCards');
+        var tableEl = document.getElementById('vehicleTable');
+        var btnCard = document.getElementById('btnCardView');
+        var btnTable = document.getElementById('btnTableView');
+        if (mode === 'cards') {
+            cardsEl.style.display = '';
+            tableEl.style.display = 'none';
+            btnCard.classList.add('active');
+            btnTable.classList.remove('active');
+        } else {
+            cardsEl.style.display = 'none';
+            tableEl.style.display = '';
+            btnTable.classList.add('active');
+            btnCard.classList.remove('active');
+        }
+        renderCurrentView();
+    }
+
+    /* ---------- Pagination ---------- */
+    function renderPagination() {
+        var el = document.getElementById('pagination');
+        if (VM.totalPages <= 1) { el.innerHTML = ''; return; }
+        var html = '<button ' + (VM.currentPage <= 1 ? 'disabled' : '') + ' onclick="goToPage(' + (VM.currentPage - 1) + ')">\u2039</button>';
+        var start = Math.max(1, VM.currentPage - 2);
+        var end = Math.min(VM.totalPages, VM.currentPage + 2);
+        for (var i = start; i <= end; i++) {
+            html += '<button class="' + (i === VM.currentPage ? 'active' : '') + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+        }
+        html += '<button ' + (VM.currentPage >= VM.totalPages ? 'disabled' : '') + ' onclick="goToPage(' + (VM.currentPage + 1) + ')">\u203A</button>';
+        el.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        if (page < 1 || page > VM.totalPages) return;
+        VM.currentPage = page;
+        loadVehicles();
+    }
+
+    /* ---------- Filters & Search ---------- */
+    function bindFilterEvents() {
+        var searchTimer;
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(function() {
+                VM.filters.search = e.target.value.trim();
+                VM.currentPage = 1;
+                loadVehicles();
+            }, 400);
+        });
+        document.getElementById('filterStatus').addEventListener('change', function(e) {
+            VM.filters.status = e.target.value; VM.currentPage = 1; loadVehicles();
+        });
+        document.getElementById('filterDepartment').addEventListener('change', function(e) {
+            VM.filters.department_id = e.target.value; VM.currentPage = 1; loadVehicles();
+        });
+        document.getElementById('filterMode').addEventListener('change', function(e) {
+            VM.filters.vehicle_mode = e.target.value; VM.currentPage = 1; loadVehicles();
+        });
+    }
+
+    /* ---------- Add Vehicle ---------- */
+    function openAddModal() {
+        document.getElementById('vehicleModalTitle').textContent = i18n.t('add_vehicle') || '\u0625\u0636\u0627\u0641\u0629 \u0645\u0631\u0643\u0628\u0629';
+        resetVehicleForm();
+        UI.showModal('vehicleModal');
+    }
+
+    /* ---------- Edit Vehicle ---------- */
+    async function openEditModal(id) {
+        try {
+            var res = await API.get('/vehicles/' + id);
+            var v = res.data || res;
+            document.getElementById('vehicleModalTitle').textContent = i18n.t('edit_vehicle') || '\u062A\u0639\u062F\u064A\u0644 \u0645\u0631\u0643\u0628\u0629';
+            document.getElementById('vehId').value = v.id;
+            document.getElementById('vehCode').value = v.vehicle_code || v.code || '';
+            document.getElementById('vehPlate').value = v.plate_number || '';
+            document.getElementById('vehType').value = v.type || v.vehicle_type || '';
+            document.getElementById('vehMode').value = v.vehicle_mode || '';
+            document.getElementById('vehYear').value = v.year || '';
+            document.getElementById('vehColor').value = v.color || '';
+            document.getElementById('vehDriver').value = v.driver_name || v.driver || '';
+            document.getElementById('vehStatus').value = v.status || 'operational';
+            document.getElementById('vehChassis').value = v.chassis_number || '';
+            document.getElementById('vehNotes').value = v.notes || '';
+            document.getElementById('vehDepartment').value = v.department_id || '';
+            onDepartmentChange(v.department_id || '');
+            setTimeout(function() {
+                document.getElementById('vehSection').value = v.section_id || '';
+                onSectionChange(v.section_id || '');
+                setTimeout(function() { document.getElementById('vehDivision').value = v.division_id || ''; }, 50);
+            }, 50);
+            UI.showModal('vehicleModal');
+        } catch (e) {
+            UI.showToast(i18n.t('error_loading') || '\u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u0645\u064A\u0644 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A', 'error');
+        }
+    }
+
+    /* ---------- Save Vehicle ---------- */
+    async function saveVehicle() {
+        var id = document.getElementById('vehId').value;
+        var payload = {
+            vehicle_code: document.getElementById('vehCode').value.trim(),
+            plate_number: document.getElementById('vehPlate').value.trim(),
+            type: document.getElementById('vehType').value.trim(),
+            vehicle_mode: document.getElementById('vehMode').value,
+            year: document.getElementById('vehYear').value || null,
+            color: document.getElementById('vehColor').value.trim(),
+            driver_name: document.getElementById('vehDriver').value.trim(),
+            status: document.getElementById('vehStatus').value,
+            department_id: document.getElementById('vehDepartment').value || null,
+            section_id: document.getElementById('vehSection').value || null,
+            division_id: document.getElementById('vehDivision').value || null,
+            chassis_number: document.getElementById('vehChassis').value.trim(),
+            notes: document.getElementById('vehNotes').value.trim()
+        };
+
+        if (!payload.vehicle_code) {
+            UI.showToast(i18n.t('vehicle_code_required') || '\u0631\u0645\u0632 \u0627\u0644\u0645\u0631\u0643\u0628\u0629 \u0645\u0637\u0644\u0648\u0628', 'warning');
+            return;
+        }
+
+        try {
+            if (id) {
+                await API.put('/vehicles/' + id, payload);
+                UI.showToast(i18n.t('vehicle_updated') || '\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0645\u0631\u0643\u0628\u0629', 'success');
+            } else {
+                await API.post('/vehicles', payload);
+                UI.showToast(i18n.t('vehicle_created') || '\u062A\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0645\u0631\u0643\u0628\u0629', 'success');
+            }
+            UI.hideModal('vehicleModal');
+            loadVehicles();
+            loadStats();
+        } catch (e) {
+            UI.showToast(e.message || i18n.t('error_saving') || '\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0641\u0638', 'error');
+        }
+    }
+
+    function resetVehicleForm() {
+        ['vehId','vehCode','vehPlate','vehType','vehYear','vehColor','vehDriver','vehChassis','vehNotes'].forEach(function(id) {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('vehMode').value = '';
+        document.getElementById('vehStatus').value = 'operational';
+        document.getElementById('vehDepartment').value = '';
+        document.getElementById('vehSection').innerHTML = '<option value="">\u0627\u062E\u062A\u0631 \u0627\u0644\u0642\u0633\u0645</option>';
+        document.getElementById('vehDivision').innerHTML = '<option value="">\u0627\u062E\u062A\u0631 \u0627\u0644\u0634\u0639\u0628\u0629</option>';
+    }
+
+    /* ---------- Delete Vehicle ---------- */
+    function deleteVehicle(id) {
+        document.getElementById('deleteVehicleId').value = id;
+        UI.showModal('deleteModal');
+    }
+
+    async function confirmDelete() {
+        var id = document.getElementById('deleteVehicleId').value;
+        if (!id) return;
+        try {
+            await API.del('/vehicles/' + id);
+            UI.showToast(i18n.t('vehicle_deleted') || '\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0645\u0631\u0643\u0628\u0629', 'success');
+            UI.hideModal('deleteModal');
+            loadVehicles();
+            loadStats();
+        } catch (e) {
+            UI.showToast(e.message || i18n.t('error_deleting') || '\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0630\u0641', 'error');
+        }
+    }
+
+    /* ---------- Vehicle Details ---------- */
+    async function openDetailsModal(id) {
+        var body = document.getElementById('detailsBody');
+        body.innerHTML = '<div class="text-center"><div class="spinner"></div></div>';
+        UI.showModal('detailsModal');
+        try {
+            var res = await API.get('/vehicles/' + id);
+            var v = res.data || res;
+            var html = '<div class="form-grid" style="gap:8px 16px">';
+            var fields = [
+                ['vehicle_code', v.vehicle_code || v.code],
+                ['plate_number', v.plate_number],
+                ['vehicle_type', v.type || v.vehicle_type],
+                ['vehicle_mode', v.vehicle_mode],
+                ['year', v.year],
+                ['color', v.color],
+                ['driver', v.driver_name || v.driver],
+                ['status', null, statusBadge(v.status)],
+                ['department', deptName(v.department_id)],
+                ['chassis_number', v.chassis_number]
+            ];
+            fields.forEach(function(f) {
+                html += '<div class="detail-row" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border-default)">';
+                html += '<span class="text-muted">' + (i18n.t(f[0]) || f[0]) + '</span>';
+                html += '<span>' + (f[2] || UI._escapeHtml(String(f[1] || '\u2014'))) + '</span>';
+                html += '</div>';
+            });
+            if (v.notes) {
+                html += '<div class="full-width" style="padding:8px 0"><span class="text-muted">' + (i18n.t('notes') || '\u0645\u0644\u0627\u062D\u0638\u0627\u062A') + ':</span><p style="margin-top:4px">' + UI._escapeHtml(v.notes) + '</p></div>';
+            }
+            html += '</div>';
+            body.innerHTML = html;
+        } catch (e) {
+            body.innerHTML = '<p class="text-danger">' + (i18n.t('error_loading') || '\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644') + '</p>';
+        }
+    }
+
+    </script>
 </body>
 </html>

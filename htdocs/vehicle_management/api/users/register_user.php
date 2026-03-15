@@ -37,6 +37,7 @@ $role_id = (int)$data['role_id'];
 $department_id = isset($data['department_id']) && $data['department_id'] !== '' ? (int)$data['department_id'] : null;
 $section_id    = isset($data['section_id']) && $data['section_id'] !== '' ? (int)$data['section_id'] : null;
 $division_id   = isset($data['division_id']) && $data['division_id'] !== '' ? (int)$data['division_id'] : null;
+$sector_id     = isset($data['sector_id']) && $data['sector_id'] !== '' ? (int)$data['sector_id'] : null;
 $preferred_language = (isset($data['preferred_language']) && in_array($data['preferred_language'], ['en','ar'])) ? $data['preferred_language'] : 'en';
 $phone = isset($data['phone']) && $data['phone'] !== '' ? trim($data['phone']) : null;
 
@@ -68,6 +69,7 @@ try {
     }
 
     $invalid = [];
+    if ($sector_id !== null    && !existsRef($conn, 'sectors',     'id',            $sector_id))    $invalid[] = "sector_id:{$sector_id}";
     if ($department_id !== null && !existsRef($conn, 'Departments', 'department_id', $department_id)) $invalid[] = "department_id:{$department_id}";
     if ($section_id !== null    && !existsRef($conn, 'Sections',    'section_id',    $section_id))    $invalid[] = "section_id:{$section_id}";
     if ($division_id !== null   && !existsRef($conn, 'Divisions',   'division_id',   $division_id))   $invalid[] = "division_id:{$division_id}";
@@ -110,6 +112,7 @@ try {
     $params[] = $phone;
     $params[] = $role_id;
 
+    if ($sector_id !== null)    { $fields[] = 'sector_id';    $placeholders[] = '?'; $params[] = $sector_id; }    else { $fields[] = 'sector_id';    $placeholders[] = 'NULL'; }
     if ($department_id !== null) { $fields[] = 'department_id'; $placeholders[] = '?'; $params[] = $department_id; } else { $fields[] = 'department_id'; $placeholders[] = 'NULL'; }
     if ($section_id !== null)    { $fields[] = 'section_id';    $placeholders[] = '?'; $params[] = $section_id; }    else { $fields[] = 'section_id';    $placeholders[] = 'NULL'; }
     if ($division_id !== null)   { $fields[] = 'division_id';   $placeholders[] = '?'; $params[] = $division_id; }   else { $fields[] = 'division_id';   $placeholders[] = 'NULL'; }
@@ -120,6 +123,7 @@ try {
 
     $types = str_repeat('s', 6) . 'i';
     $optionalCount = 0;
+    if ($sector_id !== null) $optionalCount++;
     if ($department_id !== null) $optionalCount++;
     if ($section_id !== null) $optionalCount++;
     if ($division_id !== null) $optionalCount++;
