@@ -2,8 +2,9 @@
 /**
  * My Vehicles Fragment — Employee Self-Service
  * Loaded inside dashboard.php shell.
- * Shows private vehicles (emp_id match) and ALL shift/department vehicles with turn order.
- * The next-in-rotation vehicle is highlighted. Pickup/Return buttons available via self-service endpoint.
+ * Shows private vehicles (emp_id match).
+ * Admin/SuperAdmin see ALL shift/department vehicles with turn order rotation.
+ * Employee sees only the next-in-turn vehicle (filtered by sector_id and gender).
  */
 ?>
 <style>
@@ -94,7 +95,9 @@
 <script>
 /* ============================================
    My Vehicles Fragment — Employee Self-Service
-   Shows ALL shift/dept vehicles with turn order.
+   Admin/SuperAdmin: see ALL shift/dept vehicles with turn order.
+   Employee: see only the next-in-turn vehicle.
+   Vehicles are filtered by sector_id and gender.
    The next-in-rotation vehicle is highlighted
    and has a pickup button.
    Pickup/Return available for ALL authenticated users
@@ -269,7 +272,9 @@
         container.innerHTML = vehicles.map(function(v) { return buildCard(v, { isPrivate: true }); }).join('');
     }
 
-    /* ---------- Render shift vehicles (ALL vehicles with turn order) ---------- */
+    /* ---------- Render shift vehicles ---------- */
+    /* Admin/SuperAdmin see ALL vehicles with turn order.
+       Employee sees only the next-in-turn vehicle + their current vehicle. */
     function renderShift(vehicles, totalShift) {
         var container = document.getElementById('mvShiftGrid');
         if (!container) return;
@@ -285,7 +290,20 @@
             return;
         }
 
-        var cards = vehicles.map(function(v) {
+        /* Filter for Employee: only next-in-turn and my current vehicle */
+        var displayVehicles = vehicles;
+        if (!hasAdminMovementPermission) {
+            displayVehicles = vehicles.filter(function(v) {
+                return v.is_next_turn || v.is_my_current;
+            });
+            if (!displayVehicles.length) {
+                container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔄</div><p>' +
+                    t('لا يوجد دور لك حالياً في مركبات الورديات', 'No shift vehicle is assigned to your turn currently') + '</p></div>';
+                return;
+            }
+        }
+
+        var cards = displayVehicles.map(function(v) {
             return buildCard(v, {
                 turnOrder: v.turn_order || null,
                 isNextTurn: v.is_next_turn || false,
@@ -295,7 +313,9 @@
         container.innerHTML = cards;
     }
 
-    /* ---------- Render department vehicles (ALL vehicles with turn order) ---------- */
+    /* ---------- Render department vehicles ---------- */
+    /* Admin/SuperAdmin see ALL vehicles with turn order.
+       Employee sees only the next-in-turn vehicle + their current vehicle. */
     function renderDepartment(vehicles, totalDept) {
         var container = document.getElementById('mvDeptGrid');
         if (!container) return;
@@ -311,7 +331,20 @@
             return;
         }
 
-        var cards = vehicles.map(function(v) {
+        /* Filter for Employee: only next-in-turn and my current vehicle */
+        var displayVehicles = vehicles;
+        if (!hasAdminMovementPermission) {
+            displayVehicles = vehicles.filter(function(v) {
+                return v.is_next_turn || v.is_my_current;
+            });
+            if (!displayVehicles.length) {
+                container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' +
+                    t('لا يوجد دور لك حالياً في مركبات الإدارة', 'No department vehicle is assigned to your turn currently') + '</p></div>';
+                return;
+            }
+        }
+
+        var cards = displayVehicles.map(function(v) {
             return buildCard(v, {
                 turnOrder: v.turn_order || null,
                 isNextTurn: v.is_next_turn || false,
