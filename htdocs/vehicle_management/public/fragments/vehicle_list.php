@@ -113,6 +113,9 @@
                 <th>#</th>
                 <th data-label-ar="كود المركبة" data-label-en="Vehicle Code">كود المركبة</th>
                 <th data-label-ar="النوع" data-label-en="Type">النوع</th>
+                <th data-label-ar="الرقم الإداري" data-label-en="Emp ID">الرقم الإداري</th>
+                <th data-label-ar="اسم السائق" data-label-en="Driver Name">اسم السائق</th>
+                <th data-label-ar="هاتف السائق" data-label-en="Driver Phone">هاتف السائق</th>
                 <th data-label-ar="القطاع" data-label-en="Sector">القطاع</th>
                 <th data-label-ar="الإدارة" data-label-en="Department">الإدارة</th>
                 <th data-label-ar="القسم" data-label-en="Section">القسم</th>
@@ -192,6 +195,22 @@
         <div class="form-group">
             <label id="vlLblYear" data-label-ar="سنة الصنع" data-label-en="Year">سنة الصنع</label>
             <input type="number" id="vlFldYear" min="2000" max="2099">
+        </div>
+        <div class="form-group">
+            <label id="vlLblEmpId" data-label-ar="الرقم الإداري" data-label-en="Emp ID">الرقم الإداري</label>
+            <input type="text" id="vlFldEmpId">
+        </div>
+        <div class="form-group">
+            <label id="vlLblDriverName" data-label-ar="اسم السائق" data-label-en="Driver Name">اسم السائق</label>
+            <input type="text" id="vlFldDriverName">
+        </div>
+        <div class="form-group">
+            <label id="vlLblDriverPhone" data-label-ar="هاتف السائق" data-label-en="Driver Phone">هاتف السائق</label>
+            <input type="text" id="vlFldDriverPhone">
+        </div>
+        <div class="form-group">
+            <label id="vlLblNotes" data-label-ar="ملاحظات" data-label-en="Notes">ملاحظات</label>
+            <textarea id="vlFldNotes" rows="3"></textarea>
         </div>
         <div class="form-actions">
             <button class="btn btn-secondary" id="vlCancelBtn" onclick="VLForm.hide()">إلغاء</button>
@@ -377,7 +396,10 @@
             if(search){
                 var code=(v.vehicle_code||'').toLowerCase();
                 var type=(v.type||v.vehicle_type||'').toLowerCase();
-                if(code.indexOf(search)<0 && type.indexOf(search)<0) return false;
+                var empId=(v.emp_id||'').toLowerCase();
+                var driverName=(v.driver_name||'').toLowerCase();
+                var driverPhone=(v.driver_phone||'').toLowerCase();
+                if(code.indexOf(search)<0 && type.indexOf(search)<0 && empId.indexOf(search)<0 && driverName.indexOf(search)<0 && driverPhone.indexOf(search)<0) return false;
             }
             return true;
         });
@@ -411,6 +433,9 @@
                 +'<td>'+(i+1)+'</td>'
                 +'<td>'+(v.vehicle_code||'—')+'</td>'
                 +'<td>'+(v.type||v.vehicle_type||'—')+'</td>'
+                +'<td>'+(v.emp_id||'—')+'</td>'
+                +'<td>'+(v.driver_name||'—')+'</td>'
+                +'<td>'+(v.driver_phone||'—')+'</td>'
                 +'<td>'+sectorName+'</td>'
                 +'<td>'+deptName+'</td>'
                 +'<td>'+sectName+'</td>'
@@ -456,6 +481,10 @@
             $('vlFldSection').innerHTML='<option value="">—</option>';
             $('vlFldDivision').innerHTML='<option value="">—</option>';
             $('vlFldYear').value='';
+            $('vlFldEmpId').value='';
+            $('vlFldDriverName').value='';
+            $('vlFldDriverPhone').value='';
+            $('vlFldNotes').value='';
             $('vlModalTitle').textContent='إضافة مركبة';
             $('vlModal').classList.add('active');
         },
@@ -478,6 +507,10 @@
                 setTimeout(function(){ $('vlFldDivision').value=v.division_id||''; },50);
             },50);
             $('vlFldYear').value=v.manufacture_year||v.year||'';
+            $('vlFldEmpId').value=v.emp_id||'';
+            $('vlFldDriverName').value=v.driver_name||'';
+            $('vlFldDriverPhone').value=v.driver_phone||'';
+            $('vlFldNotes').value=v.notes||'';
             $('vlModalTitle').textContent='تعديل مركبة';
             $('vlModal').classList.add('active');
         },
@@ -497,7 +530,11 @@
                 department_id: $('vlFldDept').value||null,
                 section_id: $('vlFldSection').value||null,
                 division_id: $('vlFldDivision').value||null,
-                manufacture_year: $('vlFldYear').value||null
+                manufacture_year: $('vlFldYear').value||null,
+                emp_id: $('vlFldEmpId').value.trim()||null,
+                driver_name: $('vlFldDriverName').value.trim()||null,
+                driver_phone: $('vlFldDriverPhone').value.trim()||null,
+                notes: $('vlFldNotes').value.trim()||null
             };
             if(!data.vehicle_code){
                 UI.showToast('كود المركبة مطلوب','error');
