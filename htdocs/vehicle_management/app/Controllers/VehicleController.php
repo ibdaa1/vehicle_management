@@ -162,6 +162,10 @@ class VehicleController extends BaseController
      * - Shift   : ONE vehicle only (next in round-robin for user's gender)
      *             If the user already holds a shift vehicle → show that for
      *             return only, do NOT show next vehicle for pickup.
+     * - Dept    : ONE vehicle only (next in round-robin for user's
+     *             department/section/division + gender).
+     *             If the user already holds a dept vehicle → show that for
+     *             return only, do NOT show next vehicle for pickup.
      */
     public function myVehicles(Request $request, array $params = []): void
     {
@@ -222,54 +226,53 @@ class VehicleController extends BaseController
                 }
 
                 if ($myCheckedOutShift === null) {
-                    $shiftCodes     = array_column($shiftVehicles, 'vehicle_code');
-                    $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($shiftCodes);
-
-                    if ($lastPickupCode) {
-                        $lastIdx = -1;
-                        foreach ($shiftVehicles as $i => $v) {
-                            if ($v['vehicle_code'] === $lastPickupCode) {
-                                $lastIdx = $i;
-                                break;
-                            }
-                        }
-                        $count = count($shiftVehicles);
-                        for ($j = 1; $j <= $count; $j++) {
-                            $idx = ($lastIdx + $j) % $count;
-                            if ($shiftVehicles[$idx]['available']) {
-                                $nextShiftVehicle = $shiftVehicles[$idx];
-                                $nextShiftVehicle['turn_order'] = $idx + 1;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!$nextShiftVehicle) {
-                        foreach ($shiftVehicles as $i => $v) {
-                            if ($v['available']) {
-                                $nextShiftVehicle = $v;
-                                $nextShiftVehicle['turn_order'] = $i + 1;
-                                break;
-                            }
-                        }
-                    }
+                    $nextShiftVehicle = $this->findNextInRotation($shiftVehicles);
                 }
             }
 
-            // Department vehicles: all operational vehicles from user's department
-            // that match gender, giving the user vehicles to choose from
+            // Department vehicles: filter by dept/section/division + gender,
+            // exclude private vehicles already shown, then pick ONE in round-robin
             $departmentVehicles = [];
+            $nextDeptVehicle    = null;
+            $myCheckedOutDept   = null;
+            $deptTotal          = 0;
+
             if ($userDeptId) {
-                $departmentVehicles = array_values(array_filter($allVehicles, function ($v) use ($userDeptId, $userSectionId, $userGender, $userEmpId) {
-                    $deptMatch = ((int)($v['department_id'] ?? 0)) === $userDeptId;
+                $departmentVehicles = array_values(array_filter($allVehicles, function ($v) use ($userDeptId, $userSectionId, $userDivisionId, $userGender, $userEmpId) {
+                    $deptMatch = ((int)($v['department_id'] ?? 0)) === (int)$userDeptId;
+                    // Also match section/division when available
+                    if ($userSectionId && !empty($v['section_id'])) {
+                        $deptMatch = $deptMatch && ((int)($v['section_id'] ?? 0)) === (int)$userSectionId;
+                    }
+                    if ($userDivisionId && !empty($v['division_id'])) {
+                        $deptMatch = $deptMatch && ((int)($v['division_id'] ?? 0)) === (int)$userDivisionId;
+                    }
                     $statusOk  = ($v['status'] ?? '') === 'operational';
                     $genderOk  = (!$userGender || empty($v['gender']) || $v['gender'] === $userGender);
                     // Exclude vehicles already shown in private section
                     $isMyPrivate = ($v['vehicle_mode'] ?? '') === 'private'
                         && trim($v['emp_id'] ?? '') !== ''
                         && trim($v['emp_id'] ?? '') === trim($userEmpId);
-                    return $deptMatch && $statusOk && $genderOk && !$isMyPrivate;
+                    // Exclude shift vehicles (shown in shift section)
+                    $isShift = ($v['vehicle_mode'] ?? '') === 'shift';
+                    return $deptMatch && $statusOk && $genderOk && !$isMyPrivate && !$isShift;
                 }));
+
+                usort($departmentVehicles, fn($a, $b) => strcmp($a['vehicle_code'] ?? '', $b['vehicle_code'] ?? ''));
+                $deptTotal = count($departmentVehicles);
+
+                // Check if user currently holds a department vehicle
+                foreach ($departmentVehicles as $v) {
+                    if (!$v['available'] && ($v['last_holder'] ?? '') === $userEmpId) {
+                        $myCheckedOutDept = $v;
+                        break;
+                    }
+                }
+
+                // If user doesn't hold one, find next in round-robin
+                if ($myCheckedOutDept === null && !empty($departmentVehicles)) {
+                    $nextDeptVehicle = $this->findNextInRotation($departmentVehicles);
+                }
             }
 
             Response::json([
@@ -279,8 +282,11 @@ class VehicleController extends BaseController
                     'shift_next'          => $nextShiftVehicle,
                     'shift_my_current'    => $myCheckedOutShift,
                     'shift_total'         => count($shiftVehicles),
-                    'shift_vehicles'      => $shiftVehicles,
-                    'department_vehicles' => $departmentVehicles,
+                    'shift_vehicles'      => [],
+                    'dept_next'           => $nextDeptVehicle,
+                    'dept_my_current'     => $myCheckedOutDept,
+                    'dept_total'          => $deptTotal,
+                    'department_vehicles' => [],
                 ],
             ]);
 
@@ -295,10 +301,56 @@ class VehicleController extends BaseController
                     'shift_my_current'    => null,
                     'shift_total'         => 0,
                     'shift_vehicles'      => [],
+                    'dept_next'           => null,
+                    'dept_my_current'     => null,
+                    'dept_total'          => 0,
                     'department_vehicles' => [],
                 ],
             ], 500);
         }
+    }
+
+    /**
+     * Find the next available vehicle in round-robin rotation.
+     * Looks at the last pickup among the given vehicles and returns the next
+     * available one in sorted order (wrapping around like a circular list).
+     */
+    private function findNextInRotation(array $vehicles): ?array
+    {
+        if (empty($vehicles)) return null;
+
+        $codes          = array_column($vehicles, 'vehicle_code');
+        $lastPickupCode = $this->movementModel->getLastPickupForShiftVehicles($codes);
+
+        if ($lastPickupCode) {
+            $lastIdx = -1;
+            foreach ($vehicles as $i => $v) {
+                if ($v['vehicle_code'] === $lastPickupCode) {
+                    $lastIdx = $i;
+                    break;
+                }
+            }
+            $count = count($vehicles);
+            for ($j = 1; $j <= $count; $j++) {
+                $idx = ($lastIdx + $j) % $count;
+                if ($vehicles[$idx]['available']) {
+                    $next = $vehicles[$idx];
+                    $next['turn_order'] = $idx + 1;
+                    return $next;
+                }
+            }
+        }
+
+        // Fallback: first available vehicle
+        foreach ($vehicles as $i => $v) {
+            if ($v['available']) {
+                $next = $v;
+                $next['turn_order'] = $i + 1;
+                return $next;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -213,8 +213,8 @@
             }
             var data = (res && res.data) || res || {};
             renderPrivate(data.private || []);
-            renderShift(data.shift_vehicles || [], data.shift_next, data.shift_my_current, data.shift_total || 0);
-            renderDepartment(data.department_vehicles || []);
+            renderShift(data.shift_next || null, data.shift_my_current || null, data.shift_total || 0);
+            renderDepartment(data.dept_next || null, data.dept_my_current || null, data.dept_total || 0);
         } catch (e) {
             console.error('Failed to load my vehicles:', e);
             var errMsg = (e && e.message) || '';
@@ -250,8 +250,8 @@
         container.innerHTML = vehicles.map(function(v) { return buildCard(v, { isPrivate: true }); }).join('');
     }
 
-    /* ---------- Render shift vehicles (all available) ---------- */
-    function renderShift(shiftVehicles, nextVehicle, myCurrentVehicle, totalShift) {
+    /* ---------- Render shift vehicles (ONE vehicle only — round-robin) ---------- */
+    function renderShift(nextVehicle, myCurrentVehicle, totalShift) {
         var container = document.getElementById('mvShiftGrid');
         if (!container) return;
         var cards = '';
@@ -259,20 +259,9 @@
         // Show vehicle currently held by user (for return)
         if (myCurrentVehicle) {
             cards += buildCard(myCurrentVehicle, { turnOrder: null });
-        }
-
-        // Show all available shift vehicles
-        var nextCode = nextVehicle ? String(nextVehicle.vehicle_code) : '';
-        var currentCode = myCurrentVehicle ? String(myCurrentVehicle.vehicle_code) : '';
-
-        if (shiftVehicles && shiftVehicles.length) {
-            for (var i = 0; i < shiftVehicles.length; i++) {
-                var sv = shiftVehicles[i];
-                // Skip the one already shown as myCurrentVehicle
-                if (currentCode && String(sv.vehicle_code) === currentCode) continue;
-                var isNext = nextCode && String(sv.vehicle_code) === nextCode;
-                cards += buildCard(sv, { turnOrder: isNext ? (sv.turn_order || nextVehicle.turn_order || i + 1) : null });
-            }
+        } else if (nextVehicle) {
+            // Show ONLY the next vehicle in rotation (for pickup)
+            cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
         }
 
         if (!cards) {
@@ -288,16 +277,31 @@
         container.innerHTML = cards;
     }
 
-    /* ---------- Render department vehicles ---------- */
-    function renderDepartment(vehicles) {
+    /* ---------- Render department vehicles (ONE vehicle only — round-robin) ---------- */
+    function renderDepartment(nextVehicle, myCurrentVehicle, totalDept) {
         var container = document.getElementById('mvDeptGrid');
         if (!container) return;
-        if (!vehicles || !vehicles.length) {
-            container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' +
-                t('لا توجد مركبات متاحة في إدارتك', 'No vehicles available in your department') + '</p></div>';
+        var cards = '';
+
+        // Show vehicle currently held by user (for return)
+        if (myCurrentVehicle) {
+            cards += buildCard(myCurrentVehicle, { turnOrder: null });
+        } else if (nextVehicle) {
+            // Show ONLY the next vehicle in rotation (for pickup)
+            cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
+        }
+
+        if (!cards) {
+            var msg = '';
+            if (totalDept > 0) {
+                msg = t('جميع مركبات الإدارة مستلمة حالياً', 'All department vehicles are currently checked out');
+            } else {
+                msg = t('لا توجد مركبات متاحة في إدارتك', 'No vehicles available in your department');
+            }
+            container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' + msg + '</p></div>';
             return;
         }
-        container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
+        container.innerHTML = cards;
     }
 
     /* ---------- Pickup action (self-service) ---------- */

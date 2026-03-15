@@ -502,6 +502,81 @@ if (file_exists($controllerPath)) {
 
 echo "\n";
 
+// ─── Section 3b3: Round-Robin & Single-Vehicle Display Tests ────
+echo "🔄 Section 3b3: Round-Robin & Single-Vehicle Display Tests\n" . str_repeat('-', 40) . "\n";
+
+// Test: Backend returns dept_next and dept_my_current in myVehicles response
+if (file_exists($controllerPath)) {
+    $controllerContent = file_get_contents($controllerPath);
+    assert_true(
+        str_contains($controllerContent, "'dept_next'") && str_contains($controllerContent, "'dept_my_current'"),
+        'myVehicles returns dept_next and dept_my_current for department round-robin',
+        'dept_next / dept_my_current not found in VehicleController response'
+    );
+
+    // Test: Backend has findNextInRotation helper
+    assert_true(
+        str_contains($controllerContent, 'function findNextInRotation'),
+        'VehicleController has findNextInRotation() helper for round-robin logic',
+        'findNextInRotation method not found'
+    );
+
+    // Test: Backend returns empty arrays for shift_vehicles and department_vehicles (single vehicle only)
+    assert_true(
+        str_contains($controllerContent, "'shift_vehicles'      => []") && str_contains($controllerContent, "'department_vehicles' => []"),
+        'Backend returns empty shift_vehicles/department_vehicles arrays (single vehicle display)',
+        'Expected empty arrays for shift_vehicles and department_vehicles'
+    );
+
+    // Test: Department filter includes section/division matching
+    assert_true(
+        str_contains($controllerContent, 'userSectionId') && str_contains($controllerContent, 'userDivisionId')
+            && str_contains($controllerContent, "section_id") && str_contains($controllerContent, "division_id"),
+        'Department vehicles filter by section and division (not just department)',
+        'Section/division filtering not found in department vehicle logic'
+    );
+
+    // Test: Dept round-robin excludes shift vehicles
+    assert_true(
+        str_contains($controllerContent, "isShift") && str_contains($controllerContent, "'shift'"),
+        'Department vehicles exclude shift vehicles (shown in shift section)',
+        'Shift vehicle exclusion not found in department filter'
+    );
+}
+
+// Test: Frontend shows ONE vehicle in shift section (not all)
+if (file_exists($fragmentPath)) {
+    $fragmentContent = file_get_contents($fragmentPath);
+    assert_true(
+        str_contains($fragmentContent, 'renderShift(data.shift_next') && !str_contains($fragmentContent, 'data.shift_vehicles ||'),
+        'Frontend shift section shows ONE vehicle (shift_next), not all vehicles',
+        'Frontend may still render all shift vehicles instead of single next vehicle'
+    );
+
+    // Test: Frontend shows ONE vehicle in department section
+    assert_true(
+        str_contains($fragmentContent, 'renderDepartment(data.dept_next') && !str_contains($fragmentContent, 'data.department_vehicles.map'),
+        'Frontend department section shows ONE vehicle (dept_next), not all vehicles',
+        'Frontend may still render all department vehicles'
+    );
+
+    // Test: Frontend department section has round-robin display
+    assert_true(
+        str_contains($fragmentContent, 'dept_my_current') && str_contains($fragmentContent, 'dept_total'),
+        'Frontend handles dept_my_current and dept_total for department round-robin',
+        'Department round-robin frontend fields not found'
+    );
+}
+
+// Test: Legacy login.php has been removed (cleanup)
+assert_true(
+    !file_exists($BASE_DIR . '/api/users/login.php'),
+    'Legacy api/users/login.php has been removed (login uses /api/v1/auth/login)',
+    'api/users/login.php still exists — should be removed'
+);
+
+echo "\n";
+
 // ─── Section 3c: Login Redirect (return_to) Tests ───────────────
 echo "🔗 Section 3c: Login Redirect (return_to) Tests\n" . str_repeat('-', 40) . "\n";
 
