@@ -12,6 +12,11 @@
  *        etc.
  */
 
+// Prevent caching so that ?page= parameter is always respected
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 // Determine which fragment to load — validate against allowlist
 $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page']) : 'dashboard';
 

@@ -152,7 +152,8 @@ const API = {
         const res = await fetch(this._fullUrl(path), opts);
 
         if (res.status === 401) {
-            Auth.logout();
+            Auth.clear();
+            window.location.href = API.baseUrl + '/public/login.html?return_to=' + encodeURIComponent(window.location.href);
             throw new Error('Unauthorized');
         }
 
