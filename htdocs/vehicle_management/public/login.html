@@ -198,23 +198,27 @@
         </div>
         <div class="fr">
           <div class="fg">
-            <label id="lblDept"></label>
-            <div class="iw"><select id="department_id"><option value=""></option></select><span class="ic">📂</span></div>
+            <label id="lblSector"></label>
+            <div class="iw"><select id="sector_id"><option value=""></option></select><span class="ic">🏛</span></div>
           </div>
           <div class="fg">
-            <label id="lblSection"></label>
-            <div class="iw"><select id="section_id"><option value=""></option></select><span class="ic">📁</span></div>
+            <label id="lblDept"></label>
+            <div class="iw"><select id="department_id"><option value=""></option></select><span class="ic">📂</span></div>
           </div>
         </div>
         <div class="fr">
           <div class="fg">
+            <label id="lblSection"></label>
+            <div class="iw"><select id="section_id"><option value=""></option></select><span class="ic">📁</span></div>
+          </div>
+          <div class="fg">
             <label id="lblDivision"></label>
             <div class="iw"><select id="division_id"><option value=""></option></select><span class="ic">📋</span></div>
           </div>
-          <div class="fg">
-            <label id="lblPhone"></label>
-            <div class="iw"><input type="tel" id="phone" /><span class="ic">📞</span></div>
-          </div>
+        </div>
+        <div class="fg">
+          <label id="lblPhone"></label>
+          <div class="iw"><input type="tel" id="phone" /><span class="ic">📞</span></div>
         </div>
         <div class="fr">
           <div class="fg">
@@ -272,7 +276,7 @@
     footerText:$('footerText'),
     identifier:$('identifier'), password:$('password'),
     empId:$('emp_id'), regUsername:$('reg_username'), regEmail:$('reg_email'),
-    roleId:$('role_id'), deptId:$('department_id'), sectionId:$('section_id'),
+    roleId:$('role_id'), sectorId:$('sector_id'), deptId:$('department_id'), sectionId:$('section_id'),
     divisionId:$('division_id'), phone:$('phone'),
     regPassword:$('reg_password'), regConfirm:$('reg_password_confirm'),
     rolePermsBox:$('rolePermsBox')
@@ -358,10 +362,10 @@
       passwordLabel: a?'كلمة المرور':'Password',
       empIdLabel: a?'الرقم الوظيفي':'Employee ID', usernameLabel: a?'اسم المستخدم':'Username',
       emailLabel: a?'البريد الإلكتروني':'Email', roleLabel: a?'الدور':'Role',
-      deptLabel: a?'الإدارة':'Department', sectionLabel: a?'القسم':'Section',
+      sectorLabel: a?'القطاع':'Sector', deptLabel: a?'الإدارة':'Department', sectionLabel: a?'القسم':'Section',
       divisionLabel: a?'الشعبة':'Division', phoneLabel: a?'الهاتف (اختياري)':'Phone (optional)',
       regPasswordLabel: a?'كلمة المرور':'Password', confirmPasswordLabel: a?'تأكيد كلمة المرور':'Confirm Password',
-      selectRole: a?'اختر الدور':'Select role', selectDept: a?'اختر الإدارة':'Select department',
+      selectRole: a?'اختر الدور':'Select role', selectSector: a?'اختر القطاع':'Select sector', selectDept: a?'اختر الإدارة':'Select department',
       selectSection: a?'اختر القسم':'Select section', selectDivision: a?'اختر الشعبة':'Select division',
       missingFields: a?'حقول مطلوبة: ':'Missing fields: ',
       loginProgress: a?'جارٍ تسجيل الدخول...':'Signing in...',
@@ -396,7 +400,7 @@
     const lbl = (id,txt) => { const e=$(id); if(e) e.textContent=txt; };
     lbl('lblIdentifier',t.identifierLabel); lbl('lblPassword',t.passwordLabel);
     lbl('lblEmpId',t.empIdLabel); lbl('lblUsername',t.usernameLabel); lbl('lblEmail',t.emailLabel);
-    lbl('lblRole',t.roleLabel); lbl('lblDept',t.deptLabel); lbl('lblSection',t.sectionLabel);
+    lbl('lblRole',t.roleLabel); lbl('lblSector',t.sectorLabel); lbl('lblDept',t.deptLabel); lbl('lblSection',t.sectionLabel);
     lbl('lblDivision',t.divisionLabel); lbl('lblPhone',t.phoneLabel);
     lbl('lblRegPass',t.regPasswordLabel); lbl('lblConfirmPass',t.confirmPasswordLabel);
 
@@ -408,7 +412,7 @@
     ph(el.empId,'empIdPlaceholder'); ph(el.regUsername,'usernamePlaceholder');
     ph(el.regEmail,'emailPlaceholder'); ph(el.phone,'phonePlaceholder');
 
-    [['roleId','selectRole'],['deptId','selectDept'],['sectionId','selectSection'],['divisionId','selectDivision']]
+    [['roleId','selectRole'],['sectorId','selectSector'],['deptId','selectDept'],['sectionId','selectSection'],['divisionId','selectDivision']]
       .forEach(([k,tk]) => { const s=el[k]; if(s){ const o=s.querySelector('option[value=""]'); if(o) o.textContent=t[tk]||''; } });
 
     const fAr = s.footer_text_ar || t.departmentNameAr || 'إدارة الرقابة والسلامة الصحية';
@@ -468,12 +472,14 @@
   }
 
   // References (cascading)
-  let allDepts = [];
+  let allDepts = [], allSectors = [];
   async function loadRefs() {
     let d = await api(API.references);
-    if(d){ const r=d.data||d; allDepts=r.departments||[]; fillSel(el.deptId, allDepts, 'selectDept'); return; }
+    if(d){ const r=d.data||d; allDepts=r.departments||[]; allSectors=r.sectors||[]; fillSel(el.sectorId, allSectors, 'selectSector'); fillSel(el.deptId, allDepts, 'selectDept'); return; }
     d = await api(API.legacyRefs+'?type=departments&lang='+lang);
     if(d){ allDepts=d.departments||d.items||d.data||[]; fillSel(el.deptId, allDepts, 'selectDept'); }
+    let s = await api(API.legacyRefs+'?type=sectors&lang='+lang);
+    if(s){ allSectors=s.sectors||s.items||s.data||[]; fillSel(el.sectorId, allSectors, 'selectSector'); }
   }
   function fillSel(s, items, phKey) {
     if(!s) return; const t=i18n[lang]||{}, prev=s.value; s.innerHTML='';
@@ -554,6 +560,7 @@
       const p=new URLSearchParams();
       p.append('emp_id',f.emp_id); p.append('username',f.username); p.append('email',f.email);
       p.append('password',f.password); p.append('role_id',f.role_id);
+      p.append('sector_id',el.sectorId?el.sectorId.value:'');
       p.append('department_id',el.deptId?el.deptId.value:'');
       p.append('section_id',el.sectionId?el.sectionId.value:'');
       p.append('division_id',el.divisionId?el.divisionId.value:'');
@@ -583,6 +590,7 @@
   el.langBtn.addEventListener('click', async ()=>{
     lang=lang==='ar'?'en':'ar'; el.langBtn.disabled=true;
     await loadI18n(lang); applyI18n(); fillRoles();
+    fillSel(el.sectorId, allSectors, 'selectSector');
     fillSel(el.deptId, allDepts, 'selectDept');
     if(el.deptId.value) await loadSections(el.deptId.value);
     if(el.sectionId.value) await loadDivisions(el.sectionId.value);
