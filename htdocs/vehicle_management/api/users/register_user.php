@@ -144,87 +144,99 @@ try {
     $newUserId = (int)$conn->insert_id;
     $stmt->close();
 
-    // create activation token
-    $token = bin2hex(random_bytes(32));
-    $tz = new DateTimeZone('Asia/Dubai');
-    $now = new DateTime('now', $tz);
-    $created_at = $now->format('Y-m-d H:i:s');
-    $expires_at = (clone $now)->modify('+2 days')->format('Y-m-d H:i:s');
-
-    $ins = $conn->prepare("INSERT INTO user_activations (user_id, token, created_at, expires_at, used) VALUES (?, ?, ?, ?, 0)");
-    if ($ins === false) throw new Exception('Prepare failed (activation insert): ' . $conn->error);
-    $ins->bind_param('isss', $newUserId, $token, $created_at, $expires_at);
-    if (!$ins->execute()) {
-        throw new Exception('Execute failed (activation insert): ' . $ins->error);
-    }
-    $ins->close();
-
-    // build base URL dynamically
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $baseUrl = $scheme . '://' . $host;
-
-    $activationLink = rtrim($baseUrl, '/') . "/vehicle_management/api/users/activate_user.php?token={$token}";
-
-    // --- Call send_report_mail.php endpoint via internal HTTP POST (cURL) ---
-    $sendEndpoint = $baseUrl . '/vehicle_management/api/users/send_report_mail.php';
-    $mailSubject = ($preferred_language === 'ar') ? "تفعيل حسابك - نظام متابعة السيارات" : "Activate your account - Vehicle Management";
-    if ($preferred_language === 'ar') {
-        $mailBody = "مرحباً {$username},\n\nشكراً لتسجيلك في نظام متابعة السيارات.\nالرجاء الضغط على الرابط لتفعيل حسابك:\n{$activationLink}\n\nهذا الرابط صالح حتى {$expires_at} (Asia/Dubai).\n\nإذا لم تقم بطلب هذا الحساب، تجاهل هذا البريد.";
-    } else {
-        $mailBody = "Hello {$username},\n\nThanks for registering at Vehicle Management.\nPlease click the link below to activate your account:\n{$activationLink}\n\nThis link is valid until {$expires_at} (Asia/Dubai).\n\nIf you did not request this, please ignore this email.";
-    }
-
-    // prepare POST fields
-    $postFields = http_build_query([
-        'to' => $email,
-        'subject' => $mailSubject,
-        'body' => $mailBody
-    ]);
-
-    // cURL request to local endpoint
-    $ch = curl_init($sendEndpoint);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
-    // set a reasonable timeout
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    // if server uses self-signed cert or other TLS issues you may disable verify (not recommended):
-    // curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-
-    $curlResp = curl_exec($ch);
-    $curlErr = curl_error($ch);
-    $curlCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
+    // create activation token (gracefully handle missing table)
+    $activationLink = '';
     $mailSent = false;
-    if ($curlResp !== false && $curlCode >= 200 && $curlCode < 300) {
-        $decoded = json_decode($curlResp, true);
-        if (is_array($decoded) && isset($decoded['success']) && $decoded['success'] === true) {
-            $mailSent = true;
-        } else {
-            // endpoint returned failure or unexpected data
-            error_log("send_report_mail response: " . $curlResp);
-            if ($decoded && isset($decoded['message'])) $curlErr = $decoded['message'];
+    $activationError = '';
+    try {
+        // ensure user_activations table exists
+        $conn->query("CREATE TABLE IF NOT EXISTS `user_activations` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `user_id` INT NOT NULL,
+            `token` VARCHAR(255) NOT NULL,
+            `created_at` DATETIME NOT NULL,
+            `expires_at` DATETIME NOT NULL,
+            `used` TINYINT(1) NOT NULL DEFAULT 0,
+            UNIQUE KEY `uk_token` (`token`),
+            KEY `idx_user_id` (`user_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $token = bin2hex(random_bytes(32));
+        $tz = new DateTimeZone('Asia/Dubai');
+        $now = new DateTime('now', $tz);
+        $created_at = $now->format('Y-m-d H:i:s');
+        $expires_at = (clone $now)->modify('+2 days')->format('Y-m-d H:i:s');
+
+        $ins = $conn->prepare("INSERT INTO user_activations (user_id, token, created_at, expires_at, used) VALUES (?, ?, ?, ?, 0)");
+        if ($ins === false) throw new Exception('Prepare failed (activation insert): ' . $conn->error);
+        $ins->bind_param('isss', $newUserId, $token, $created_at, $expires_at);
+        if (!$ins->execute()) {
+            throw new Exception('Execute failed (activation insert): ' . $ins->error);
         }
-    } else {
-        error_log("cURL to send_report_mail failed: code={$curlCode}, err={$curlErr}, resp={$curlResp}");
+        $ins->close();
+
+        // build base URL dynamically
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $baseUrl = $scheme . '://' . $host;
+
+        $activationLink = rtrim($baseUrl, '/') . "/vehicle_management/api/users/activate_user.php?token={$token}";
+
+        // --- Call send_report_mail.php endpoint via internal HTTP POST (cURL) ---
+        $sendEndpoint = $baseUrl . '/vehicle_management/api/users/send_report_mail.php';
+        $mailSubject = ($preferred_language === 'ar') ? "تفعيل حسابك - نظام متابعة السيارات" : "Activate your account - Vehicle Management";
+        if ($preferred_language === 'ar') {
+            $mailBody = "مرحباً {$username},\n\nشكراً لتسجيلك في نظام متابعة السيارات.\nالرجاء الضغط على الرابط لتفعيل حسابك:\n{$activationLink}\n\nهذا الرابط صالح حتى {$expires_at} (Asia/Dubai).\n\nإذا لم تقم بطلب هذا الحساب، تجاهل هذا البريد.";
+        } else {
+            $mailBody = "Hello {$username},\n\nThanks for registering at Vehicle Management.\nPlease click the link below to activate your account:\n{$activationLink}\n\nThis link is valid until {$expires_at} (Asia/Dubai).\n\nIf you did not request this, please ignore this email.";
+        }
+
+        // prepare POST fields
+        $postFields = http_build_query([
+            'to' => $email,
+            'subject' => $mailSubject,
+            'body' => $mailBody
+        ]);
+
+        // cURL request to local endpoint
+        $ch = curl_init($sendEndpoint);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+        $curlResp = curl_exec($ch);
+        $curlErr = curl_error($ch);
+        $curlCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($curlResp !== false && $curlCode >= 200 && $curlCode < 300) {
+            $decoded = json_decode($curlResp, true);
+            if (is_array($decoded) && isset($decoded['success']) && $decoded['success'] === true) {
+                $mailSent = true;
+            } else {
+                error_log("send_report_mail response: " . $curlResp);
+                if ($decoded && isset($decoded['message'])) $activationError = $decoded['message'];
+            }
+        } else {
+            error_log("cURL to send_report_mail failed: code={$curlCode}, err={$curlErr}, resp={$curlResp}");
+            $activationError = $curlErr;
+        }
+    } catch (Exception $actEx) {
+        error_log("Activation step failed for user {$newUserId}: " . $actEx->getMessage());
+        $activationError = $actEx->getMessage();
     }
 
     if ($mailSent) {
-        echo json_encode(['success' => true, 'message' => 'User registered. Activation email sent via send_report_mail.php. Please check your inbox.', 'user_id' => $newUserId]);
+        echo json_encode(['success' => true, 'message' => 'User registered. Activation email sent. Please check your inbox.', 'user_id' => $newUserId]);
         exit;
     } else {
-        // fallback: return activation link in response for temporary manual activation
-        error_log("Activation email via send_report_mail.php failed for user {$newUserId}. curl_err={$curlErr}");
         echo json_encode([
             'success' => true,
-            'message' => 'User registered. Failed to send activation email via send_report_mail.php — use the returned activation_link to activate account (temporary).',
+            'message' => 'User registered successfully.',
             'user_id' => $newUserId,
-            'activation_link' => $activationLink,
-            'debug' => $curlErr
+            'activation_link' => $activationLink ?: null
         ]);
         exit;
     }
