@@ -170,13 +170,13 @@
             html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + t('المستلم الحالي', 'Current Holder') + ': ' + esc(v.last_holder) + '</div>';
         }
 
-        /* Pickup/Return buttons — available for all authenticated users (self-service) */
+        /* Pickup/Return buttons — pickup for all, return only for holder + permission check */
         html += '<div class="mv-v-actions">';
         if (canPickup) {
             html += '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
             html += '<span>🚗</span> ' + t('استلام', 'Pickup');
             html += '</button>';
-        } else if (isCheckedByMe) {
+        } else if (isCheckedByMe && hasAdminMovementPermission) {
             html += '<button class="btn mv-btn-return" onclick="MyVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
             html += '<span>↩️</span> ' + t('إرجاع', 'Return');
             html += '</button>';
@@ -366,6 +366,14 @@
         perms = (currentUser && currentUser.permissions) || [];
         hasMovementPermission = true; /* All authenticated users can self-service */
         hasAdminMovementPermission = perms.includes('manage_movements') || perms.includes('*');
+
+        /* Visibility: shift & department sections only for users with manage_movements or * permission */
+        if (!hasAdminMovementPermission) {
+            var shiftSec = document.getElementById('mvShiftSection');
+            var deptSec  = document.getElementById('mvDeptSection');
+            if (shiftSec) shiftSec.style.display = 'none';
+            if (deptSec)  deptSec.style.display = 'none';
+        }
 
         applyFragmentLang();
         loadMyVehicles();

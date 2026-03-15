@@ -137,5 +137,11 @@
     <!-- Page-specific scripts -->
     <?= $pageScripts ?>
     <?php endif; ?>
+    <script>
+    /* Register Service Worker for PWA support */
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('<?= $publicUrl ?>/sw.js').catch(function(){});
+    }
+    </script>
 </body>
 </html>

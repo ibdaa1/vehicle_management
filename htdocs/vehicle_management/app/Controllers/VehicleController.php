@@ -447,4 +447,31 @@ class VehicleController extends BaseController
         }
         Response::json(['success' => true, 'data' => $stats]);
     }
+
+    /**
+     * Log an activity to the activity_logs table.
+     */
+    private function logActivity(array $user, string $type, string $tableName, int $recordId, string $description): void
+    {
+        try {
+            $db = Database::getInstance();
+            $db->execute(
+                "INSERT INTO activity_logs (user_id, emp_id, activity_type, description, table_name, record_id, ip_address, user_agent)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                'issssiss',
+                [
+                    $user['id'],
+                    $user['emp_id'] ?? '',
+                    $type,
+                    $description,
+                    $tableName,
+                    $recordId,
+                    $_SERVER['REMOTE_ADDR'] ?? '',
+                    substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+                ]
+            );
+        } catch (\Throwable $e) {
+            error_log("Activity log error: " . $e->getMessage());
+        }
+    }
 }

@@ -108,8 +108,8 @@ $menuItems = [
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a2e">
-    <link rel="manifest" href="<?= $publicUrl ?>/manifest.json">
+    <meta name="theme-color" content="<?= htmlspecialchars(!empty($theme['colors']['primary_dark']) ? $theme['colors']['primary_dark'] : '#1a1a2e') ?>">
+    <link rel="manifest" href="<?= $publicUrl ?>/manifest.php">
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <link rel="stylesheet" href="<?= $publicUrl ?>/css/theme.css">
     <?php if ($cssVars): ?>
