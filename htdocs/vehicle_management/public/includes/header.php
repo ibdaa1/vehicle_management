@@ -108,6 +108,8 @@ $menuItems = [
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="manifest" href="<?= $publicUrl ?>/manifest.json">
     <title><?= htmlspecialchars($pageTitle) ?></title>
     <link rel="stylesheet" href="<?= $publicUrl ?>/css/theme.css">
     <?php if ($cssVars): ?>
@@ -138,7 +140,7 @@ $menuItems = [
                     <div class="menu-divider"></div>
                 <?php else: ?>
                     <a class="menu-item<?= ($activePage === $item['page']) ? ' active' : '' ?>"
-                       href="<?= $publicUrl ?>/dashboard.php?page=<?= urlencode($item['page']) ?>"
+                       href="<?= $publicUrl ?>/dashboard.php?page=<?= urlencode($item['page']) ?>&_v=<?= time() ?>"
                        data-perm="<?= htmlspecialchars($item['perm'] ?? '') ?>">
                         <span class="menu-icon"><?= $item['icon'] ?></span>
                         <span class="menu-label" data-label-ar="<?= htmlspecialchars($item['label_ar']) ?>" data-label-en="<?= htmlspecialchars($item['label_en']) ?>"><?= htmlspecialchars($item['label_ar']) ?></span>

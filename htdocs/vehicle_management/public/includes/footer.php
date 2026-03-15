@@ -15,18 +15,21 @@
         var params = new URLSearchParams(window.location.search);
         var requestedPage = params.get('page') || 'dashboard';
         if (renderedPage !== requestedPage) {
-            // Server rendered a different page than what URL requested (caching issue)
-            // Force reload with cache-bust parameter (only once to prevent loops)
-            if (!params.has('_cb')) {
-                params.set('_cb', Date.now());
+            // Server rendered a different page than what URL requested (CDN caching issue)
+            // Retry up to 3 times with increasingly aggressive cache-busting
+            var retries = parseInt(params.get('_retry') || '0', 10);
+            if (retries < 3) {
+                params.set('_cb', Date.now() + '' + Math.random());
+                params.set('_retry', retries + 1);
                 window.location.replace(window.location.pathname + '?' + params.toString());
                 return;
             }
         }
-        // Clean up _cb parameter from URL (cosmetic, using replaceState if available)
-        // If replaceState is not available, _cb stays in URL but page still works correctly
-        if (params.has('_cb') && renderedPage === requestedPage) {
+        // Clean up cache-bust parameters from URL (cosmetic, using replaceState if available)
+        if (renderedPage === requestedPage && (params.has('_cb') || params.has('_retry') || params.has('_v'))) {
             params.delete('_cb');
+            params.delete('_retry');
+            params.delete('_v');
             var cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             if (window.history && window.history.replaceState) {
                 window.history.replaceState(null, '', cleanUrl);

@@ -72,16 +72,16 @@
 <!-- Quick Actions (visibility controlled by JS based on permissions) -->
 <div class="section-header"><h3>إجراءات سريعة</h3></div>
 <div class="quick-actions" id="quickActions">
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list" data-requires="manage_vehicles" style="display:none">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list&_v=<?= time() ?>" data-requires="manage_vehicles" style="display:none">
         <div class="action-icon">🚗</div><div class="action-label">إضافة مركبة</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements" data-requires="manage_movements" style="display:none">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements&_v=<?= time() ?>" data-requires="manage_movements" style="display:none">
         <div class="action-icon">🔄</div><div class="action-label">تسليم / استلام</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=my_vehicles" data-requires="">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=my_vehicles&_v=<?= time() ?>" data-requires="">
         <div class="action-icon">🚙</div><div class="action-label">مركباتي</div>
     </a>
-    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users" data-requires="manage_users" style="display:none">
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users&_v=<?= time() ?>" data-requires="manage_users" style="display:none">
         <div class="action-icon">👥</div><div class="action-label">إدارة المستخدمين</div>
     </a>
 </div>
