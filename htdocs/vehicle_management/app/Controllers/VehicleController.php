@@ -356,13 +356,14 @@ class VehicleController extends BaseController
                 return;
             }
         } else {
-            // Return: verify the user is the one who checked it out
+            // Return: verify the user is the one who checked it out, or is admin/superadmin
             if ($isAvailable) {
                 Response::error('Vehicle is not checked out', 400);
                 return;
             }
             $lastHolder = trim($lastMovement['performed_by'] ?? '');
-            if ($lastHolder !== $userEmpId) {
+            $isAdmin = in_array((int)($user['role_id'] ?? 0), [1, 2], true);
+            if ($lastHolder !== $userEmpId && !$isAdmin) {
                 Response::error('You can only return vehicles you have checked out', 403);
                 return;
             }

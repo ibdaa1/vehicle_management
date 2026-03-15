@@ -52,7 +52,7 @@ self.addEventListener('fetch', function(event) {
         fetch(request).then(function(response) {
             // Don't cache responses with Vary: * (breaks Cache API)
             var vary = response.headers.get('Vary');
-            if (vary && vary.trim() === '*') {
+            if (vary && vary.indexOf('*') !== -1) {
                 return response;
             }
 

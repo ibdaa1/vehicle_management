@@ -170,13 +170,22 @@
             html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + t('المستلم الحالي', 'Current Holder') + ': ' + esc(v.last_holder) + '</div>';
         }
 
-        /* Pickup/Return buttons — pickup for all, return only for holder + permission check */
+        /* Pickup/Return buttons — pickup for all, return logic:
+           - Private vehicles: holder can always return
+           - Shift/dept vehicles: only admin/superadmin can return */
+        var isNotAvailable = !isAvailable;
+        var canReturn = false;
+        if (opts.isPrivate) {
+            canReturn = isCheckedByMe;
+        } else {
+            canReturn = isNotAvailable && hasAdminMovementPermission;
+        }
         html += '<div class="mv-v-actions">';
         if (canPickup) {
             html += '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
             html += '<span>🚗</span> ' + t('استلام', 'Pickup');
             html += '</button>';
-        } else if (isCheckedByMe && hasAdminMovementPermission) {
+        } else if (canReturn) {
             html += '<button class="btn mv-btn-return" onclick="MyVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
             html += '<span>↩️</span> ' + t('إرجاع', 'Return');
             html += '</button>';
@@ -238,7 +247,7 @@
                 t('لا توجد مركبات خاصة مسجلة لك', 'No private vehicles assigned to you') + '</p></div>';
             return;
         }
-        container.innerHTML = vehicles.map(function(v) { return buildCard(v); }).join('');
+        container.innerHTML = vehicles.map(function(v) { return buildCard(v, { isPrivate: true }); }).join('');
     }
 
     /* ---------- Render shift vehicles (all available) ---------- */
@@ -366,14 +375,6 @@
         perms = (currentUser && currentUser.permissions) || [];
         hasMovementPermission = true; /* All authenticated users can self-service */
         hasAdminMovementPermission = perms.includes('manage_movements') || perms.includes('*');
-
-        /* Visibility: shift & department sections only for users with manage_movements or * permission */
-        if (!hasAdminMovementPermission) {
-            var shiftSec = document.getElementById('mvShiftSection');
-            var deptSec  = document.getElementById('mvDeptSection');
-            if (shiftSec) shiftSec.style.display = 'none';
-            if (deptSec)  deptSec.style.display = 'none';
-        }
 
         applyFragmentLang();
         loadMyVehicles();
