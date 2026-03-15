@@ -253,5 +253,8 @@
   "vehicle_condition_label": "Vehicle Condition",
   "fuel_level_label": "Fuel Level",
   "location_label": "Location",
-  "photos_label": "Photos (max 6)"
+  "photos_label": "Photos (max 6)",
+  "sector": "Sector",
+  "all_sectors": "All Sectors",
+  "search_vehicle": "Search vehicles..."
 }

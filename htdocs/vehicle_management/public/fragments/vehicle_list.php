@@ -16,6 +16,8 @@
 .vl-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
 .vl-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
 .vl-toolbar .btn-add{margin-inline-start:auto}
+.vl-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.vl-filters select{min-width:140px;padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
 .vl-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .vl-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
 .vl-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
@@ -40,6 +42,24 @@
 .btn-secondary{background:var(--bg-secondary,#e9ecef);color:var(--text-primary,#333)}
 .btn-danger{background:#dc3545;color:#fff}
 .btn-sm{padding:6px 12px;font-size:.8rem}
+/* Mobile responsive styles */
+@media(max-width:768px){
+    .vl-toolbar{flex-direction:column;align-items:stretch}
+    .vl-toolbar .search-box{max-width:100%;min-width:auto}
+    .vl-toolbar .btn-add{margin-inline-start:0}
+    .vl-filters{flex-direction:column}
+    .vl-filters select{min-width:auto;width:100%}
+    .vl-stats{gap:8px}
+    .vl-stat{min-width:calc(50% - 8px);padding:12px}
+    .vl-stat .num{font-size:1.4rem}
+    #vlTableWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .vl-table th,.vl-table td{padding:8px 10px;font-size:.8rem}
+}
+@media(max-width:480px){
+    .vl-stat{min-width:calc(50% - 4px)}
+    .vl-stat .num{font-size:1.2rem}
+    .vl-stat .lbl{font-size:.75rem}
+}
 </style>
 
 <div class="page-header">
@@ -61,12 +81,28 @@
         <span class="ico">🔍</span>
     </div>
     <select id="vlFilterStatus">
-        <option value="">كل الحالات</option>
-        <option value="operational">تعمل</option>
-        <option value="maintenance">صيانة</option>
-        <option value="out_of_service">خارج الخدمة</option>
+        <option value="" data-label-ar="كل الحالات" data-label-en="All Statuses">كل الحالات</option>
+        <option value="operational" data-label-ar="تعمل" data-label-en="Operational">تعمل</option>
+        <option value="maintenance" data-label-ar="صيانة" data-label-en="Maintenance">صيانة</option>
+        <option value="out_of_service" data-label-ar="خارج الخدمة" data-label-en="Out of Service">خارج الخدمة</option>
     </select>
     <button class="btn btn-primary btn-add" id="vlBtnAdd" style="display:none" onclick="VLForm.showAdd()">➕ <span data-label-ar="إضافة مركبة" data-label-en="Add Vehicle">إضافة مركبة</span></button>
+</div>
+
+<!-- Filters Row -->
+<div class="vl-filters">
+    <select id="vlFilterSector">
+        <option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">كل القطاعات</option>
+    </select>
+    <select id="vlFilterDept">
+        <option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">كل الإدارات</option>
+    </select>
+    <select id="vlFilterSection">
+        <option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">كل الأقسام</option>
+    </select>
+    <select id="vlFilterDivision">
+        <option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">كل الشعب</option>
+    </select>
 </div>
 
 <!-- Data Table -->
@@ -78,7 +114,9 @@
                 <th data-label-ar="كود المركبة" data-label-en="Vehicle Code">كود المركبة</th>
                 <th data-label-ar="النوع" data-label-en="Type">النوع</th>
                 <th data-label-ar="القطاع" data-label-en="Sector">القطاع</th>
-                <th data-label-ar="القسم" data-label-en="Department">القسم</th>
+                <th data-label-ar="الإدارة" data-label-en="Department">الإدارة</th>
+                <th data-label-ar="القسم" data-label-en="Section">القسم</th>
+                <th data-label-ar="الشعبة" data-label-en="Division">الشعبة</th>
                 <th data-label-ar="الحالة" data-label-en="Status">الحالة</th>
                 <th data-label-ar="النمط" data-label-en="Mode">النمط</th>
                 <th data-label-ar="الإجراءات" data-label-en="Actions">الإجراءات</th>
@@ -140,8 +178,16 @@
             <select id="vlFldSector"><option value="">—</option></select>
         </div>
         <div class="form-group">
-            <label id="vlLblDept" data-label-ar="القسم" data-label-en="Department">القسم</label>
+            <label id="vlLblDept" data-label-ar="الإدارة" data-label-en="Department">الإدارة</label>
             <select id="vlFldDept"><option value="">—</option></select>
+        </div>
+        <div class="form-group">
+            <label id="vlLblSection" data-label-ar="القسم" data-label-en="Section">القسم</label>
+            <select id="vlFldSection"><option value="">—</option></select>
+        </div>
+        <div class="form-group">
+            <label id="vlLblDivision" data-label-ar="الشعبة" data-label-en="Division">الشعبة</label>
+            <select id="vlFldDivision"><option value="">—</option></select>
         </div>
         <div class="form-group">
             <label id="vlLblYear" data-label-ar="سنة الصنع" data-label-en="Year">سنة الصنع</label>
@@ -176,6 +222,110 @@
 
     var $=function(id){return document.getElementById(id);};
     var allVehicles=[], canCreate=false, canEdit=false, canDelete=false;
+    var vlRefs={sectors:[],departments:[],sections:[],divisions:[]};
+
+    /* --- Load references --- */
+    function loadAllRefs(){
+        return API.get('/references').then(function(res){
+            vlRefs=(res&&res.data)||res||{sectors:[],departments:[],sections:[],divisions:[]};
+            populateFormDropdowns();
+            populateFilterDropdowns();
+        }).catch(function(e){
+            console.error('Load references error',e);
+            vlRefs={sectors:[],departments:[],sections:[],divisions:[]};
+        });
+    }
+
+    function populateFormDropdowns(){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var sel=$('vlFldSector');
+        sel.innerHTML='<option value="">—</option>';
+        (vlRefs.sectors||[]).forEach(function(s){
+            sel.innerHTML+='<option value="'+(s.id||'')+'">'+((isEn?(s.name_en||s.name):(s.name||s.name_en))||'—')+'</option>';
+        });
+        var dd=$('vlFldDept');
+        dd.innerHTML='<option value="">—</option>';
+        (vlRefs.departments||[]).forEach(function(d){
+            dd.innerHTML+='<option value="'+(d.department_id||'')+'">'+((isEn?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—')+'</option>';
+        });
+        $('vlFldSection').innerHTML='<option value="">—</option>';
+        $('vlFldDivision').innerHTML='<option value="">—</option>';
+    }
+
+    function populateFilterDropdowns(){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var sf=$('vlFilterSector');
+        var prevSector=sf.value;
+        sf.innerHTML='<option value="">'+(isEn?'All Sectors':'كل القطاعات')+'</option>';
+        (vlRefs.sectors||[]).forEach(function(s){
+            sf.innerHTML+='<option value="'+(s.id||'')+'">'+((isEn?(s.name_en||s.name):(s.name||s.name_en))||'—')+'</option>';
+        });
+        if(prevSector) sf.value=prevSector;
+        var df=$('vlFilterDept');
+        var prevDept=df.value;
+        df.innerHTML='<option value="">'+(isEn?'All Departments':'كل الإدارات')+'</option>';
+        (vlRefs.departments||[]).forEach(function(d){
+            df.innerHTML+='<option value="'+(d.department_id||'')+'">'+((isEn?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—')+'</option>';
+        });
+        if(prevDept) df.value=prevDept;
+        cascadeFilterSections(prevDept);
+    }
+
+    function cascadeFilterSections(deptId){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var sf=$('vlFilterSection');
+        var prevVal=sf.value;
+        sf.innerHTML='<option value="">'+(isEn?'All Sections':'كل الأقسام')+'</option>';
+        if(deptId){
+            (vlRefs.sections||[]).filter(function(s){return s.department_id==deptId;}).forEach(function(s){
+                sf.innerHTML+='<option value="'+(s.section_id||'')+'">'+((isEn?(s.name_en||s.name_ar):(s.name_ar||s.name_en))||'—')+'</option>';
+            });
+        }
+        if(prevVal) sf.value=prevVal;
+        cascadeFilterDivisions(sf.value);
+    }
+
+    function cascadeFilterDivisions(sectionId){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var df=$('vlFilterDivision');
+        var prevVal=df.value;
+        df.innerHTML='<option value="">'+(isEn?'All Divisions':'كل الشعب')+'</option>';
+        if(sectionId){
+            (vlRefs.divisions||[]).filter(function(d){return d.section_id==sectionId;}).forEach(function(d){
+                df.innerHTML+='<option value="'+(d.division_id||'')+'">'+((isEn?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—')+'</option>';
+            });
+        }
+        if(prevVal) df.value=prevVal;
+    }
+
+    /* Form cascading */
+    function cascadeFormSection(deptId){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var s=$('vlFldSection');
+        s.innerHTML='<option value="">—</option>';
+        if(deptId){
+            (vlRefs.sections||[]).filter(function(sc){return sc.department_id==deptId;}).forEach(function(sc){
+                s.innerHTML+='<option value="'+(sc.section_id||'')+'">'+((isEn?(sc.name_en||sc.name_ar):(sc.name_ar||sc.name_en))||'—')+'</option>';
+            });
+        }
+        cascadeFormDivision('');
+    }
+    function cascadeFormDivision(sectionId){
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
+        var d=$('vlFldDivision');
+        d.innerHTML='<option value="">—</option>';
+        if(sectionId){
+            (vlRefs.divisions||[]).filter(function(dv){return dv.section_id==sectionId;}).forEach(function(dv){
+                d.innerHTML+='<option value="'+(dv.division_id||'')+'">'+((isEn?(dv.name_en||dv.name_ar):(dv.name_ar||dv.name_en))||'—')+'</option>';
+            });
+        }
+    }
 
     /* --- Load vehicles --- */
     function loadVehicles(){
@@ -214,8 +364,16 @@
     function renderTable(){
         var search=($('vlSearch').value||'').toLowerCase();
         var statusFilter=$('vlFilterStatus').value;
+        var sectorFilter=$('vlFilterSector').value;
+        var deptFilter=$('vlFilterDept').value;
+        var sectionFilter=$('vlFilterSection').value;
+        var divisionFilter=$('vlFilterDivision').value;
         var filtered=allVehicles.filter(function(v){
             if(statusFilter && v.status!==statusFilter) return false;
+            if(sectorFilter && String(v.sector_id||'')!==sectorFilter) return false;
+            if(deptFilter && String(v.department_id||'')!==deptFilter) return false;
+            if(sectionFilter && String(v.section_id||'')!==sectionFilter) return false;
+            if(divisionFilter && String(v.division_id||'')!==divisionFilter) return false;
             if(search){
                 var code=(v.vehicle_code||'').toLowerCase();
                 var type=(v.type||v.vehicle_type||'').toLowerCase();
@@ -234,11 +392,18 @@
         $('vlTableWrap').style.display='';
         $('vlEmpty').style.display='none';
 
+        var lang=localStorage.getItem('lang')||'ar';
+        var isEn=(lang==='en');
         var html='';
         filtered.forEach(function(v,i){
             var statusCls=v.status==='operational'?'operational':(v.status==='maintenance'?'maintenance':'out_of_service');
-            var statusTxt=v.status==='operational'?'تعمل':(v.status==='maintenance'?'صيانة':'خارج الخدمة');
-            var modeTxt=(v.vehicle_mode||v.usage_mode)==='private'?'خاص':'وردية';
+            var statusTxt=v.status==='operational'?(isEn?'Operational':'تعمل'):(v.status==='maintenance'?(isEn?'Maintenance':'صيانة'):(isEn?'Out of Service':'خارج الخدمة'));
+            var modeTxt=(v.vehicle_mode||v.usage_mode)==='private'?(isEn?'Private':'خاص'):(isEn?'Shift':'وردية');
+            var sectorName='—', deptName='—', sectName='—', divName='—';
+            if(v.sector_id){var sc=(vlRefs.sectors||[]).find(function(s){return s.id==v.sector_id;});if(sc) sectorName=(isEn?(sc.name_en||sc.name):(sc.name||sc.name_en))||'—';}
+            if(v.department_id){var dd=(vlRefs.departments||[]).find(function(d){return d.department_id==v.department_id;});if(dd) deptName=(isEn?(dd.name_en||dd.name_ar):(dd.name_ar||dd.name_en))||'—';}
+            if(v.section_id){var ss=(vlRefs.sections||[]).find(function(s){return s.section_id==v.section_id;});if(ss) sectName=(isEn?(ss.name_en||ss.name_ar):(ss.name_ar||ss.name_en))||'—';}
+            if(v.division_id){var dv=(vlRefs.divisions||[]).find(function(d){return d.division_id==v.division_id;});if(dv) divName=(isEn?(dv.name_en||dv.name_ar):(dv.name_ar||dv.name_en))||'—';}
             var actions='';
             if(canEdit) actions+='<button onclick="VLForm.showEdit('+v.id+')" title="Edit">✏️</button>';
             if(canDelete) actions+='<button onclick="VLForm.showDelete('+v.id+')" title="Delete">🗑️</button>';
@@ -246,8 +411,10 @@
                 +'<td>'+(i+1)+'</td>'
                 +'<td>'+(v.vehicle_code||'—')+'</td>'
                 +'<td>'+(v.type||v.vehicle_type||'—')+'</td>'
-                +'<td>'+(v.sector_name||v.sector_name_en||'—')+'</td>'
-                +'<td>'+(v.department_name_ar||v.department_name||'—')+'</td>'
+                +'<td>'+sectorName+'</td>'
+                +'<td>'+deptName+'</td>'
+                +'<td>'+sectName+'</td>'
+                +'<td>'+divName+'</td>'
                 +'<td><span class="vl-badge '+statusCls+'">'+statusTxt+'</span></td>'
                 +'<td>'+modeTxt+'</td>'
                 +'<td class="vl-actions">'+actions+'</td>'
@@ -259,36 +426,20 @@
     /* --- Search & Filter events --- */
     $('vlSearch').addEventListener('input', renderTable);
     $('vlFilterStatus').addEventListener('change', renderTable);
+    $('vlFilterSector').addEventListener('change', renderTable);
+    $('vlFilterDept').addEventListener('change', function(){
+        cascadeFilterSections(this.value);
+        renderTable();
+    });
+    $('vlFilterSection').addEventListener('change', function(){
+        cascadeFilterDivisions(this.value);
+        renderTable();
+    });
+    $('vlFilterDivision').addEventListener('change', renderTable);
 
-    /* --- Load sectors for dropdown --- */
-    function loadSectors(){
-        API.get('/references/sectors').then(function(res){
-            var sectors=res.data||res||[];
-            var sel=$('vlFldSector');
-            var lang=localStorage.getItem('lang')||'ar';
-            sel.innerHTML='<option value="">—</option>';
-            sectors.forEach(function(s){
-                var sId=s.id||'';
-                var sName=(lang==='en'?(s.name_en||s.name):(s.name||s.name_en))||'—';
-                sel.innerHTML+='<option value="'+sId+'">'+sName+'</option>';
-            });
-        }).catch(function(e){ console.error('Load sectors error',e); });
-    }
-
-    /* --- Load departments for dropdown --- */
-    function loadDepartments(){
-        API.get('/references/departments').then(function(res){
-            var depts=res.data||res||[];
-            var sel=$('vlFldDept');
-            var lang=localStorage.getItem('lang')||'ar';
-            sel.innerHTML='<option value="">—</option>';
-            depts.forEach(function(d){
-                var dId=d.department_id||'';
-                var dName=(lang==='en'?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—';
-                sel.innerHTML+='<option value="'+dId+'">'+dName+'</option>';
-            });
-        }).catch(function(e){ console.error('Load departments error',e); });
-    }
+    /* Form cascading events */
+    $('vlFldDept').addEventListener('change', function(){ cascadeFormSection(this.value); });
+    $('vlFldSection').addEventListener('change', function(){ cascadeFormDivision(this.value); });
 
     /* --- Form object (exposed globally for onclick) --- */
     window.VLForm = {
@@ -302,6 +453,8 @@
             $('vlFldGender').value='men';
             $('vlFldSector').value='';
             $('vlFldDept').value='';
+            $('vlFldSection').innerHTML='<option value="">—</option>';
+            $('vlFldDivision').innerHTML='<option value="">—</option>';
             $('vlFldYear').value='';
             $('vlModalTitle').textContent='إضافة مركبة';
             $('vlModal').classList.add('active');
@@ -318,6 +471,12 @@
             $('vlFldGender').value=v.gender||'men';
             $('vlFldSector').value=v.sector_id||'';
             $('vlFldDept').value=v.department_id||'';
+            cascadeFormSection(v.department_id||'');
+            setTimeout(function(){
+                $('vlFldSection').value=v.section_id||'';
+                cascadeFormDivision(v.section_id||'');
+                setTimeout(function(){ $('vlFldDivision').value=v.division_id||''; },50);
+            },50);
             $('vlFldYear').value=v.manufacture_year||v.year||'';
             $('vlModalTitle').textContent='تعديل مركبة';
             $('vlModal').classList.add('active');
@@ -336,6 +495,8 @@
                 gender: $('vlFldGender').value,
                 sector_id: $('vlFldSector').value||null,
                 department_id: $('vlFldDept').value||null,
+                section_id: $('vlFldSection').value||null,
+                division_id: $('vlFldDivision').value||null,
                 manufacture_year: $('vlFldYear').value||null
             };
             if(!data.vehicle_code){
@@ -372,7 +533,11 @@
         var lang=localStorage.getItem('lang')||'ar';
         var isEn=(lang==='en');
         document.querySelectorAll('#pageContent [data-label-ar]').forEach(function(el){
-            el.textContent=el.getAttribute(isEn?'data-label-en':'data-label-ar')||el.textContent;
+            if(el.tagName==='OPTION'){
+                el.textContent=el.getAttribute(isEn?'data-label-en':'data-label-ar')||el.textContent;
+            } else {
+                el.textContent=el.getAttribute(isEn?'data-label-en':'data-label-ar')||el.textContent;
+            }
         });
         var s=$('vlSearch');
         if(s) s.placeholder=s.getAttribute(isEn?'data-placeholder-en':'data-placeholder-ar')||s.placeholder;
@@ -389,9 +554,7 @@
         canDelete=perms.includes('manage_vehicles')||perms.includes('*');
         if(canCreate){$('vlBtnAdd').style.display='';}
         applyLang();
-        loadSectors();
-        loadDepartments();
-        loadVehicles();
+        loadAllRefs().then(function(){ loadVehicles(); });
     })();
 })();
 </script>

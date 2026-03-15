@@ -95,6 +95,7 @@
     </div>
     <div class="filters">
         <select class="form-select" id="filterRole"><option value="" id="optAllRoles">All Roles</option></select>
+        <select class="form-select" id="filterSector"><option value="" id="optAllSectors">All Sectors</option></select>
         <select class="form-select" id="filterActive">
             <option value="" id="optAllStatus">All</option>
             <option value="1" id="optActiveStatus">Active</option>
@@ -259,9 +260,14 @@
         } catch(e) { uRefs = {sectors:[],departments:[],sections:[],divisions:[]}; }
         var sd = document.getElementById('fSectorId');
         sd.innerHTML = '<option value="">--</option>';
+        var filterSel = document.getElementById('filterSector');
+        var prevFilterVal = filterSel ? filterSel.value : '';
+        if(filterSel) filterSel.innerHTML = '<option value="">' + i18n.t('all_sectors') + '</option>';
         (uRefs.sectors||[]).forEach(function(s){
             sd.innerHTML += '<option value="'+s.id+'">'+(s.name||s.name_en)+'</option>';
+            if(filterSel) filterSel.innerHTML += '<option value="'+s.id+'">'+(s.name||s.name_en)+'</option>';
         });
+        if(prevFilterVal && filterSel) filterSel.value = prevFilterVal;
         var dd = document.getElementById('fDeptId');
         dd.innerHTML = '<option value="">--</option>';
         (uRefs.departments||[]).forEach(function(d){
@@ -310,6 +316,7 @@
     function renderTable() {
         const search = (document.getElementById('userSearch').value || '').toLowerCase();
         const roleFilter = document.getElementById('filterRole').value;
+        const sectorFilter = document.getElementById('filterSector').value;
         const activeFilter = document.getElementById('filterActive').value;
         const genderFilter = document.getElementById('filterGender').value;
 
@@ -319,6 +326,7 @@
                 if (!haystack.includes(search)) return false;
             }
             if (roleFilter && String(u.role_id) !== roleFilter) return false;
+            if (sectorFilter && String(u.sector_id || '') !== sectorFilter) return false;
             if (activeFilter !== '' && String(u.is_active) !== activeFilter) return false;
             if (genderFilter && (u.gender || '') !== genderFilter) return false;
             return true;
@@ -563,6 +571,7 @@
     function resetPageAndRender() { uCurrentPage = 1; renderTable(); }
     document.getElementById('userSearch').addEventListener('input', resetPageAndRender);
     document.getElementById('filterRole').addEventListener('change', resetPageAndRender);
+    document.getElementById('filterSector').addEventListener('change', resetPageAndRender);
     document.getElementById('filterActive').addEventListener('change', resetPageAndRender);
     document.getElementById('filterGender').addEventListener('change', resetPageAndRender);
 
@@ -577,6 +586,7 @@
             'lblActiveUsers': 'active',
             'lblInactiveUsers': 'inactive',
             'optAllRoles': 'all_roles',
+            'optAllSectors': 'all_sectors',
             'optAllStatus': 'all',
             'optActiveStatus': 'active',
             'optInactiveStatus': 'inactive',

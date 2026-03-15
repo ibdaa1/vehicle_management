@@ -253,5 +253,8 @@
   "vehicle_condition_label": "حالة المركبة",
   "fuel_level_label": "مستوى الوقود",
   "location_label": "الموقع",
-  "photos_label": "صور (بحد أقصى 6)"
+  "photos_label": "صور (بحد أقصى 6)",
+  "sector": "القطاع",
+  "all_sectors": "كل القطاعات",
+  "search_vehicle": "بحث عن مركبة..."
 }
