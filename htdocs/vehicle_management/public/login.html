@@ -278,17 +278,22 @@
     rolePermsBox:$('rolePermsBox')
   };
 
-  // Get safe return URL from query parameter (same-origin only)
+  // Get safe return URL from query parameter (same-origin and same-app only)
   function getReturnUrl() {
+    var defaultUrl = BASE+'/public/dashboard.php';
     var params = new URLSearchParams(location.search);
     var returnTo = params.get('return_to');
-    if (!returnTo) return BASE+'/public/dashboard.php';
+    if (!returnTo) return defaultUrl;
     try {
       var url = new URL(returnTo, location.origin);
-      if (url.origin !== location.origin) return BASE+'/public/dashboard.php';
-      return url.pathname + url.search;
+      // Must be same origin
+      if (url.origin !== location.origin) return defaultUrl;
+      // Must be within the app's base path (or root if no BASE)
+      var path = url.pathname + url.search;
+      if (BASE && path.indexOf(BASE) !== 0) return defaultUrl;
+      return path;
     } catch(e) {
-      return BASE+'/public/dashboard.php';
+      return defaultUrl;
     }
   }
   var afterLoginUrl = getReturnUrl();

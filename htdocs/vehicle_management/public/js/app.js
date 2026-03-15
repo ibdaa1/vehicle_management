@@ -443,11 +443,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!publicPages.includes(currentPage)) {
         const user = await Auth.check();
         if (!user) {
-            var loginUrl = API.baseUrl + '/public/login.html';
             // Preserve the current page so the user returns here after login
-            if (window.location.href) {
-                loginUrl += '?return_to=' + encodeURIComponent(window.location.href);
-            }
+            var loginUrl = API.baseUrl + '/public/login.html?return_to=' + encodeURIComponent(window.location.href);
             window.location.href = loginUrl;
             return;
         }
