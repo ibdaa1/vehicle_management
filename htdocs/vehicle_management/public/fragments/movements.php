@@ -106,6 +106,8 @@
     <div class="mv-stat" data-stat="bus"><div class="num" id="mvStatBus">0</div><div class="lbl" data-lang-key="bus">Bus</div><div class="print-hint">🖨️</div></div>
     <div class="mv-stat" data-stat="operational"><div class="num" id="mvStatOperational">0</div><div class="lbl" data-lang-key="operational">Operational</div><div class="print-hint">🖨️</div></div>
 </div>
+<!-- Sector Stats (dynamic) -->
+<div class="mv-stats" id="mvSectorStats" style="display:none"></div>
 
 <!-- Toolbar: Search + Actions -->
 <div class="mv-toolbar">
@@ -119,6 +121,9 @@
 
 <!-- Filters Row 1: Organizational filters -->
 <div class="mv-filters-row">
+    <select id="mvFilterSector">
+        <option value="" id="mvOptAllSectors">All Sectors</option>
+    </select>
     <select id="mvFilterDept">
         <option value="" id="mvOptAllDepts">All Departments</option>
     </select>
@@ -329,6 +334,11 @@
             var rRes=await API.get('/references');
             var refs=rRes.data||rRes;
             allRefs=refs;
+            // Populate sector dropdown
+            var sSel=$('mvFilterSector');
+            (refs.sectors||[]).forEach(function(s){
+                var o=document.createElement('option');o.value=s.id;o.textContent=s.name||s.name_en;sSel.appendChild(o);
+            });
             // Populate department dropdown
             var dSel=$('mvFilterDept');
             (refs.departments||[]).forEach(function(d){
@@ -413,12 +423,17 @@
     async function loadStats(){
         try{
             var params=[];
+            var sectorSel=$('mvFilterSector');
             var deptSel=$('mvFilterDept');
             var secSel=$('mvFilterSection');
             var divSel=$('mvFilterDivision');
             var dateFrom=$('mvDateFrom').value;
             var dateTo=$('mvDateTo').value;
             var gender=$('mvFilterGender').value;
+            // Get sector_id from the selected sector
+            if(sectorSel&&sectorSel.value){
+                params.push('sector_id='+encodeURIComponent(sectorSel.value));
+            }
             // Get department_id from the selected department name
             if(deptSel&&deptSel.value){
                 var deptOpt=deptSel.options[deptSel.selectedIndex];
@@ -462,7 +477,33 @@
             $('mvStatBus').textContent=cats.bus||0;
             var sts=s.statuses||{};
             $('mvStatOperational').textContent=sts.operational||0;
+            // Build per-sector stats from client-side vehicle data
+            renderSectorStats();
         }catch(e){console.error('loadStats',e);}
+    }
+
+    function renderSectorStats(){
+        var container=$('mvSectorStats');
+        var sectors=allRefs.sectors||[];
+        if(!sectors.length){container.style.display='none';return;}
+        var vehicles=getFilteredVehicles();
+        var sectorCounts={};
+        vehicles.forEach(function(v){
+            var sid=v.sector_id||0;
+            if(!sectorCounts[sid]) sectorCounts[sid]=0;
+            sectorCounts[sid]++;
+        });
+        var html='';
+        sectors.forEach(function(s){
+            var count=sectorCounts[s.id]||0;
+            html+='<div class="mv-stat"><div class="num">'+count+'</div><div class="lbl">'+(s.name||s.name_en)+'</div></div>';
+        });
+        if(html){
+            container.innerHTML=html;
+            container.style.display='flex';
+        }else{
+            container.style.display='none';
+        }
     }
 
     function updateStats(){
@@ -476,6 +517,7 @@
         const dateFrom=$('mvDateFrom').value;
         const dateTo=$('mvDateTo').value;
         const vStatus=$('mvFilterVehicleStatus').value;
+        const sectorId=$('mvFilterSector').value;
         const deptId=getSelId($('mvFilterDept'));
         const secId=getSelId($('mvFilterSection'));
         const divId=getSelId($('mvFilterDivision'));
@@ -496,9 +538,10 @@
             }
             // Cross-reference vehicle data
             const v=vehicleMap[m.vehicle_code];
-            const hasVehicleFilter=vStatus||deptId||secId||divId||gender||vMode;
+            const hasVehicleFilter=vStatus||sectorId||deptId||secId||divId||gender||vMode;
             if(hasVehicleFilter && !v) return false;
             if(vStatus && v && (v.status||'')!==vStatus) return false;
+            if(sectorId && v && String(v.sector_id||'')!==String(sectorId)) return false;
             if(deptId && v && String(v.department_id||'')!==String(deptId)) return false;
             if(secId && v && String(v.section_id||'')!==String(secId)) return false;
             if(divId && v && String(v.division_id||'')!==String(divId)) return false;
@@ -649,6 +692,7 @@
     $('mvDateFrom').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvDateTo').addEventListener('input',debouncedApplyFiltersAndStats);
     $('mvFilterVehicleStatus').addEventListener('change',applyFilters);
+    $('mvFilterSector').addEventListener('change',applyFiltersAndStats);
     $('mvFilterDept').addEventListener('change',function(){
         // Cascade: repopulate sections based on selected department
         var deptId=getSelId($('mvFilterDept'));
@@ -669,12 +713,14 @@
     /* ---- Print individual stat ---- */
     function getFilteredVehicles(){
         var allVehicles=Object.values(vehicleMap);
+        var sectorId=$('mvFilterSector').value;
         var deptId=getSelId($('mvFilterDept'));
         var secId=getSelId($('mvFilterSection'));
         var divId=getSelId($('mvFilterDivision'));
         var gender=$('mvFilterGender').value;
         var vMode=$('mvFilterVehicleMode').value;
         return allVehicles.filter(function(v){
+            if(sectorId && String(v.sector_id||'')!==String(sectorId)) return false;
             if(deptId && String(v.department_id||'')!==String(deptId)) return false;
             if(secId && String(v.section_id||'')!==String(secId)) return false;
             if(divId && String(v.division_id||'')!==String(divId)) return false;
@@ -1044,6 +1090,7 @@
             mvOptAllConditions:'all_conditions', mvOptClean:'clean', mvOptAcceptable:'acceptable', mvOptDamaged:'damaged',
             mvOptAllVehicleStatuses:'all_vehicle_statuses', mvOptOperational:'operational', mvOptMaintenance:'under_maintenance', mvOptOutOfService:'out_of_service',
             mvOptAllDepts:'all_departments', mvOptAllSections:'all_sections', mvOptAllDivisions:'all_divisions',
+            mvOptAllSectors:'all_sectors',
             mvOptAllGenders:'all_genders', mvOptMen:'men', mvOptWomen:'women',
             mvOptAllModes:'all_modes', mvOptPrivateMode:'private_vehicles', mvOptShiftMode:'shift_vehicles',
             mvOptAllVehicles:'all_vehicles',

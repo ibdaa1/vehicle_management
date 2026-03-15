@@ -96,6 +96,9 @@
     <div class="filters">
         <select class="form-select" id="filterRole"><option value="" id="optAllRoles">All Roles</option></select>
         <select class="form-select" id="filterSector"><option value="" id="optAllSectors">All Sectors</option></select>
+        <select class="form-select" id="filterDept"><option value="" id="optAllDepts">All Departments</option></select>
+        <select class="form-select" id="filterSection"><option value="" id="optAllSections">All Sections</option></select>
+        <select class="form-select" id="filterDivision"><option value="" id="optAllDivisions">All Divisions</option></select>
         <select class="form-select" id="filterActive">
             <option value="" id="optAllStatus">All</option>
             <option value="1" id="optActiveStatus">Active</option>
@@ -268,6 +271,16 @@
             if(filterSel) filterSel.innerHTML += '<option value="'+s.id+'">'+(s.name||s.name_en)+'</option>';
         });
         if(prevFilterVal && filterSel) filterSel.value = prevFilterVal;
+        // Populate filter department dropdown
+        var filterDept = document.getElementById('filterDept');
+        filterDept.innerHTML = '<option value="">' + i18n.t('all_departments') + '</option>';
+        (uRefs.departments||[]).forEach(function(d){
+            filterDept.innerHTML += '<option value="'+d.department_id+'">'+(d.name_ar||d.name_en)+'</option>';
+        });
+        // Populate filter section dropdown (all initially)
+        cascadeFilterSection('');
+        // Populate filter division dropdown (all initially)
+        cascadeFilterDivision('');
         var dd = document.getElementById('fDeptId');
         dd.innerHTML = '<option value="">--</option>';
         (uRefs.departments||[]).forEach(function(d){
@@ -276,6 +289,23 @@
         dd.addEventListener('change', function(){ cascadeSection(this.value); });
         document.getElementById('fSectionId').addEventListener('change', function(){ cascadeDivision(this.value); });
     }
+    // Filter cascading for department→section→division
+    function cascadeFilterSection(did) {
+        var s = document.getElementById('filterSection');
+        s.innerHTML = '<option value="">' + i18n.t('all_sections') + '</option>';
+        (uRefs.sections||[]).filter(function(sc){ return !did || sc.department_id == did; }).forEach(function(sc){
+            s.innerHTML += '<option value="'+sc.section_id+'">'+(sc.name_ar||sc.name_en)+'</option>';
+        });
+        cascadeFilterDivision('');
+    }
+    function cascadeFilterDivision(sid) {
+        var d = document.getElementById('filterDivision');
+        d.innerHTML = '<option value="">' + i18n.t('all_divisions') + '</option>';
+        (uRefs.divisions||[]).filter(function(dv){ return !sid || dv.section_id == sid; }).forEach(function(dv){
+            d.innerHTML += '<option value="'+dv.division_id+'">'+(dv.name_ar||dv.name_en)+'</option>';
+        });
+    }
+    // Form cascading for department→section→division
     function cascadeSection(did) {
         var s = document.getElementById('fSectionId');
         s.innerHTML = '<option value="">--</option>';
@@ -317,6 +347,9 @@
         const search = (document.getElementById('userSearch').value || '').toLowerCase();
         const roleFilter = document.getElementById('filterRole').value;
         const sectorFilter = document.getElementById('filterSector').value;
+        const deptFilter = document.getElementById('filterDept').value;
+        const sectionFilter = document.getElementById('filterSection').value;
+        const divisionFilter = document.getElementById('filterDivision').value;
         const activeFilter = document.getElementById('filterActive').value;
         const genderFilter = document.getElementById('filterGender').value;
 
@@ -327,6 +360,9 @@
             }
             if (roleFilter && String(u.role_id) !== roleFilter) return false;
             if (sectorFilter && String(u.sector_id || '') !== sectorFilter) return false;
+            if (deptFilter && String(u.department_id || '') !== deptFilter) return false;
+            if (sectionFilter && String(u.section_id || '') !== sectionFilter) return false;
+            if (divisionFilter && String(u.division_id || '') !== divisionFilter) return false;
             if (activeFilter !== '' && String(u.is_active) !== activeFilter) return false;
             if (genderFilter && (u.gender || '') !== genderFilter) return false;
             return true;
@@ -572,6 +608,15 @@
     document.getElementById('userSearch').addEventListener('input', resetPageAndRender);
     document.getElementById('filterRole').addEventListener('change', resetPageAndRender);
     document.getElementById('filterSector').addEventListener('change', resetPageAndRender);
+    document.getElementById('filterDept').addEventListener('change', function(){
+        cascadeFilterSection(this.value);
+        resetPageAndRender();
+    });
+    document.getElementById('filterSection').addEventListener('change', function(){
+        cascadeFilterDivision(this.value);
+        resetPageAndRender();
+    });
+    document.getElementById('filterDivision').addEventListener('change', resetPageAndRender);
     document.getElementById('filterActive').addEventListener('change', resetPageAndRender);
     document.getElementById('filterGender').addEventListener('change', resetPageAndRender);
 
@@ -587,6 +632,9 @@
             'lblInactiveUsers': 'inactive',
             'optAllRoles': 'all_roles',
             'optAllSectors': 'all_sectors',
+            'optAllDepts': 'all_departments',
+            'optAllSections': 'all_sections',
+            'optAllDivisions': 'all_divisions',
             'optAllStatus': 'all',
             'optActiveStatus': 'active',
             'optInactiveStatus': 'inactive',
