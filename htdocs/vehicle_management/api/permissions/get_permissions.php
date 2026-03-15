@@ -7,24 +7,7 @@ session_start();
 $debug = isset($_GET['debug']) && $_GET['debug'] == '1';
 
 // Try including DB config
-$dbCandidates = [
-    __DIR__ . '/../../config/db.php',
-    __DIR__ . '/../config/db.php',
-    __DIR__ . '/../../../config/db.php',
-];
-$included = false;
-foreach ($dbCandidates as $p) {
-    if (file_exists($p)) { require_once $p; $included = true; break; }
-}
-if (!$included) {
-    http_response_code(500);
-    echo json_encode([
-        'success'=>false,
-        'message'=>'Server error',
-        'debug'=>$debug?'DB config not found':null
-    ], JSON_UNESCAPED_UNICODE);
-    exit;
-}
+require_once __DIR__ . '/../../config/db.php';
 if (!isset($conn)) {
     http_response_code(500);
     echo json_encode([

@@ -1,7 +1,7 @@
 <?php
 // vehicle_management/api/users/register_user.php
 // يسجّل مستخدماً، ينشئ رمز تفعيل، ويطلب من send_report_mail.php إرسال رسالة التفعيل عبر POST.
-// لا يعتمد على config.php خارجي؛ يستخدم اتصال قاعدة البيانات في api/config/db.php
+// لا يعتمد على config.php خارجي؛ يستخدم اتصال قاعدة البيانات في config/db.php
 
 header('Content-Type: application/json; charset=utf-8');
 header("Access-Control-Allow-Origin: *");
@@ -10,8 +10,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
 
-// اتصال قاعدة البيانات (تأكد أن الملف موجود في هذا المسار)
-require_once __DIR__ . '/../config/db.php';
+// اتصال قاعدة البيانات (MVC config)
+require_once __DIR__ . '/../../config/db.php';
 
 $raw = file_get_contents('php://input');
 $data = json_decode($raw, true);

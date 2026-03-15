@@ -7,12 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 // include DB
-$paths = [
-    __DIR__ . '/../../config/db.php',
-    __DIR__ . '/../config/db.php',
-    __DIR__ . '/config/db.php'
-];
-foreach ($paths as $p) { if (file_exists($p)) { require_once $p; break; } }
+require_once __DIR__ . '/../../config/db.php';
 if (!isset($conn) || !($conn instanceof mysqli)) {
     http_response_code(500);
     echo json_encode(['success'=>false,'message'=>'Server misconfiguration: DB missing']);

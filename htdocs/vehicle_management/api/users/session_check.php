@@ -7,8 +7,8 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// تضمين ملف قاعدة البيانات (المسار الصحيح المؤكد)
-require_once __DIR__ . '/../config/db.php'; // تم تثبيت المسار بناءً على طلبك
+// تضمين ملف قاعدة البيانات (MVC config)
+require_once __DIR__ . '/../../config/db.php';
 
 // helper to read headers (لا حاجة للتعديل)
 function get_headers_normalized() {

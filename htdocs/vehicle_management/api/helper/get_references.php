@@ -28,22 +28,9 @@ if (session_status() === PHP_SESSION_NONE) {
 /* =========================
    4. Include DB config
    ========================= */
-$dbPaths = [
-    __DIR__ . '/../../config/db.php',
-    __DIR__ . '/../config/db.php',
-    __DIR__ . '/../../../config/db.php'
-];
+require_once __DIR__ . '/../../config/db.php';
 
-$included = false;
-foreach ($dbPaths as $p) {
-    if (file_exists($p)) {
-        require_once $p;
-        $included = true;
-        break;
-    }
-}
-
-if (!$included || !isset($conn)) {
+if (!isset($conn)) {
     echo json_encode([
         'success' => false,
         'message' => 'DB config missing'

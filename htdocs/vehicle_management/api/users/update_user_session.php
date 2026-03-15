@@ -11,7 +11,7 @@
 header('Content-Type: application/json; charset=utf-8');
 session_start();
 
-require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // Determine authenticated user id from session (support both session styles)
 $uid = null;

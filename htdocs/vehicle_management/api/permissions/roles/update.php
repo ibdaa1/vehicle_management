@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-require_once __DIR__ . '/../../config/db.php'; // عدل المسار حسب هيكلك
+require_once __DIR__ . '/../../../config/db.php';
 
 $userId = $_SESSION['user_id'] ?? ($_SESSION['user']['id'] ?? null);
 if (!$userId) {

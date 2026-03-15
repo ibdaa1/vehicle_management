@@ -14,18 +14,7 @@ if (!$userId) {
 }
 
 // تضمين الاتصال
-$dbPaths = [
-    __DIR__ . '/../../config/db.php',
-    __DIR__ . '/../config/db.php',
-    __DIR__ . '/../../../config/db.php',
-    __DIR__ . '/../../../../config/db.php'
-];
-foreach ($dbPaths as $p) {
-    if (file_exists($p)) {
-        require_once $p;
-        break;
-    }
-}
+require_once __DIR__ . '/../../../config/db.php';
 if (!isset($conn)) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'DB connection failed']);
