@@ -350,11 +350,18 @@ if (file_exists($fragmentPath)) {
         'Self-service endpoint call not found — buttons may not work for regular users'
     );
 
-    // Test: Pickup/return buttons visible for ALL authenticated users (not gated by permission)
+    // Test: Pickup button visible for ALL authenticated users; return button requires manage_movements
     assert_true(
-        !str_contains($fragmentContent, 'if (hasMovementPermission)') || str_contains($fragmentContent, 'hasMovementPermission = true'),
-        'Pickup/return buttons visible for ALL authenticated users (self-service)',
-        'Buttons still gated behind hasMovementPermission check — regular users cannot pick up vehicles'
+        str_contains($fragmentContent, 'hasMovementPermission = true'),
+        'Pickup buttons visible for ALL authenticated users (self-service)',
+        'hasMovementPermission should be true for all authenticated users'
+    );
+
+    // Test: Return button is restricted to users with manage_movements or * permission
+    assert_true(
+        str_contains($fragmentContent, 'hasAdminMovementPermission'),
+        'Return button requires manage_movements permission',
+        'Return button should be gated behind hasAdminMovementPermission'
     );
 
     // Test: Fragment handles empty data gracefully
@@ -417,6 +424,80 @@ if (file_exists($controllerPath)) {
             'Operation type validation not found'
         );
     }
+}
+
+echo "\n";
+
+// ─── Section 3b2: Service Worker, Manifest & PWA Tests ──────────
+echo "📱 Section 3b2: Service Worker, Manifest & PWA Tests\n" . str_repeat('-', 40) . "\n";
+
+// Test: sw.js exists
+$swPath = $BASE_DIR . '/public/sw.js';
+assert_true(
+    file_exists($swPath),
+    'Service worker file exists: public/sw.js',
+    'sw.js not found at ' . $swPath
+);
+
+// Test: sw.js handles Vary: * safely
+if (file_exists($swPath)) {
+    $swContent = file_get_contents($swPath);
+    assert_true(
+        str_contains($swContent, 'Vary') && str_contains($swContent, '*'),
+        'Service worker handles Vary: * header (skips caching)',
+        'Vary: * handling not found in sw.js'
+    );
+}
+
+// Test: manifest.php exists (dynamic manifest)
+$manifestPhpPath = $BASE_DIR . '/public/manifest.php';
+assert_true(
+    file_exists($manifestPhpPath),
+    'Dynamic manifest file exists: public/manifest.php',
+    'manifest.php not found'
+);
+
+// Test: manifest.php reads theme from DB
+if (file_exists($manifestPhpPath)) {
+    $manifestContent = file_get_contents($manifestPhpPath);
+    assert_true(
+        str_contains($manifestContent, 'vm_get_theme') && str_contains($manifestContent, 'theme_color'),
+        'Dynamic manifest reads theme colors from database',
+        'DB theme integration not found in manifest.php'
+    );
+}
+
+// Test: header.php links to dynamic manifest
+$headerContent = file_get_contents($BASE_DIR . '/public/includes/header.php');
+assert_true(
+    str_contains($headerContent, 'manifest.php'),
+    'header.php links to dynamic manifest.php (not static manifest.json)',
+    'manifest.php link not found in header.php'
+);
+
+// Test: header.php uses DB theme color for meta theme-color
+assert_true(
+    str_contains($headerContent, "theme['colors']['primary_dark']"),
+    'header.php uses DB theme color for meta theme-color',
+    'DB-based theme-color not found in header.php'
+);
+
+// Test: footer.php registers service worker
+$footerContent = file_get_contents($BASE_DIR . '/public/includes/footer.php');
+assert_true(
+    str_contains($footerContent, 'serviceWorker') && str_contains($footerContent, 'sw.js'),
+    'footer.php registers service worker',
+    'SW registration not found in footer.php'
+);
+
+// Test: VehicleController has logActivity method (required for self-service)
+if (file_exists($controllerPath)) {
+    $controllerContent = file_get_contents($controllerPath);
+    assert_true(
+        str_contains($controllerContent, 'function logActivity'),
+        'VehicleController has logActivity() method',
+        'logActivity method missing — causes self-service to fail'
+    );
 }
 
 echo "\n";
