@@ -346,10 +346,22 @@
     window.MyVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadMyVehicles };
 
     /* ---------- Init with retry for Auth (matches working fragment pattern) ---------- */
+    var _initAttempts = 0;
     (function init() {
         if (window.__pageDenied) return;
         var user = Auth.getUser();
-        if (!user) { setTimeout(init, 100); return; }
+        if (!user) {
+            _initAttempts++;
+            if (_initAttempts > 50) {
+                console.warn('my_vehicles: Auth not available after 5s');
+                renderError('mvPrivateGrid');
+                renderError('mvShiftGrid');
+                renderError('mvDeptGrid');
+                return;
+            }
+            setTimeout(init, 100);
+            return;
+        }
         currentUser = user;
         perms = (currentUser && currentUser.permissions) || [];
         hasMovementPermission = true; /* All authenticated users can self-service */

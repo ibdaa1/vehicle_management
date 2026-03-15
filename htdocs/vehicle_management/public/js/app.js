@@ -342,7 +342,7 @@ const i18n = {
 const Menu = {
     items: [
         { key: 'dashboard',          icon: '📊', page: 'dashboard.html',          permission: null },
-        { key: 'my_vehicles',        icon: '🚙', page: 'my_vehicles.html',        permission: null },
+        { key: 'my_vehicles',        icon: '🚙', page: 'dashboard.php?page=my_vehicles', permission: null },
         { key: 'vehicles',           icon: '🚗', page: 'vehicle_management.html', permission: 'manage_vehicles' },
         { key: 'movements',          icon: '🔄', page: 'vehicle_movements.html',  permission: 'manage_movements' },
         { key: 'maintenance',        icon: '🔧', page: 'Vehicle_Maintenance.html', permission: 'manage_maintenance' },
