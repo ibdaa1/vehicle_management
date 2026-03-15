@@ -395,6 +395,47 @@ if (file_exists($controllerPath)) {
 }
 
 echo "\n";
+
+// ─── Section 3c: Login Redirect (return_to) Tests ───────────────
+echo "🔗 Section 3c: Login Redirect (return_to) Tests\n" . str_repeat('-', 40) . "\n";
+
+// Test: app.js passes return_to parameter when redirecting to login
+$appJsPath = $BASE_DIR . '/public/js/app.js';
+if (file_exists($appJsPath)) {
+    $appJsContent = file_get_contents($appJsPath);
+    assert_true(
+        str_contains($appJsContent, 'return_to') && str_contains($appJsContent, 'encodeURIComponent'),
+        'app.js passes return_to parameter when redirecting to login',
+        'return_to redirect not found in app.js'
+    );
+}
+
+// Test: login.html reads return_to parameter and redirects after login
+$loginPath = $BASE_DIR . '/public/login.html';
+if (file_exists($loginPath)) {
+    $loginContent = file_get_contents($loginPath);
+    assert_true(
+        str_contains($loginContent, 'return_to') && str_contains($loginContent, 'getReturnUrl'),
+        'login.html handles return_to parameter for post-login redirect',
+        'return_to handling not found in login.html'
+    );
+
+    // Test: login.html validates return_to URL is same-origin (security)
+    assert_true(
+        str_contains($loginContent, 'url.origin') && str_contains($loginContent, 'location.origin'),
+        'login.html validates return_to URL is same-origin (prevents open redirect)',
+        'Same-origin validation not found in login.html'
+    );
+
+    // Test: login.html uses afterLoginUrl for post-login redirect
+    assert_true(
+        str_contains($loginContent, 'afterLoginUrl'),
+        'login.html uses afterLoginUrl variable for redirect after successful login',
+        'afterLoginUrl variable not found in login.html'
+    );
+}
+
+echo "\n";
 // ─── Section 4: HTTP Integration Tests ──────────────────────────
 if ($httpBase) {
     echo "🌐 Section 4: HTTP Integration Tests (server: {$httpBase})\n" . str_repeat('-', 40) . "\n";

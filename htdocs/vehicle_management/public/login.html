@@ -278,11 +278,26 @@
     rolePermsBox:$('rolePermsBox')
   };
 
+  // Get safe return URL from query parameter (same-origin only)
+  function getReturnUrl() {
+    var params = new URLSearchParams(location.search);
+    var returnTo = params.get('return_to');
+    if (!returnTo) return BASE+'/public/dashboard.php';
+    try {
+      var url = new URL(returnTo, location.origin);
+      if (url.origin !== location.origin) return BASE+'/public/dashboard.php';
+      return url.pathname + url.search;
+    } catch(e) {
+      return BASE+'/public/dashboard.php';
+    }
+  }
+  var afterLoginUrl = getReturnUrl();
+
   // Check if already logged in
   const token = localStorage.getItem('auth_token');
   if (token) {
     fetch(API.settingsPublic, { headers: { Authorization: 'Bearer '+token } })
-      .then(r => { if (r.ok) location.href = BASE+'/public/dashboard.php'; })
+      .then(r => { if (r.ok) location.href = afterLoginUrl; })
       .catch(() => {});
   }
 
@@ -502,7 +517,7 @@
         if(j.user) localStorage.setItem('auth_user',JSON.stringify(j.user));
         if(j.data&&j.data.user) localStorage.setItem('auth_user',JSON.stringify(j.data.user));
         showMsg(el.loginMsg, t.loginSuccess+' ✓', 'success');
-        setTimeout(()=>{ location.href=BASE+'/public/dashboard.php'; },600);
+        setTimeout(()=>{ location.href=afterLoginUrl; },600);
       } else {
         showMsg(el.loginMsg, j.message||t.loginFailed, 'error');
         el.loginBtn.disabled=false; el.loginBtn.classList.remove('loading');
