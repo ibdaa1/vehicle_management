@@ -159,13 +159,14 @@ class VehicleController extends BaseController
     /**
      * GET /api/v1/vehicles/my-vehicles
      * - Private : vehicles where emp_id + gender match the logged-in user
-     * - Shift   : ONE vehicle only (next in round-robin for user's gender)
-     *             If the user already holds a shift vehicle → show that for
-     *             return only, do NOT show next vehicle for pickup.
-     * - Dept    : ONE vehicle only (next in round-robin for user's
-     *             department/section/division + gender).
-     *             If the user already holds a dept vehicle → show that for
-     *             return only, do NOT show next vehicle for pickup.
+     * - Shift   : ALL shift vehicles sorted by turn order (round-robin).
+     *             The next-in-rotation vehicle is marked with is_next_turn.
+     *             If the user already holds a shift vehicle → that is flagged
+     *             with is_my_current so the frontend can show a return button.
+     * - Dept    : ALL department vehicles sorted by turn order (round-robin).
+     *             The next-in-rotation vehicle is marked with is_next_turn.
+     *             If the user already holds a dept vehicle → that is flagged
+     *             with is_my_current so the frontend can show a return button.
      */
     public function myVehicles(Request $request, array $params = []): void
     {
@@ -228,6 +229,9 @@ class VehicleController extends BaseController
                 if ($myCheckedOutShift === null) {
                     $nextShiftVehicle = $this->findNextInRotation($shiftVehicles);
                 }
+
+                // Assign turn_order to ALL shift vehicles in rotation order
+                $shiftVehicles = $this->assignTurnOrder($shiftVehicles, $nextShiftVehicle, $myCheckedOutShift, $userEmpId);
             }
 
             // Department vehicles: filter by dept/section/division + gender,
@@ -273,6 +277,9 @@ class VehicleController extends BaseController
                 if ($myCheckedOutDept === null && !empty($departmentVehicles)) {
                     $nextDeptVehicle = $this->findNextInRotation($departmentVehicles);
                 }
+
+                // Assign turn_order to ALL department vehicles in rotation order
+                $departmentVehicles = $this->assignTurnOrder($departmentVehicles, $nextDeptVehicle, $myCheckedOutDept, $userEmpId);
             }
 
             Response::json([
@@ -282,11 +289,11 @@ class VehicleController extends BaseController
                     'shift_next'          => $nextShiftVehicle,
                     'shift_my_current'    => $myCheckedOutShift,
                     'shift_total'         => count($shiftVehicles),
-                    'shift_vehicles'      => [],
+                    'shift_vehicles'      => $shiftVehicles,
                     'dept_next'           => $nextDeptVehicle,
                     'dept_my_current'     => $myCheckedOutDept,
                     'dept_total'          => $deptTotal,
-                    'department_vehicles' => [],
+                    'department_vehicles' => $departmentVehicles,
                 ],
             ]);
 
@@ -351,6 +358,27 @@ class VehicleController extends BaseController
         }
 
         return null;
+    }
+
+    /**
+     * Assign turn_order, is_next_turn, and is_my_current flags to ALL vehicles.
+     * Vehicles are numbered 1..N in their sorted order.
+     * The vehicle matching $nextVehicle gets is_next_turn = true.
+     * The vehicle currently held by the user gets is_my_current = true.
+     */
+    private function assignTurnOrder(array $vehicles, ?array $nextVehicle, ?array $myCurrentVehicle, string $userEmpId): array
+    {
+        $nextCode    = $nextVehicle ? ($nextVehicle['vehicle_code'] ?? '') : '';
+        $currentCode = $myCurrentVehicle ? ($myCurrentVehicle['vehicle_code'] ?? '') : '';
+
+        foreach ($vehicles as $i => &$v) {
+            $v['turn_order']    = $i + 1;
+            $v['is_next_turn']  = ($nextCode !== '' && ($v['vehicle_code'] ?? '') === $nextCode);
+            $v['is_my_current'] = ($currentCode !== '' && ($v['vehicle_code'] ?? '') === $currentCode);
+        }
+        unset($v);
+
+        return $vehicles;
     }
 
     /**

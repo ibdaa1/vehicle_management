@@ -2,8 +2,8 @@
 /**
  * My Vehicles Fragment — Employee Self-Service
  * Loaded inside dashboard.php shell.
- * Shows private vehicles (emp_id match) and shift vehicles (round-robin by gender).
- * Pickup/Return buttons are available for ALL authenticated users via self-service endpoint.
+ * Shows private vehicles (emp_id match) and ALL shift/department vehicles with turn order.
+ * The next-in-rotation vehicle is highlighted. Pickup/Return buttons available via self-service endpoint.
  */
 ?>
 <style>
@@ -39,6 +39,9 @@
 .mv-info-banner{background:rgba(23,162,184,.08);border:1px solid rgba(23,162,184,.2);border-radius:10px;padding:14px 20px;margin-bottom:20px;color:var(--text-primary);font-size:.9rem;display:flex;align-items:center;gap:10px}
 .mv-info-banner .icon{font-size:1.3rem}
 .mv-order-badge{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--primary-main);color:var(--text-light);font-weight:700;font-size:.85rem;margin-inline-end:8px}
+.mv-v-card.next-turn{border:2px solid var(--primary-main);box-shadow:0 0 12px rgba(var(--primary-main-rgb,59,130,246),.25)}
+.mv-next-label{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;background:var(--primary-main);color:var(--text-light);margin-inline-start:6px}
+.mv-v-card.my-current{border:2px solid var(--status-warning);box-shadow:0 0 12px rgba(255,193,7,.25)}
 @media(max-width:768px){
     .mv-vehicles-grid{grid-template-columns:1fr}
 }
@@ -91,8 +94,9 @@
 <script>
 /* ============================================
    My Vehicles Fragment — Employee Self-Service
-   Round-robin shift vehicles: only shows the
-   next-in-turn vehicle for the employee's gender.
+   Shows ALL shift/dept vehicles with turn order.
+   The next-in-rotation vehicle is highlighted
+   and has a pickup button.
    Pickup/Return available for ALL authenticated users
    via /vehicles/self-service endpoint.
    ============================================ */
@@ -147,11 +151,21 @@
         var isOperational = v.status === 'operational';
         var canPickup = isAvailable && isOperational;
         var isCheckedByMe = !isAvailable && (v.last_holder || '') === (currentUser.emp_id || '');
+        var isNextTurn = opts.isNextTurn || false;
+        var isMyCurrentVehicle = opts.isMyCurrentVehicle || false;
 
-        var html = '<div class="mv-v-card">';
+        var cardClass = 'mv-v-card';
+        if (isNextTurn) cardClass += ' next-turn';
+        if (isMyCurrentVehicle) cardClass += ' my-current';
+
+        var html = '<div class="' + cardClass + '">';
         html += '<div class="mv-v-card-head">';
         if (opts.turnOrder) {
-            html += '<span><span class="mv-order-badge">' + opts.turnOrder + '</span><span class="mv-v-code">' + esc(v.vehicle_code) + '</span></span>';
+            html += '<span><span class="mv-order-badge">' + opts.turnOrder + '</span><span class="mv-v-code">' + esc(v.vehicle_code) + '</span>';
+            if (isNextTurn) {
+                html += '<span class="mv-next-label">' + t('دورك التالي', 'Next Turn') + '</span>';
+            }
+            html += '</span>';
         } else {
             html += '<span class="mv-v-code">' + esc(v.vehicle_code) + '</span>';
         }
@@ -172,13 +186,18 @@
 
         /* Pickup/Return buttons — pickup for all, return logic:
            - Private vehicles: holder can always return
-           - Shift/dept vehicles: only admin/superadmin can return */
+           - Shift/dept vehicles: only next-in-turn can be picked up,
+             only admin/superadmin can return */
         var isNotAvailable = !isAvailable;
         var canReturn = false;
         if (opts.isPrivate) {
             canReturn = isCheckedByMe;
         } else {
             canReturn = isNotAvailable && hasAdminMovementPermission;
+        }
+        /* For shift/dept: restrict pickup to next-in-turn vehicle only */
+        if (!opts.isPrivate && !isNextTurn) {
+            canPickup = false;
         }
         html += '<div class="mv-v-actions">';
         if (canPickup) {
@@ -213,8 +232,8 @@
             }
             var data = (res && res.data) || res || {};
             renderPrivate(data.private || []);
-            renderShift(data.shift_next || null, data.shift_my_current || null, data.shift_total || 0);
-            renderDepartment(data.dept_next || null, data.dept_my_current || null, data.dept_total || 0);
+            renderShift(data.shift_vehicles || [], data.shift_total || 0);
+            renderDepartment(data.department_vehicles || [], data.dept_total || 0);
         } catch (e) {
             console.error('Failed to load my vehicles:', e);
             var errMsg = (e && e.message) || '';
@@ -250,21 +269,12 @@
         container.innerHTML = vehicles.map(function(v) { return buildCard(v, { isPrivate: true }); }).join('');
     }
 
-    /* ---------- Render shift vehicles (ONE vehicle only — round-robin) ---------- */
-    function renderShift(nextVehicle, myCurrentVehicle, totalShift) {
+    /* ---------- Render shift vehicles (ALL vehicles with turn order) ---------- */
+    function renderShift(vehicles, totalShift) {
         var container = document.getElementById('mvShiftGrid');
         if (!container) return;
-        var cards = '';
 
-        // Show vehicle currently held by user (for return)
-        if (myCurrentVehicle) {
-            cards += buildCard(myCurrentVehicle, { turnOrder: null });
-        } else if (nextVehicle) {
-            // Show ONLY the next vehicle in rotation (for pickup)
-            cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
-        }
-
-        if (!cards) {
+        if (!vehicles || !vehicles.length) {
             var msg = '';
             if (totalShift > 0) {
                 msg = t('جميع مركبات الورديات مستلمة حالياً', 'All shift vehicles are currently checked out');
@@ -274,24 +284,23 @@
             container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔄</div><p>' + msg + '</p></div>';
             return;
         }
+
+        var cards = vehicles.map(function(v) {
+            return buildCard(v, {
+                turnOrder: v.turn_order || null,
+                isNextTurn: v.is_next_turn || false,
+                isMyCurrentVehicle: v.is_my_current || false
+            });
+        }).join('');
         container.innerHTML = cards;
     }
 
-    /* ---------- Render department vehicles (ONE vehicle only — round-robin) ---------- */
-    function renderDepartment(nextVehicle, myCurrentVehicle, totalDept) {
+    /* ---------- Render department vehicles (ALL vehicles with turn order) ---------- */
+    function renderDepartment(vehicles, totalDept) {
         var container = document.getElementById('mvDeptGrid');
         if (!container) return;
-        var cards = '';
 
-        // Show vehicle currently held by user (for return)
-        if (myCurrentVehicle) {
-            cards += buildCard(myCurrentVehicle, { turnOrder: null });
-        } else if (nextVehicle) {
-            // Show ONLY the next vehicle in rotation (for pickup)
-            cards += buildCard(nextVehicle, { turnOrder: nextVehicle.turn_order || 1 });
-        }
-
-        if (!cards) {
+        if (!vehicles || !vehicles.length) {
             var msg = '';
             if (totalDept > 0) {
                 msg = t('جميع مركبات الإدارة مستلمة حالياً', 'All department vehicles are currently checked out');
@@ -301,6 +310,14 @@
             container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' + msg + '</p></div>';
             return;
         }
+
+        var cards = vehicles.map(function(v) {
+            return buildCard(v, {
+                turnOrder: v.turn_order || null,
+                isNextTurn: v.is_next_turn || false,
+                isMyCurrentVehicle: v.is_my_current || false
+            });
+        }).join('');
         container.innerHTML = cards;
     }
 

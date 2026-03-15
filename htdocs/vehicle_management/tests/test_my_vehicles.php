@@ -521,11 +521,11 @@ if (file_exists($controllerPath)) {
         'findNextInRotation method not found'
     );
 
-    // Test: Backend returns empty arrays for shift_vehicles and department_vehicles (single vehicle only)
+    // Test: Backend returns populated shift_vehicles and department_vehicles arrays (all vehicles display)
     assert_true(
-        str_contains($controllerContent, "'shift_vehicles'      => []") && str_contains($controllerContent, "'department_vehicles' => []"),
-        'Backend returns empty shift_vehicles/department_vehicles arrays (single vehicle display)',
-        'Expected empty arrays for shift_vehicles and department_vehicles'
+        str_contains($controllerContent, "'shift_vehicles'      => \$shiftVehicles") && str_contains($controllerContent, "'department_vehicles' => \$departmentVehicles"),
+        'Backend returns populated shift_vehicles/department_vehicles arrays (all vehicles with turn order)',
+        'Expected populated arrays for shift_vehicles and department_vehicles'
     );
 
     // Test: Department filter includes section/division matching
@@ -544,27 +544,29 @@ if (file_exists($controllerPath)) {
     );
 }
 
-// Test: Frontend shows ONE vehicle in shift section (not all)
+// Test: Frontend shows ALL vehicles in shift section with turn order
 if (file_exists($fragmentPath)) {
     $fragmentContent = file_get_contents($fragmentPath);
     assert_true(
-        str_contains($fragmentContent, 'renderShift(data.shift_next') && !str_contains($fragmentContent, 'data.shift_vehicles ||'),
-        'Frontend shift section shows ONE vehicle (shift_next), not all vehicles',
-        'Frontend may still render all shift vehicles instead of single next vehicle'
+        str_contains($fragmentContent, 'renderShift(data.shift_vehicles') && str_contains($fragmentContent, 'is_next_turn'),
+        'Frontend shift section shows ALL vehicles with turn order and next-turn highlighting',
+        'Frontend may still render single shift vehicle instead of all vehicles'
     );
 
-    // Test: Frontend shows ONE vehicle in department section
+    // Test: Frontend shows ALL vehicles in department section with turn order
     assert_true(
-        str_contains($fragmentContent, 'renderDepartment(data.dept_next') && !str_contains($fragmentContent, 'data.department_vehicles.map'),
-        'Frontend department section shows ONE vehicle (dept_next), not all vehicles',
-        'Frontend may still render all department vehicles'
+        str_contains($fragmentContent, 'renderDepartment(data.department_vehicles') && str_contains($fragmentContent, 'is_next_turn'),
+        'Frontend department section shows ALL vehicles with turn order and next-turn highlighting',
+        'Frontend may still render single department vehicle'
     );
 
-    // Test: Frontend department section has round-robin display
+    // Test: Backend returns all shift/dept vehicles with turn order
+    $controllerPath = $BASE_DIR . '/app/Controllers/VehicleController.php';
+    $controllerContent = file_exists($controllerPath) ? file_get_contents($controllerPath) : '';
     assert_true(
-        str_contains($fragmentContent, 'dept_my_current') && str_contains($fragmentContent, 'dept_total'),
-        'Frontend handles dept_my_current and dept_total for department round-robin',
-        'Department round-robin frontend fields not found'
+        str_contains($controllerContent, 'assignTurnOrder') && str_contains($controllerContent, 'is_next_turn'),
+        'Backend assigns turn_order and is_next_turn to all shift/dept vehicles',
+        'Backend assignTurnOrder method not found'
     );
 }
 
