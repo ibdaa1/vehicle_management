@@ -13,7 +13,7 @@
 .vl-toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
 .vl-toolbar .search-box{flex:1;min-width:200px;max-width:360px;position:relative}
 .vl-toolbar .search-box input{width:100%;padding:10px 14px;padding-inline-end:36px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
-.vl-toolbar .search-box input:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
+.vl-toolbar .search-box input:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-main) 15%,transparent)}
 .vl-toolbar .search-box .ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:var(--text-secondary);pointer-events:none}
 .vl-toolbar select{padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
 .vl-toolbar .btn-add{margin-inline-start:auto}
@@ -26,14 +26,14 @@
 .vl-table tr:hover{background:var(--bg-main)}
 .vl-table .vl-actions{display:flex;gap:6px;justify-content:center}
 .vl-table .vl-actions .btn-icon{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;transition:all .3s}
-.btn-icon.btn-edit{background:var(--status-info);color:#fff}
+.btn-icon.btn-edit{background:var(--status-info);color:var(--text-light)}
 .btn-icon.btn-edit:hover{opacity:.85}
-.btn-icon.btn-delete{background:var(--status-danger);color:#fff}
+.btn-icon.btn-delete{background:var(--status-danger);color:var(--text-light)}
 .btn-icon.btn-delete:hover{opacity:.85}
 .vl-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
-.vl-badge.operational{background:#d4edda;color:#155724}
-.vl-badge.maintenance{background:#fff3cd;color:#856404}
-.vl-badge.out_of_service{background:#f8d7da;color:#721c24}
+.vl-badge.operational{background:color-mix(in srgb,var(--status-success) 18%,var(--bg-card));color:var(--status-success)}
+.vl-badge.maintenance{background:color-mix(in srgb,var(--status-warning) 22%,var(--bg-card));color:var(--status-warning)}
+.vl-badge.out_of_service{background:color-mix(in srgb,var(--status-danger) 18%,var(--bg-card));color:var(--status-danger)}
 .vl-empty{text-align:center;padding:48px 24px;color:var(--text-secondary)}
 .vl-empty .ico{font-size:3rem;margin-bottom:12px;opacity:.5}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
@@ -44,13 +44,13 @@
 .form-group{margin-bottom:16px}
 .form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text-secondary)}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary-main) 15%,transparent)}
 .form-actions{display:flex;gap:12px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border-default)}
 .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .3s}
 .btn-primary{background:var(--primary-main);color:var(--text-light)}
 .btn-primary:hover{opacity:.9}
 .btn-secondary{background:var(--bg-main);color:var(--text-primary);border:1px solid var(--border-default)}
-.btn-danger{background:var(--status-danger);color:#fff}
+.btn-danger{background:var(--status-danger);color:var(--text-light)}
 .btn-danger:hover{opacity:.9}
 .btn-sm{padding:6px 12px;font-size:.8rem}
 @media(max-width:768px){
