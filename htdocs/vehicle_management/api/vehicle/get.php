@@ -113,7 +113,7 @@ try {
     $stmt = $conn->prepare("
         SELECT 
             id, vehicle_code, type, manufacture_year, emp_id, driver_name, driver_phone, 
-            status, department_id, section_id, division_id, vehicle_mode, notes,
+            status, sector_id, department_id, section_id, division_id, vehicle_mode, notes,
             created_at, created_by, updated_at, updated_by
         FROM vehicles 
         WHERE id = ?
@@ -135,6 +135,7 @@ try {
     // Convert to int where appropriate
     $row['id'] = intval($row['id']);
     $row['manufacture_year'] = $row['manufacture_year'] ? intval($row['manufacture_year']) : null;
+    $row['sector_id'] = $row['sector_id'] ? intval($row['sector_id']) : null;
     $row['department_id'] = $row['department_id'] ? intval($row['department_id']) : null;
     $row['section_id'] = $row['section_id'] ? intval($row['section_id']) : null;
     $row['division_id'] = $row['division_id'] ? intval($row['division_id']) : null;

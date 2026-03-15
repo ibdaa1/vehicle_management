@@ -1,10 +1,10 @@
 <?php
 /**
  * vehicle_management/api/helper/get_references.php
- * Returns references: departments, sections, divisions
+ * Returns references: sectors, departments, sections, divisions
  * Supports:
  *  ?lang=ar|en
- *  ?type=departments|sections|divisions
+ *  ?type=sectors|departments|sections|divisions
  *  ?parent_id=NN
  */
 
@@ -69,7 +69,37 @@ $out = ['success' => true];
 try {
 
     /* =========================
-       7. Departments
+       7. Sectors
+       ========================= */
+    if ($type === 'sectors' || $type === '') {
+
+        $rows = [];
+        $sql = "SELECT id, sector_code, name, name_en FROM sectors WHERE is_active = 1 ORDER BY id ASC";
+        $res = $conn->query($sql);
+
+        if ($res) {
+            while ($r = $res->fetch_assoc()) {
+                $rows[] = [
+                    'id'          => (int)$r['id'],
+                    'sector_code' => $r['sector_code'],
+                    'name'        => ($lang === 'en')
+                        ? ($r['name_en'] ?: $r['name'])
+                        : ($r['name'] ?: $r['name_en'])
+                ];
+            }
+        }
+
+        $out['sectors'] = $rows;
+
+        if ($type === 'sectors') {
+            echo json_encode($out, JSON_UNESCAPED_UNICODE);
+            ob_end_flush();
+            exit;
+        }
+    }
+
+    /* =========================
+       8. Departments
        ========================= */
     if ($type === 'departments' || $type === '') {
 
@@ -96,7 +126,7 @@ try {
     }
 
     /* =========================
-       8. Sections
+       9. Sections
        ========================= */
     if ($type === 'sections' || $type === '') {
 
@@ -129,7 +159,7 @@ try {
     }
 
     /* =========================
-       9. Divisions
+       10. Divisions
        ========================= */
     if ($type === 'divisions' || $type === '') {
 
@@ -162,7 +192,7 @@ try {
     }
 
     /* =========================
-       10. Final output
+       11. Final output
        ========================= */
     echo json_encode($out, JSON_UNESCAPED_UNICODE);
     ob_end_flush();

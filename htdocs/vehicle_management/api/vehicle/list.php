@@ -36,17 +36,20 @@ function tableExists($conn, $table) {
 $deptJoin = tableExists($conn, 'departments') ? '(SELECT name_ar FROM departments d WHERE d.id = v.department_id LIMIT 1) AS department_name' : null;
 $secJoin = tableExists($conn, 'sections') ? '(SELECT name_ar FROM sections s WHERE s.id = v.section_id LIMIT 1) AS section_name' : null;
 $divJoin = tableExists($conn, 'divisions') ? '(SELECT name_ar FROM divisions dv WHERE dv.id = v.division_id LIMIT 1) AS division_name' : null;
+$sectorJoin = tableExists($conn, 'sectors') ? '(SELECT name FROM sectors sc WHERE sc.id = v.sector_id LIMIT 1) AS sector_name' : null;
 // Build join string
 $joins = [];
 if ($deptJoin) $joins[] = $deptJoin;
 if ($secJoin) $joins[] = $secJoin;
 if ($divJoin) $joins[] = $divJoin;
+if ($sectorJoin) $joins[] = $sectorJoin;
 $joinSql = !empty($joins) ? ', ' . implode(', ', $joins) : '';
 // read params
 $q = $_GET['q'] ?? '';
 $status = $_GET['status'] ?? '';
 $department_id = intval($_GET['department_id'] ?? 0);
 $section_id = intval($_GET['section_id'] ?? 0);
+$sector_id = intval($_GET['sector_id'] ?? 0);
 $page = max(1, intval($_GET['page'] ?? 1));
 $per_page = max(1, min(1000, intval($_GET['per_page'] ?? 30)));
 $offset = ($page - 1) * $per_page;
@@ -77,6 +80,12 @@ if ($department_id > 0) {
 if ($section_id > 0) {
     $where[] = "v.section_id = ?";
     $params[] = $section_id;
+    $types .= 'i';
+}
+// sector filter
+if ($sector_id > 0) {
+    $where[] = "v.sector_id = ?";
+    $params[] = $sector_id;
     $types .= 'i';
 }
 $whereSql = '';
@@ -133,6 +142,8 @@ while ($r = $result->fetch_assoc()) {
         'driver_name' => $r['driver_name'] ?? null,
         'driver_phone' => $r['driver_phone'] ?? null,
         'status' => $r['status'] ?? null,
+        'sector_id' => isset($r['sector_id']) ? (int)$r['sector_id'] : null,
+        'sector_name' => $r['sector_name'] ?? null,
         'department_id' => isset($r['department_id']) ? (int)$r['department_id'] : null,
         'department_name' => $r['department_name'] ?? null,
         'section_id' => isset($r['section_id']) ? (int)$r['section_id'] : null,
