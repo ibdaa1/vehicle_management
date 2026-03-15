@@ -144,9 +144,9 @@ if (file_exists($dashboardPath)) {
         'my_vehicles page may have a permission restriction'
     );
     assert_true(
-        str_contains($dashboardContent, 'data-page'),
-        'dashboard.php has data-page attribute for cache-mismatch detection',
-        'data-page attribute missing from dashboard.php pageContent div'
+        str_contains($dashboardContent, 'data-page="<?= htmlspecialchars($page)'),
+        'dashboard.php has data-page attribute with dynamic $page value for cache-mismatch detection',
+        'data-page attribute missing or not using $page variable in dashboard.php'
     );
 } else {
     test_fail('dashboard.php exists', 'File not found');

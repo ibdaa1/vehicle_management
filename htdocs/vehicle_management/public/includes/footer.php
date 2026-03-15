@@ -23,7 +23,8 @@
                 return;
             }
         }
-        // Clean up _cb parameter from URL (cosmetic, using replaceState)
+        // Clean up _cb parameter from URL (cosmetic, using replaceState if available)
+        // If replaceState is not available, _cb stays in URL but page still works correctly
         if (params.has('_cb') && renderedPage === requestedPage) {
             params.delete('_cb');
             var cleanUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');

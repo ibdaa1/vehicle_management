@@ -14,6 +14,7 @@
 
 // Prevent caching so that ?page= parameter is always respected
 // Critical for InfinityFree and other hosting that may cache PHP output ignoring query params
+// Vary: * ensures CDN/proxy treats each request as unique (needed because query params are ignored by some CDNs)
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0, private');
 header('Pragma: no-cache');
 header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
