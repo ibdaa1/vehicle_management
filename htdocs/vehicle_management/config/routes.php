@@ -3,8 +3,7 @@
  * Route Definitions
  * 
  * Defines all MVC API routes (v1 prefix).
- * Old API endpoints in /api/ remain functional for backward compatibility.
- * New endpoints use /api/v1/ prefix.
+ * All API endpoints use /api/v1/ prefix and go through app/Controllers.
  * 
  * @param \App\Core\Router $router
  */
@@ -29,6 +28,8 @@ $router->get('api/v1/health', \App\Controllers\HealthController::class, 'check')
 $router->post('api/v1/auth/login', AuthController::class, 'login');
 $router->get('api/v1/auth/check', AuthController::class, 'check');
 $router->post('api/v1/auth/logout', AuthController::class, 'logout');
+$router->post('api/v1/auth/register', AuthController::class, 'register');
+$router->get('api/v1/auth/activate', AuthController::class, 'activate');
 
 // === Roles Routes ===
 $router->get('api/v1/roles', RoleController::class, 'index');

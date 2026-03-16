@@ -102,7 +102,7 @@ abstract class BaseController
     {
         $db = Database::getInstance();
         $row = $db->fetchOne(
-            "SELECT id, emp_id, username, email, phone, gender, role_id, preferred_language, department_id, section_id, division_id FROM users WHERE id = ? AND is_active = 1 LIMIT 1",
+            "SELECT id, emp_id, username, email, phone, gender, role_id, preferred_language, sector_id, department_id, section_id, division_id FROM users WHERE id = ? AND is_active = 1 LIMIT 1",
             'i',
             [$userId]
         );
@@ -120,6 +120,7 @@ abstract class BaseController
             'gender'             => $row['gender'] ?? null,
             'role_id'            => (int)$row['role_id'],
             'preferred_language' => $row['preferred_language'] ?? 'ar',
+            'sector_id'          => isset($row['sector_id']) && $row['sector_id'] ? (int)$row['sector_id'] : null,
             'department_id'      => $row['department_id'] ? (int)$row['department_id'] : null,
             'section_id'         => $row['section_id'] ? (int)$row['section_id'] : null,
             'division_id'        => $row['division_id'] ? (int)$row['division_id'] : null,
