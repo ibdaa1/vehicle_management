@@ -21,7 +21,7 @@
 .vl-filters select{min-width:140px;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
 .vl-table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border-default)}
 .vl-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
-.vl-table th,.vl-table td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border-default);font-size:.875rem}
+.vl-table th,.vl-table td{padding:12px 16px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.875rem}
 .vl-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap}
 .vl-table tr:hover{background:var(--bg-main)}
 .vl-table .vl-actions{display:flex;gap:6px;justify-content:center}

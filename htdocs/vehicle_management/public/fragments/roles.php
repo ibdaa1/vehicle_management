@@ -21,7 +21,7 @@
 .r-stat .r-stat-val{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
 .r-stat .r-stat-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
 .data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
-.data-table th,.data-table td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border-default);font-size:.875rem}
+.data-table th,.data-table td{padding:12px 16px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.875rem}
 .data-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap}
 .data-table tr:hover{background:var(--bg-main)}
 .data-table .table-actions{display:flex;gap:6px;justify-content:center}
@@ -76,7 +76,7 @@
 .res-table{width:100%;border-collapse:collapse;font-size:.85rem}
 .res-table th,.res-table td{padding:8px 10px;border:1px solid var(--border-default);text-align:center}
 .res-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap;font-size:.78rem}
-.res-table td:first-child{text-align:right;font-weight:600;white-space:nowrap;background:var(--bg-main)}
+.res-table td:first-child{text-align:start;font-weight:600;white-space:nowrap;background:var(--bg-main)}
 .res-table input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary-main);cursor:pointer}
 /* Tabs */
 .perm-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border-default);padding-bottom:0}

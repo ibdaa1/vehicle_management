@@ -104,6 +104,18 @@ $menuItems = [
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <script>
+    // Immediately apply stored language direction before any rendering to prevent RTL→LTR flash
+    (function(){
+        try {
+            var lang = localStorage.getItem('lang');
+            if (lang === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        } catch(e) {}
+    })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -117,6 +129,17 @@ $menuItems = [
     <?php endif; ?>
 </head>
 <body>
+    <script>
+    // Apply stored direction to body immediately to match CSS selectors
+    (function(){
+        try {
+            var lang = localStorage.getItem('lang');
+            if (lang === 'en') {
+                document.body.setAttribute('dir', 'ltr');
+            }
+        } catch(e) {}
+    })();
+    </script>
     <!-- ========== HEADER ========== -->
     <header class="app-header">
         <div class="logo-area">
@@ -149,6 +172,26 @@ $menuItems = [
             <?php endforeach; ?>
         </nav>
     </aside>
+
+    <script>
+    // Apply stored language to header/sidebar text immediately to prevent Arabic flash in English mode
+    (function(){
+        try {
+            var lang = localStorage.getItem('lang');
+            if (lang === 'en') {
+                document.querySelectorAll('.menu-label[data-label-en]').forEach(function(el) {
+                    el.textContent = el.getAttribute('data-label-en');
+                });
+                var ht = document.getElementById('headerTitle');
+                if (ht) ht.textContent = ht.getAttribute('data-title-en') || ht.textContent;
+                var lb = document.getElementById('langBtn');
+                if (lb) lb.textContent = 'AR';
+                var lo = document.getElementById('logoutBtn');
+                if (lo) lo.textContent = lo.getAttribute('data-label-en') || lo.textContent;
+            }
+        } catch(e) {}
+    })();
+    </script>
 
     <!-- ========== MAIN CONTENT ========== -->
     <main class="app-main">

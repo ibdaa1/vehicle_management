@@ -14,8 +14,8 @@
 .mt-stat.overdue .num{color:#ff9800}
 .mt-toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
 .mt-toolbar .search-box{flex:1;min-width:200px;position:relative}
-.mt-toolbar .search-box input{width:100%;padding:10px 12px 10px 36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
-.mt-toolbar .search-box .ico{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#999}
+.mt-toolbar .search-box input{width:100%;padding:10px 12px;padding-inline-end:36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
+.mt-toolbar .search-box .ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:#999}
 .mt-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem}
 .mt-toolbar .btn-add{margin-inline-start:auto}
 .mt-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}

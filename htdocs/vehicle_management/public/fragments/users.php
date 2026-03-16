@@ -18,7 +18,7 @@
 .u-stat .u-stat-val{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
 .u-stat .u-stat-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
 .data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
-.data-table th,.data-table td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border-default);font-size:.875rem}
+.data-table th,.data-table td{padding:12px 16px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.875rem}
 .data-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap}
 .data-table tr:hover{background:var(--bg-main)}
 .data-table .table-actions{display:flex;gap:6px;justify-content:center}
@@ -71,7 +71,7 @@
 .toggle-switch{position:relative;display:inline-block;width:42px;height:24px;cursor:pointer}
 .toggle-switch input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:24px;transition:.3s}
-.toggle-slider:before{content:"";position:absolute;height:18px;width:18px;bottom:3px;left:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-slider:before{content:"";position:absolute;height:18px;width:18px;bottom:3px;inset-inline-start:3px;background:#fff;border-radius:50%;transition:.3s}
 .toggle-switch input:checked+.toggle-slider{background:var(--status-success,#4caf50)}
 .toggle-switch input:checked+.toggle-slider:before{transform:translateX(18px)}
 </style>

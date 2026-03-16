@@ -4,6 +4,18 @@
     <footer class="app-footer">
         <span id="footerText" data-footer-ar="<?= htmlspecialchars($footerAr ?? '© 2025 بلدية مدينة الشارقة') ?>" data-footer-en="<?= htmlspecialchars($footerEn ?? '© 2025 Sharjah City Municipality') ?>"><?= htmlspecialchars($footerAr ?? '© 2025 بلدية مدينة الشارقة') ?></span>
     </footer>
+    <script>
+    // Apply stored language to footer text immediately
+    (function(){
+        try {
+            var lang = localStorage.getItem('lang');
+            if (lang === 'en') {
+                var ft = document.getElementById('footerText');
+                if (ft) ft.textContent = ft.getAttribute('data-footer-en') || ft.textContent;
+            }
+        } catch(e) {}
+    })();
+    </script>
 
     <!-- Cache-mismatch detection: fix for hosting that caches PHP output ignoring query params -->
     <script>
@@ -45,7 +57,7 @@
     (function(){
         API.baseUrl = <?= json_encode($appBaseUrl, JSON_UNESCAPED_UNICODE) ?>;
 
-        /* ---- Language toggle for sidebar, header, footer ---- */
+        /* ---- Language toggle for sidebar, header, footer, and all page content ---- */
         function applyLang(lang) {
             var isEn = (lang === 'en');
             var dir = isEn ? 'ltr' : 'rtl';
@@ -53,16 +65,15 @@
             document.documentElement.setAttribute('dir', dir);
             document.body.setAttribute('dir', dir);
 
-            // Sidebar menu labels
-            document.querySelectorAll('.menu-label[data-label-ar]').forEach(function(el) {
+            // All elements with data-label-ar/en (sidebar, header, footer, fragment content)
+            document.querySelectorAll('[data-label-ar]').forEach(function(el) {
                 el.textContent = el.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || el.textContent;
             });
-            // Header title
-            var ht = document.getElementById('headerTitle');
-            if (ht && ht.hasAttribute('data-title-ar')) {
-                ht.textContent = ht.getAttribute(isEn ? 'data-title-en' : 'data-title-ar') || ht.textContent;
-            }
-            // Footer
+            // All elements with data-title-ar/en
+            document.querySelectorAll('[data-title-ar]').forEach(function(el) {
+                el.textContent = el.getAttribute(isEn ? 'data-title-en' : 'data-title-ar') || el.textContent;
+            });
+            // Footer text
             var ft = document.getElementById('footerText');
             if (ft && ft.hasAttribute('data-footer-ar')) {
                 ft.textContent = ft.getAttribute(isEn ? 'data-footer-en' : 'data-footer-ar') || ft.textContent;
@@ -70,11 +81,10 @@
             // Lang button
             var lb = document.getElementById('langBtn');
             if (lb) lb.textContent = isEn ? 'AR' : 'EN';
-            // Logout button
-            var lo = document.getElementById('logoutBtn');
-            if (lo && lo.hasAttribute('data-label-ar')) {
-                lo.textContent = lo.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || lo.textContent;
-            }
+            // All elements with data-placeholder-ar/en
+            document.querySelectorAll('[data-placeholder-ar]').forEach(function(el) {
+                el.placeholder = el.getAttribute(isEn ? 'data-placeholder-en' : 'data-placeholder-ar') || el.placeholder;
+            });
         }
 
         // Apply stored language on load
