@@ -623,6 +623,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         $('mvModalTitle').textContent=title||'Add Movement';
         $('mvModal').classList.add('show');
         pendingPhotos=[];
+        existingPhotosHtml='';
         $('mvPhotosPreview').innerHTML='';
     }
     function closeModal(){$('mvModal').classList.remove('show');}
@@ -676,11 +677,17 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             reader.readAsDataURL(f);
         });
     }
+    var existingPhotosHtml='';
     function renderPhotosPrev(){
-        $('mvPhotosPreview').innerHTML=pendingPhotos.map((p,i)=>{
-            var safe=p.replace(/[^a-zA-Z0-9+/=:;,]/g,'');
-            return '<img src="'+safe+'" class="thumb" onclick="MvPage.removePhoto('+i+')">';
-        }).join('');
+        var html=existingPhotosHtml;
+        if(pendingPhotos.length){
+            if(html) html+='<div style="margin-bottom:8px;margin-top:8px"><strong data-label-ar="صور جديدة" data-label-en="New Photos">صور جديدة:</strong></div>';
+            html+=pendingPhotos.map((p,i)=>{
+                var safe=p.replace(/[^a-zA-Z0-9+/=:;,]/g,'');
+                return '<img src="'+safe+'" class="thumb" onclick="MvPage.removePhoto('+i+')">';
+            }).join('');
+        }
+        $('mvPhotosPreview').innerHTML=html;
     }
 
     /* ---- Filters ---- */
@@ -985,6 +992,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             let res;
             if(id){
                 res=await API.put('/movements/'+id,data);
+                // Upload new photos if any
+                if(pendingPhotos.length){
+                    try{await API.post('/movements/'+id+'/photos',{photos:pendingPhotos});}catch(pe){console.error(pe);}
+                }
                 UI.showToast('Movement updated','success');
             }else{
                 res=await API.post('/movements',data);
@@ -1023,6 +1034,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 }
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(m.created_by||'—')+'</span></div>';
+                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">آخر تعديل بواسطة</span><span class="d-val">'+esc(m.updated_by)+'</span></div>';
+                if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">تاريخ الإنشاء</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
+                if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">تاريخ التحديث</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
                 // Photos
                 const photos=m.photos||[];
                 if(photos.length){
@@ -1056,8 +1070,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 $('mvLat').value=m.latitude||'';
                 $('mvLng').value=m.longitude||'';
                 $('mvNotes').value=m.notes||'';
-                pendingPhotos=[];renderPhotosPrev();
                 openModal('✏️ Edit Movement #'+id);
+                // Show existing photos in the edit form (after openModal which clears them)
+                var ePhotos=m.photos||[];
+                existingPhotosHtml='';
+                if(ePhotos.length){
+                    existingPhotosHtml='<div style="margin-bottom:8px"><strong data-label-ar="الصور الحالية" data-label-en="Current Photos">الصور الحالية:</strong></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+                    ePhotos.forEach(function(p){
+                        var pu=p.photo_url||'';
+                        var basePath='';
+                        try{basePath=(new URL(API.baseUrl)).pathname;}catch(e){basePath=API.baseUrl||'';}
+                        basePath=basePath.replace(/\/+$/,'');
+                        if(basePath && basePath!=='/' && pu.indexOf('/public/uploads/')===0 && pu.indexOf(basePath)!==0) pu=basePath+pu;
+                        existingPhotosHtml+='<img src="'+esc(pu)+'" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:2px solid var(--border-default,#ddd)" onclick="window.open(this.src,\'_blank\')">';
+                    });
+                    existingPhotosHtml+='</div>';
+                }
+                renderPhotosPrev();
             }catch(e){UI.showToast('Failed to load','error');}
         },
         async del(id){
