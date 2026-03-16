@@ -18,7 +18,7 @@
     <div class="spin">جاري التحميل...</div>
 </div>
 <script>
-fetch('../api/vehicle/get_violations_with_editor.php')
+fetch('../api/v1/violations')
   .then(response => response.json())
   .then(data => {
     if(!data.success) {

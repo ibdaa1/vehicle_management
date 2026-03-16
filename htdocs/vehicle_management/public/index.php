@@ -1010,15 +1010,15 @@
     currentLanguage = lang;
     showLoading(true);
     
-    // Update language in user session
+    // Update language in user session via MVC profile endpoint
     if (currentUser) {
       try {
-        await fetch('/vehicle_management/api/users/update_language.php', {
-          method: 'POST',
+        await fetch('/vehicle_management/api/v1/profile', {
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ language: lang }),
+          body: JSON.stringify({ preferred_language: lang }),
           credentials: 'same-origin'
         });
       } catch (error) {
@@ -1049,13 +1049,8 @@
     showLoading(true);
     
     try {
-      // 1. Initialize session
-      await fetch('/vehicle_management/api/config/session.php?init=1', { 
-        credentials: 'same-origin' 
-      });
-      
-      // 2. Check session and get user data
-      const sessionRes = await fetch('/vehicle_management/api/users/session_check.php', { 
+      // 1. Check session and get user data (MVC auth check)
+      const sessionRes = await fetch('/vehicle_management/api/v1/auth/check', { 
         credentials: 'same-origin' 
       });
       
@@ -1072,15 +1067,15 @@
       // 3. Load translations
       await loadTranslations(currentLanguage);
       
-      // 4. Get permissions
-      const permRes = await fetch('/vehicle_management/api/permissions/get_permissions.php', { 
+      // 3. Get permissions (MVC permissions endpoint)
+      const permRes = await fetch('/vehicle_management/api/v1/permissions/my', { 
         credentials: 'same-origin' 
       });
       
       if (permRes.ok) {
         const permData = await permRes.json();
         if (permData.success) {
-          currentPermissions = permData.role;
+          currentPermissions = permData.data || permData.role;
         }
       }
       

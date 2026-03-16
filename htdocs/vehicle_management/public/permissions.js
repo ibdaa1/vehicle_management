@@ -3,7 +3,7 @@
 // Designed to be safe: uses same-origin credentials, logs debug info, re-applies on DOM changes.
 
 window.Permissions = (function(){
-  const API = '/vehicle_management/api/permissions/get_permissions.php';
+  const API = '/vehicle_management/api/v1/permissions/my';
   let perms = null;        // { create:bool, edit:bool, delete:bool }
   let roleId = null;
   let loaded = false;
@@ -56,7 +56,7 @@ window.Permissions = (function(){
         return null;
       }
       roleId = j.role_id ?? roleId;
-      const r = j.role || {};
+      const r = j.role || j.data || {};
       const p = {
         create: !!r.can_create,
         edit:   !!r.can_edit,

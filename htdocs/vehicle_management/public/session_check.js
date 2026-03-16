@@ -2,7 +2,7 @@
 // Robust session check used by pages: calls session_check.php with credentials so PHPSESSID is sent.
 // Replace your existing session_check.js with this file.
 
-const SESSION_CHECK_URL = '/vehicle_management/api/users/session_check.php';
+const SESSION_CHECK_URL = '/vehicle_management/api/v1/auth/check';
 
 async function sessionCheck() {
   try {

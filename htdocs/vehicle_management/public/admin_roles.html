@@ -141,7 +141,7 @@
 async function loadRoles() {
   const msg = document.getElementById('msg');
   try {
-    const res = await fetch('/vehicle_management/api/permissions/roles/list.php', {
+    const res = await fetch('/vehicle_management/api/v1/roles', {
       credentials: 'same-origin'
     });
     const data = await res.json();
@@ -152,13 +152,14 @@ async function loadRoles() {
       return;
     }
 
-    msg.textContent = `تم تحميل ${data.roles.length} دور بنجاح`;
+    const roles = data.roles || data.data || [];
+    msg.textContent = `تم تحميل ${roles.length} دور بنجاح`;
     msg.style.background = '#e7f3e7';
 
     const tbody = document.querySelector('#rolesTable tbody');
     tbody.innerHTML = '';
 
-    data.roles.forEach(role => {
+    roles.forEach(role => {
       const tr = document.createElement('tr');
 
       // دالة مساعدة لإنشاء خلية checkbox
@@ -224,10 +225,11 @@ async function loadRoles() {
         btn.textContent = 'جاري...';
 
         try {
-          const res = await fetch('/vehicle_management/api/permissions/roles/update.php', {
-            method: 'POST',
+          const res = await fetch('/vehicle_management/api/v1/roles/' + encodeURIComponent(roleId), {
+            method: 'PUT',
             credentials: 'same-origin',
-            body: fd
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(permissions)
           });
           const result = await res.json();
 
