@@ -709,7 +709,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function renderPhotosPrev(){
         var html=existingPhotosHtml;
         if(pendingPhotos.length){
-            if(html) html+='<div style="margin-bottom:8px;margin-top:8px"><strong data-label-ar="صور جديدة" data-label-en="New Photos">صور جديدة:</strong></div>';
+            if(html) html+='<div style="margin-bottom:8px;margin-top:8px"><strong data-label-ar="صور جديدة" data-label-en="New Photos">New Photos:</strong></div>';
             html+=pendingPhotos.map((p,i)=>{
                 var safe=p.replace(/[^a-zA-Z0-9+/=:;,]/g,'');
                 return '<img src="'+safe+'" class="thumb" onclick="MvPage.removePhoto('+i+')">';
@@ -1068,9 +1068,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 const userName=empId=>{var u=userMap[empId];return u?(u.name+' ('+empId+')'):empId;};
                 const v=vehicleMap[m.vehicle_code]||{};
                 let h='<div class="d-row"><span class="d-lbl">'+i18n.t('vehicle_code')+'</span><span class="d-val">'+esc(m.vehicle_code)+'</span></div>';
-                if(v.plate_number) h+='<div class="d-row"><span class="d-lbl" data-label-ar="رقم اللوحة" data-label-en="Plate Number">رقم اللوحة</span><span class="d-val">'+esc(v.plate_number)+'</span></div>';
-                if(v.vehicle_type||v.vehicle_category) h+='<div class="d-row"><span class="d-lbl" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">نوع المركبة</span><span class="d-val">'+esc(v.vehicle_type||v.vehicle_category||'—')+'</span></div>';
-                if(v.vehicle_mode) h+='<div class="d-row"><span class="d-lbl" data-label-ar="وضع المركبة" data-label-en="Vehicle Mode">وضع المركبة</span><span class="d-val">'+esc(v.vehicle_mode)+'</span></div>';
+                if(v.plate_number) h+='<div class="d-row"><span class="d-lbl" data-label-ar="رقم اللوحة" data-label-en="Plate Number">Plate Number</span><span class="d-val">'+esc(v.plate_number)+'</span></div>';
+                if(v.vehicle_type||v.vehicle_category) h+='<div class="d-row"><span class="d-lbl" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">Vehicle Type</span><span class="d-val">'+esc(v.vehicle_type||v.vehicle_category||'—')+'</span></div>';
+                if(v.vehicle_mode) h+='<div class="d-row"><span class="d-lbl" data-label-ar="وضع المركبة" data-label-en="Vehicle Mode">Vehicle Mode</span><span class="d-val">'+esc(v.vehicle_mode)+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('operation_type')+'</span><span class="d-val"><span class="mv-badge '+m.operation_type+'">'+typeL(m.operation_type)+'</span></span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('by')+'</span><span class="d-val">'+esc(userName(m.performed_by))+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('date')+'</span><span class="d-val">'+esc((m.movement_datetime||'').replace('T',' ').substring(0,19))+'</span></div>';
@@ -1081,9 +1081,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 }
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(userName(m.created_by||'—'))+'</span></div>';
-                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">آخر تعديل بواسطة</span><span class="d-val">'+esc(userName(m.updated_by))+'</span></div>';
-                if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">تاريخ الإنشاء</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
-                if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">تاريخ التحديث</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
+                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">Updated By</span><span class="d-val">'+esc(userName(m.updated_by))+'</span></div>';
+                if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">Created At</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
+                if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">Updated At</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
                 // Photos
                 const photos=m.photos||[];
                 h+='<h4 style="margin-top:16px" data-label-ar="📷 الصور" data-label-en="📷 Photos">📷 '+(i18n.t('photos')||'Photos')+' ('+photos.length+')</h4>';
@@ -1126,7 +1126,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 var ePhotos=m.photos||[];
                 existingPhotosHtml='';
                 if(ePhotos.length){
-                    existingPhotosHtml='<div style="margin-bottom:8px"><strong data-label-ar="الصور الحالية" data-label-en="Current Photos">الصور الحالية:</strong></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+                    existingPhotosHtml='<div style="margin-bottom:8px"><strong data-label-ar="الصور الحالية" data-label-en="Current Photos">Current Photos:</strong></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
                     ePhotos.forEach(function(p){
                         var pu=p.photo_url||'';
                         var basePath='';
