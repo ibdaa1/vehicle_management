@@ -80,7 +80,7 @@
   "all_genders": "All Genders",
   "all_sections": "All Sections",
   "all_divisions": "All Divisions",
-  "search_vehicle": "Search by vehicle code or driver name...",
+  "search_vehicle": "Search vehicles...",
   "add_vehicle": "Add Vehicle",
   "movement_history": "Movement History",
   "men": "Men",
@@ -256,5 +256,10 @@
   "photos_label": "Photos (max 6)",
   "sector": "Sector",
   "all_sectors": "All Sectors",
-  "search_vehicle": "Search vehicles..."
+  "not_set": "Not set",
+  "fill_all_fields": "Please fill all fields",
+  "password_min_length": "New password must be at least 4 characters",
+  "passwords_not_match": "Passwords do not match",
+  "failed_load_history": "Failed to load history",
+  "failed_load_violations": "Failed to load violations"
 }

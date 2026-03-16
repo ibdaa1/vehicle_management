@@ -228,8 +228,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
-    function getLang() { return localStorage.getItem('lang') || 'ar'; }
-    function t(ar, en) { return getLang() === 'en' ? en : ar; }
+    function getLang() { return (typeof i18n !== 'undefined' ? i18n.lang : localStorage.getItem('lang')) || 'ar'; }
 
     /* ---------- Apply i18n to static labels ---------- */
     function applyLang() {
@@ -257,15 +256,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         $('pfUsername').value = data.username || '';
         $('pfEmail').value = data.email || '';
         $('pfPhone').value = data.phone || '';
-        $('pfRole').value = data.role_name || (t('دور', 'Role') + ' #' + (data.role_id || ''));
+        $('pfRole').value = data.role_name || (i18n.t('role') + ' #' + (data.role_id || ''));
 
-        var genderMap = { male: t('ذكر', 'Male'), female: t('أنثى', 'Female') };
+        var genderMap = { male: i18n.t('male'), female: i18n.t('female') };
         $('pfGender').value = genderMap[data.gender] || data.gender || '';
 
-        $('pfSector').value = data.sector_name || data.sector_name_en || t('غير محدد', 'Not set');
-        $('pfDept').value = data.department_name_ar || t('غير محدد', 'Not set');
-        $('pfSection').value = data.section_name_ar || t('غير محدد', 'Not set');
-        $('pfDivision').value = data.division_name_ar || t('غير محدد', 'Not set');
+        $('pfSector').value = data.sector_name || data.sector_name_en || i18n.t('not_set');
+        $('pfDept').value = data.department_name_ar || i18n.t('not_set');
+        $('pfSection').value = data.section_name_ar || i18n.t('not_set');
+        $('pfDivision').value = data.division_name_ar || i18n.t('not_set');
 
         var langSel = $('pfLang');
         if (langSel) langSel.value = data.preferred_language || 'ar';
@@ -291,7 +290,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             successEl.style.display = 'inline';
             setTimeout(function() { successEl.style.display = 'none'; }, 3000);
         } catch (e) {
-            errorEl.textContent = (e && e.message) || t('حدث خطأ', 'An error occurred');
+            errorEl.textContent = (e && e.message) || i18n.t('error');
             errorEl.style.display = 'inline';
         } finally {
             btn.disabled = false;
@@ -311,17 +310,17 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var confPwd = $('pfConfPwd').value;
 
         if (!curPwd || !newPwd) {
-            errorEl.textContent = t('يرجى ملء جميع الحقول', 'Please fill all fields');
+            errorEl.textContent = i18n.t('fill_all_fields');
             errorEl.style.display = 'inline';
             return;
         }
         if (newPwd.length < 4) {
-            errorEl.textContent = t('كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل', 'New password must be at least 4 characters');
+            errorEl.textContent = i18n.t('password_min_length');
             errorEl.style.display = 'inline';
             return;
         }
         if (newPwd !== confPwd) {
-            errorEl.textContent = t('كلمة المرور الجديدة غير متطابقة', 'Passwords do not match');
+            errorEl.textContent = i18n.t('passwords_not_match');
             errorEl.style.display = 'inline';
             return;
         }
@@ -338,7 +337,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             $('pfConfPwd').value = '';
             setTimeout(function() { successEl.style.display = 'none'; }, 3000);
         } catch (e) {
-            errorEl.textContent = (e && e.message) || t('حدث خطأ', 'An error occurred');
+            errorEl.textContent = (e && e.message) || i18n.t('error');
             errorEl.style.display = 'inline';
         } finally {
             btn.disabled = false;
@@ -358,7 +357,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         } catch (e) {
             console.error('Failed to load movements:', e);
             tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
-                '<div class="ico">⚠️</div><p>' + t('فشل تحميل السجل', 'Failed to load history') + '</p></td></tr>';
+                '<div class="ico">⚠️</div><p>' + i18n.t('failed_load_history') + '</p></td></tr>';
         }
     }
 
@@ -367,20 +366,20 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var tbody = $('pfMvBody');
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
-                '<div class="ico">🚗</div><p>' + t('لا توجد حركات مسجلة', 'No movements recorded') + '</p></td></tr>';
+                '<div class="ico">🚗</div><p>' + i18n.t('no_movements') + '</p></td></tr>';
             return;
         }
 
         var html = '';
         rows.forEach(function(mv, i) {
             var isPickup = (mv.operation_type === 'pickup');
-            var opLabel = isPickup ? t('استلام', 'Pickup') : t('إرجاع', 'Return');
+            var opLabel = isPickup ? i18n.t('pickup') : i18n.t('return');
             var opClass = isPickup ? 'pickup' : 'return';
             var dateStr = mv.movement_datetime || mv.created_at || '';
             if (dateStr) {
                 try {
                     var d = new Date(dateStr);
-                    dateStr = d.toLocaleDateString(getLang() === 'en' ? 'en-US' : 'ar-SA', {
+                    dateStr = d.toLocaleDateString(i18n.lang === 'en' ? 'en-US' : 'ar-SA', {
                         year: 'numeric', month: 'short', day: 'numeric',
                         hour: '2-digit', minute: '2-digit'
                     });
@@ -420,7 +419,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         } catch (e) {
             console.error('Failed to load violations:', e);
             tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
-                '<div class="ico">⚠️</div><p>' + t('فشل تحميل المخالفات', 'Failed to load violations') + '</p></td></tr>';
+                '<div class="ico">⚠️</div><p>' + i18n.t('failed_load_violations') + '</p></td></tr>';
         }
     }
 
@@ -429,20 +428,20 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var tbody = $('pfVlBody');
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="7" class="pf-empty">' +
-                '<div class="ico">✅</div><p>' + t('لا توجد مخالفات مسجلة', 'No violations recorded') + '</p></td></tr>';
+                '<div class="ico">✅</div><p>' + i18n.t('no_violations') + '</p></td></tr>';
             return;
         }
 
         var html = '';
         rows.forEach(function(vl, i) {
             var isPaid = (vl.violation_status === 'paid');
-            var statusLabel = isPaid ? t('مدفوعة', 'Paid') : t('غير مدفوعة', 'Unpaid');
+            var statusLabel = isPaid ? i18n.t('paid') : i18n.t('unpaid');
             var statusClass = isPaid ? 'paid' : 'unpaid';
             var dateStr = vl.violation_datetime || vl.created_at || '';
             if (dateStr) {
                 try {
                     var d = new Date(dateStr);
-                    dateStr = d.toLocaleDateString(getLang() === 'en' ? 'en-US' : 'ar-SA', {
+                    dateStr = d.toLocaleDateString(i18n.lang === 'en' ? 'en-US' : 'ar-SA', {
                         year: 'numeric', month: 'short', day: 'numeric',
                         hour: '2-digit', minute: '2-digit'
                     });

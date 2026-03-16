@@ -80,7 +80,7 @@
   "all_genders": "كل الجنس",
   "all_sections": "كل الأقسام",
   "all_divisions": "كل الشعب",
-  "search_vehicle": "بحث برقم المركبة أو اسم السائق...",
+  "search_vehicle": "بحث عن مركبة...",
   "add_vehicle": "إضافة مركبة",
   "movement_history": "سجل الحركات",
   "men": "رجال",
@@ -256,5 +256,10 @@
   "photos_label": "صور (بحد أقصى 6)",
   "sector": "القطاع",
   "all_sectors": "كل القطاعات",
-  "search_vehicle": "بحث عن مركبة..."
+  "not_set": "غير محدد",
+  "fill_all_fields": "يرجى ملء جميع الحقول",
+  "password_min_length": "كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل",
+  "passwords_not_match": "كلمة المرور الجديدة غير متطابقة",
+  "failed_load_history": "فشل تحميل السجل",
+  "failed_load_violations": "فشل تحميل المخالفات"
 }
