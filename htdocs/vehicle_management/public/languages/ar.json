@@ -261,5 +261,15 @@
   "password_min_length": "كلمة المرور الجديدة يجب أن تكون 4 أحرف على الأقل",
   "passwords_not_match": "كلمة المرور الجديدة غير متطابقة",
   "failed_load_history": "فشل تحميل السجل",
-  "failed_load_violations": "فشل تحميل المخالفات"
+  "failed_load_violations": "فشل تحميل المخالفات",
+  "next_turn": "دورك التالي",
+  "category": "الفئة",
+  "failed_load_vehicles": "تعذر تحميل بيانات المركبات",
+  "error_loading_data": "حدث خطأ أثناء تحميل البيانات",
+  "retry": "إعادة المحاولة",
+  "no_shift_turn": "لا يوجد دور لك حالياً في مركبات الورديات",
+  "all_dept_checked_out": "جميع مركبات الإدارة مستلمة حالياً",
+  "no_dept_vehicles": "لا توجد مركبات متاحة في إدارتك",
+  "no_dept_turn": "لا يوجد دور لك حالياً في مركبات الإدارة",
+  "shift_mode": "ورديات"
 }

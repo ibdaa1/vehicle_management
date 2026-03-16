@@ -261,5 +261,15 @@
   "password_min_length": "New password must be at least 4 characters",
   "passwords_not_match": "Passwords do not match",
   "failed_load_history": "Failed to load history",
-  "failed_load_violations": "Failed to load violations"
+  "failed_load_violations": "Failed to load violations",
+  "next_turn": "Next Turn",
+  "category": "Category",
+  "failed_load_vehicles": "Failed to load vehicle data",
+  "error_loading_data": "An error occurred while loading data",
+  "retry": "Retry",
+  "no_shift_turn": "No shift vehicle is assigned to your turn currently",
+  "all_dept_checked_out": "All department vehicles are currently checked out",
+  "no_dept_vehicles": "No vehicles available in your department",
+  "no_dept_turn": "No department vehicle is assigned to your turn currently",
+  "shift_mode": "Shift"
 }

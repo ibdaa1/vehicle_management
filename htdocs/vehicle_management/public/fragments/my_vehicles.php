@@ -55,23 +55,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="mvPageTitle" data-label-ar="مركباتي" data-label-en="My Vehicles">مركباتي</h2>
+    <h2 id="mvPageTitle" data-label-ar="مركباتي" data-label-en="My Vehicles">My Vehicles</h2>
 </div>
 
 <!-- Info Banner -->
 <div class="mv-info-banner" id="mvInfoBanner">
     <span class="icon">ℹ️</span>
-    <span id="mvInfoText" data-label-ar="يتم عرض المركبات الخاصة بك ومركبات الورديات ومركبات الإدارة المتاحة لك" data-label-en="Your private vehicles, shift vehicles, and available department vehicles are displayed here.">يتم عرض المركبات الخاصة بك ومركبات الورديات ومركبات الإدارة المتاحة لك</span>
+    <span id="mvInfoText" data-label-ar="يتم عرض المركبات الخاصة بك ومركبات الورديات ومركبات الإدارة المتاحة لك" data-label-en="Your private vehicles, shift vehicles, and available department vehicles are displayed here.">Your private vehicles, shift vehicles, and available department vehicles are displayed here.</span>
 </div>
 
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
 <div class="mv-section-card" id="mvPrivateSection">
     <div class="mv-section-title">
         <span>🔒</span>
-        <span id="mvPrivateTitle" data-label-ar="مركباتي الخاصة" data-label-en="My Private Vehicles">مركباتي الخاصة</span>
+        <span id="mvPrivateTitle" data-label-ar="مركباتي الخاصة" data-label-en="My Private Vehicles">My Private Vehicles</span>
     </div>
     <div id="mvPrivateGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span>جاري التحميل...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -79,10 +79,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mv-section-card" id="mvShiftSection">
     <div class="mv-section-title">
         <span>🔄</span>
-        <span id="mvShiftTitle" data-label-ar="مركبات الورديات" data-label-en="Shift Vehicles">مركبات الورديات</span>
+        <span id="mvShiftTitle" data-label-ar="مركبات الورديات" data-label-en="Shift Vehicles">Shift Vehicles</span>
     </div>
     <div id="mvShiftGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span>جاري التحميل...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -90,10 +90,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mv-section-card" id="mvDeptSection">
     <div class="mv-section-title">
         <span>🏢</span>
-        <span id="mvDeptTitle" data-label-ar="مركبات الإدارة المتاحة" data-label-en="Available Department Vehicles">مركبات الإدارة المتاحة</span>
+        <span id="mvDeptTitle" data-label-ar="مركبات الإدارة المتاحة" data-label-en="Available Department Vehicles">Available Department Vehicles</span>
     </div>
     <div id="mvDeptGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span>جاري التحميل...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -120,37 +120,30 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     /* ---------- Helpers ---------- */
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-    function getLang() {
-        return localStorage.getItem('lang') || 'ar';
-    }
-
-    function t(arText, enText) {
-        return getLang() === 'en' ? enText : arText;
-    }
-
     function statusBadge(status) {
+        var isEn = (i18n.lang === 'en');
         var map = {
             operational:    { cls: 'operational',    ar: 'تعمل',       en: 'Operational' },
             maintenance:    { cls: 'maintenance',    ar: 'صيانة',       en: 'Maintenance' },
             out_of_service: { cls: 'out_of_service', ar: 'خارج الخدمة', en: 'Out of Service' }
         };
         var s = map[status] || map.operational;
-        var label = getLang() === 'en' ? s.en : s.ar;
+        var label = isEn ? s.en : s.ar;
         return '<span class="mv-v-badge ' + s.cls + '">' + esc(label) + '</span>';
     }
 
     function availBadge(available) {
         if (available) {
-            return '<span class="mv-v-badge available">' + esc(t('متاحة', 'Available')) + '</span>';
+            return '<span class="mv-v-badge available">' + esc(i18n.t('available')) + '</span>';
         }
-        return '<span class="mv-v-badge checked_out">' + esc(t('مستلمة', 'Checked Out')) + '</span>';
+        return '<span class="mv-v-badge checked_out">' + esc(i18n.t('checked_out')) + '</span>';
     }
 
     function modeBadge(mode) {
         if (mode === 'private') {
-            return '<span class="mv-v-mode-badge private">' + t('خاصة', 'Private') + '</span>';
+            return '<span class="mv-v-mode-badge private">' + i18n.t('private') + '</span>';
         }
-        return '<span class="mv-v-mode-badge shift">' + t('ورديات', 'Shift') + '</span>';
+        return '<span class="mv-v-mode-badge shift">' + i18n.t('shift_mode') + '</span>';
     }
 
     /* ---------- Build a vehicle card ---------- */
@@ -172,7 +165,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (opts.turnOrder) {
             html += '<span><span class="mv-order-badge">' + opts.turnOrder + '</span><span class="mv-v-code">' + esc(v.vehicle_code) + '</span>';
             if (isNextTurn) {
-                html += '<span class="mv-next-label">' + t('دورك التالي', 'Next Turn') + '</span>';
+                html += '<span class="mv-next-label">' + i18n.t('next_turn') + '</span>';
             }
             html += '</span>';
         } else {
@@ -185,12 +178,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         html += statusBadge(v.status);
         html += modeBadge(v.vehicle_mode);
 
-        html += '<div class="mv-v-detail"><span class="icon">👤</span> ' + t('السائق', 'Driver') + ': ' + esc(v.driver_name || '—') + '</div>';
+        html += '<div class="mv-v-detail"><span class="icon">👤</span> ' + i18n.t('driver') + ': ' + esc(v.driver_name || '—') + '</div>';
         if (v.vehicle_category) {
-            html += '<div class="mv-v-detail"><span class="icon">🚗</span> ' + t('الفئة', 'Category') + ': ' + esc(v.vehicle_category) + '</div>';
+            html += '<div class="mv-v-detail"><span class="icon">🚗</span> ' + i18n.t('category') + ': ' + esc(v.vehicle_category) + '</div>';
         }
         if (!isAvailable && v.last_holder) {
-            html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + t('المستلم الحالي', 'Current Holder') + ': ' + esc(v.last_holder) + '</div>';
+            html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + i18n.t('current_holder') + ': ' + esc(v.last_holder) + '</div>';
         }
 
         /* Pickup/Return buttons — pickup for all, return logic:
@@ -211,11 +204,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         html += '<div class="mv-v-actions">';
         if (canPickup) {
             html += '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
-            html += '<span>🚗</span> ' + t('استلام', 'Pickup');
+            html += '<span>🚗</span> ' + i18n.t('pickup_operation');
             html += '</button>';
         } else if (canReturn) {
             html += '<button class="btn mv-btn-return" onclick="MyVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
-            html += '<span>↩️</span> ' + t('إرجاع', 'Return');
+            html += '<span>↩️</span> ' + i18n.t('return');
             html += '</button>';
         }
         html += '</div>';
@@ -229,7 +222,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         try {
             var res = await API.get('/vehicles/my-vehicles');
             if (!res || res.success === false) {
-                var errMsg = (res && res.message) || t('تعذر تحميل بيانات المركبات', 'Failed to load vehicle data');
+                var errMsg = (res && res.message) || i18n.t('failed_load_vehicles');
                 console.error('my-vehicles API error:', errMsg);
                 if (typeof UI !== 'undefined' && UI.showToast) {
                     UI.showToast(errMsg, 'error');
@@ -247,7 +240,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             console.error('Failed to load my vehicles:', e);
             var errMsg = (e && e.message) || '';
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(t('تعذر تحميل بيانات المركبات', 'Failed to load vehicle data') + (errMsg ? ': ' + errMsg : ''), 'error');
+                UI.showToast(i18n.t('failed_load_vehicles') + (errMsg ? ': ' + errMsg : ''), 'error');
             }
             renderError('mvPrivateGrid');
             renderError('mvShiftGrid');
@@ -261,9 +254,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!container) return;
         container.innerHTML = '<div class="mv-empty-state">' +
             '<div class="empty-icon">⚠️</div>' +
-            '<p>' + t('حدث خطأ أثناء تحميل البيانات', 'An error occurred while loading data') + '</p>' +
+            '<p>' + i18n.t('error_loading_data') + '</p>' +
             '<button class="btn mv-btn-pickup" onclick="MyVehiclesFragment.reload()" style="margin-top:12px">' +
-            t('إعادة المحاولة', 'Retry') + '</button></div>';
+            i18n.t('retry') + '</button></div>';
     }
 
     /* ---------- Render private vehicles ---------- */
@@ -272,7 +265,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!container) return;
         if (!vehicles.length) {
             container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔒</div><p>' +
-                t('لا توجد مركبات خاصة مسجلة لك', 'No private vehicles assigned to you') + '</p></div>';
+                i18n.t('no_private_vehicles') + '</p></div>';
             return;
         }
         container.innerHTML = vehicles.map(function(v) { return buildCard(v, { isPrivate: true }); }).join('');
@@ -288,9 +281,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!vehicles || !vehicles.length) {
             var msg = '';
             if (totalShift > 0) {
-                msg = t('جميع مركبات الورديات مستلمة حالياً', 'All shift vehicles are currently checked out');
+                msg = i18n.t('all_shift_checked_out');
             } else {
-                msg = t('لا توجد مركبات ورديات متاحة', 'No shift vehicles available');
+                msg = i18n.t('no_shift_vehicles');
             }
             container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔄</div><p>' + msg + '</p></div>';
             return;
@@ -304,7 +297,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             });
             if (!displayVehicles.length) {
                 container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🔄</div><p>' +
-                    t('لا يوجد دور لك حالياً في مركبات الورديات', 'No shift vehicle is assigned to your turn currently') + '</p></div>';
+                    i18n.t('no_shift_turn') + '</p></div>';
                 return;
             }
         }
@@ -329,9 +322,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!vehicles || !vehicles.length) {
             var msg = '';
             if (totalDept > 0) {
-                msg = t('جميع مركبات الإدارة مستلمة حالياً', 'All department vehicles are currently checked out');
+                msg = i18n.t('all_dept_checked_out');
             } else {
-                msg = t('لا توجد مركبات متاحة في إدارتك', 'No vehicles available in your department');
+                msg = i18n.t('no_dept_vehicles');
             }
             container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' + msg + '</p></div>';
             return;
@@ -345,7 +338,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             });
             if (!displayVehicles.length) {
                 container.innerHTML = '<div class="mv-empty-state"><div class="empty-icon">🏢</div><p>' +
-                    t('لا يوجد دور لك حالياً في مركبات الإدارة', 'No department vehicle is assigned to your turn currently') + '</p></div>';
+                    i18n.t('no_dept_turn') + '</p></div>';
                 return;
             }
         }
@@ -362,7 +355,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* ---------- Pickup action (self-service) ---------- */
     async function pickup(vehicleCode) {
-        var msg = t('هل تريد استلام المركبة', 'Do you want to pick up vehicle') + ' ' + vehicleCode + '?';
+        var msg = i18n.t('confirm_pickup') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
@@ -371,19 +364,19 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 operation_type: 'pickup'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(t('تم استلام المركبة بنجاح', 'Vehicle picked up successfully'), 'success');
+                UI.showToast(i18n.t('pickup_success'), 'success');
             }
             loadMyVehicles();
         } catch (e) {
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(e.message || t('خطأ', 'Error'), 'error');
+                UI.showToast(e.message || i18n.t('error'), 'error');
             }
         }
     }
 
     /* ---------- Return action (self-service) ---------- */
     async function returnVehicle(vehicleCode) {
-        var msg = t('إرجاع المركبة', 'Return Vehicle') + ' ' + vehicleCode + '?';
+        var msg = i18n.t('return_vehicle') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
@@ -392,20 +385,19 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 operation_type: 'return'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(t('تم إرجاع المركبة بنجاح', 'Vehicle returned successfully'), 'success');
+                UI.showToast(i18n.t('vehicle_returned_success'), 'success');
             }
             loadMyVehicles();
         } catch (e) {
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(e.message || t('خطأ', 'Error'), 'error');
+                UI.showToast(e.message || i18n.t('error'), 'error');
             }
         }
     }
 
     /* ---------- Apply language to fragment labels ---------- */
     function applyFragmentLang() {
-        var lang = getLang();
-        var isEn = (lang === 'en');
+        var isEn = (i18n.lang === 'en');
         document.querySelectorAll('[data-label-ar]').forEach(function(el) {
             el.textContent = el.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || el.textContent;
         });
