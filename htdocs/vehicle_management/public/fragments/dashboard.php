@@ -44,51 +44,51 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2>لوحة التحكم</h2>
+    <h2 data-label-ar="لوحة التحكم" data-label-en="Dashboard">Dashboard</h2>
 </div>
 
 <!-- Stats -->
 <div class="dashboard-stats" id="statsGrid">
     <div class="dash-stat accent-blue">
         <div class="s-icon blue">🚗</div>
-        <div class="s-info"><h4>إجمالي المركبات</h4><div class="s-value" id="statTotal">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="إجمالي المركبات" data-label-en="Total Vehicles">Total Vehicles</h4><div class="s-value" id="statTotal">&mdash;</div></div>
     </div>
     <div class="dash-stat accent-green">
         <div class="s-icon green">✅</div>
-        <div class="s-info"><h4>تعمل</h4><div class="s-value" id="statOperational">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="تعمل" data-label-en="Operational">Operational</h4><div class="s-value" id="statOperational">&mdash;</div></div>
     </div>
     <div class="dash-stat accent-warning">
         <div class="s-icon warn">🔧</div>
-        <div class="s-info"><h4>صيانة</h4><div class="s-value" id="statMaintenance">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="صيانة" data-label-en="Maintenance">Maintenance</h4><div class="s-value" id="statMaintenance">&mdash;</div></div>
     </div>
     <div class="dash-stat accent-danger">
         <div class="s-icon red">⛔</div>
-        <div class="s-info"><h4>خارج الخدمة</h4><div class="s-value" id="statOutOfService">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="خارج الخدمة" data-label-en="Out of Service">Out of Service</h4><div class="s-value" id="statOutOfService">&mdash;</div></div>
     </div>
     <div class="dash-stat accent-blue">
         <div class="s-icon blue">📋</div>
-        <div class="s-info"><h4>مخالفات غير مدفوعة</h4><div class="s-value" id="statViolations">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="مخالفات غير مدفوعة" data-label-en="Unpaid Violations">Unpaid Violations</h4><div class="s-value" id="statViolations">&mdash;</div></div>
     </div>
     <div class="dash-stat accent-gold">
         <div class="s-icon gold">👥</div>
-        <div class="s-info"><h4>المستخدمون النشطون</h4><div class="s-value" id="statUsers">&mdash;</div></div>
+        <div class="s-info"><h4 data-label-ar="المستخدمون النشطون" data-label-en="Active Users">Active Users</h4><div class="s-value" id="statUsers">&mdash;</div></div>
     </div>
 </div>
 
 <!-- Quick Actions (visibility controlled by JS based on permissions) -->
-<div class="section-header"><h3>إجراءات سريعة</h3></div>
+<div class="section-header"><h3 data-label-ar="إجراءات سريعة" data-label-en="Quick Actions">Quick Actions</h3></div>
 <div class="quick-actions" id="quickActions">
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=vehicle_list&_v=<?= time() ?>" data-requires="manage_vehicles" style="display:none">
-        <div class="action-icon">🚗</div><div class="action-label">إضافة مركبة</div>
+        <div class="action-icon">🚗</div><div class="action-label" data-label-ar="إضافة مركبة" data-label-en="Add Vehicle">Add Vehicle</div>
     </a>
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=movements&_v=<?= time() ?>" data-requires="manage_movements" style="display:none">
-        <div class="action-icon">🔄</div><div class="action-label">تسليم / استلام</div>
+        <div class="action-icon">🔄</div><div class="action-label" data-label-ar="تسليم / استلام" data-label-en="Handover / Receive">Handover / Receive</div>
     </a>
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=my_vehicles&_v=<?= time() ?>" data-requires="">
-        <div class="action-icon">🚙</div><div class="action-label">مركباتي</div>
+        <div class="action-icon">🚙</div><div class="action-label" data-label-ar="مركباتي" data-label-en="My Vehicles">My Vehicles</div>
     </a>
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users&_v=<?= time() ?>" data-requires="manage_users" style="display:none">
-        <div class="action-icon">👥</div><div class="action-label">إدارة المستخدمين</div>
+        <div class="action-icon">👥</div><div class="action-label" data-label-ar="إدارة المستخدمين" data-label-en="User Management">User Management</div>
     </a>
 </div>
 
@@ -102,12 +102,12 @@ $pageScripts = <<<'SCRIPT'
     'use strict';
     const $ = id => document.getElementById(id);
     const STATUS_MAP = {
-        operational:{ar:'تعمل',badge:'badge-success'},
-        maintenance:{ar:'صيانة',badge:'badge-warning'},
-        out_of_service:{ar:'خارج الخدمة',badge:'badge-danger'},
-        default:{ar:'غير محدد',badge:'badge-info'}
+        operational:{en:'Operational',ar:'تعمل',badge:'badge-success'},
+        maintenance:{en:'Maintenance',ar:'صيانة',badge:'badge-warning'},
+        out_of_service:{en:'Out of Service',ar:'خارج الخدمة',badge:'badge-danger'},
+        default:{en:'Unknown',ar:'غير محدد',badge:'badge-info'}
     };
-    function statusBadge(s){const m=STATUS_MAP[s]||STATUS_MAP.default;return '<span class="badge '+m.badge+'">'+m.ar+'</span>';}
+    function statusBadge(s){const m=STATUS_MAP[s]||STATUS_MAP.default;return '<span class="badge '+m.badge+'">'+m.en+'</span>';}
 
     async function loadStats(){
         try{
