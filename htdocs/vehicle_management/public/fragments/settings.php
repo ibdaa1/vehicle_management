@@ -36,11 +36,28 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .st-theme-card:hover{border-color:var(--primary-light);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .st-theme-card.active{border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
 .st-theme-card .st-active-badge{position:absolute;top:10px;inset-inline-end:10px;background:var(--status-success);color:#fff;font-size:.7rem;padding:2px 10px;border-radius:20px;font-weight:600}
+.st-theme-card .st-default-badge{position:absolute;top:10px;inset-inline-start:10px;background:var(--status-info);color:#fff;font-size:.7rem;padding:2px 10px;border-radius:20px;font-weight:600}
 .st-theme-name{font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:4px}
 .st-theme-desc{font-size:.8rem;color:var(--text-secondary);margin-bottom:12px}
 .st-theme-colors{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
 .st-color-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border-default);display:inline-block}
 .st-theme-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+/* ---- Theme layout preview strips ---- */
+.st-layout-preview{display:flex;flex-direction:column;gap:2px;border-radius:6px;overflow:hidden;margin-bottom:10px;border:1px solid var(--border-default)}
+.st-layout-preview-row{display:flex;align-items:center;padding:4px 10px;font-size:.7rem;font-weight:600}
+/* ---- Layout Colors Section ---- */
+.st-layout-section{background:var(--bg-card);border-radius:12px;padding:20px;border:1px solid var(--border-default);margin-bottom:24px;box-shadow:var(--card-shadow)}
+.st-layout-section-title{font-size:.95rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.st-layout-live-preview{display:flex;flex-direction:column;gap:3px;border-radius:10px;overflow:hidden;margin-bottom:18px;border:1px solid var(--border-default);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.st-layout-live-row{display:flex;align-items:center;justify-content:center;padding:10px 16px;font-size:.85rem;font-weight:600;transition:all .3s}
+.st-layout-color-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.st-layout-color-group{background:var(--bg-main);border-radius:10px;padding:16px;border:1px solid var(--border-default)}
+.st-layout-color-group-title{font-size:.85rem;font-weight:700;color:var(--text-primary);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.st-layout-color-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.st-layout-color-row label{flex:1;font-size:.8rem;color:var(--text-secondary)}
+.st-layout-color-row input[type=color]{width:42px;height:32px;border:1px solid var(--border-default);border-radius:6px;cursor:pointer;padding:2px}
+.st-layout-color-row .st-lc-hex{font-size:.72rem;color:var(--text-secondary);font-family:monospace;min-width:65px}
+.st-layout-save-bar{display:flex;justify-content:center;margin-top:16px}
 /* ---- Color Editor ---- */
 .st-color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .st-color-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-main);border-radius:10px;border:1px solid var(--border-default);position:relative}
@@ -145,6 +162,68 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
 <!-- Panel 2: Colors -->
 <div class="st-panel" id="panelColors">
+    <!-- Layout Colors Sub-Section (Header / Footer / Sidebar) -->
+    <div class="st-layout-section" id="layoutColorsSection">
+        <div class="st-layout-section-title">
+            <span>🎨</span>
+            <span data-label-ar="ألوان الهيدر والفوتر والسايدبار" data-label-en="Header, Footer &amp; Sidebar Colors">ألوان الهيدر والفوتر والسايدبار</span>
+        </div>
+        <!-- Live preview -->
+        <div class="st-layout-live-preview" id="layoutLivePreview">
+            <div class="st-layout-live-row" id="previewHeader" data-label-ar="شريط الهيدر" data-label-en="Header Bar">شريط الهيدر</div>
+            <div style="display:flex;min-height:50px">
+                <div id="previewSidebar" style="min-width:80px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;padding:8px" data-label-ar="السايدبار" data-label-en="Sidebar">السايدبار</div>
+                <div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg-main);color:var(--text-secondary);font-size:.75rem" data-label-ar="المحتوى" data-label-en="Content">المحتوى</div>
+            </div>
+            <div class="st-layout-live-row" id="previewFooter" data-label-ar="شريط الفوتر" data-label-en="Footer Bar">شريط الفوتر</div>
+        </div>
+        <!-- Color pickers grouped -->
+        <div class="st-layout-color-groups" id="layoutColorGroups">
+            <div class="st-layout-color-group">
+                <div class="st-layout-color-group-title"><span>📌</span> <span data-label-ar="الهيدر (الشريط العلوي)" data-label-en="Header (Top Bar)">الهيدر (الشريط العلوي)</span></div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون خلفية الهيدر" data-label-en="Header Background">لون خلفية الهيدر</label>
+                    <input type="color" id="lc_header_bg" value="#2c3e2c" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_header_bg_hex">#2c3e2c</span>
+                </div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون نص الهيدر" data-label-en="Header Text">لون نص الهيدر</label>
+                    <input type="color" id="lc_header_text" value="#ffffff" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_header_text_hex">#ffffff</span>
+                </div>
+            </div>
+            <div class="st-layout-color-group">
+                <div class="st-layout-color-group-title"><span>📎</span> <span data-label-ar="الفوتر (الشريط السفلي)" data-label-en="Footer (Bottom Bar)">الفوتر (الشريط السفلي)</span></div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون خلفية الفوتر" data-label-en="Footer Background">لون خلفية الفوتر</label>
+                    <input type="color" id="lc_footer_bg" value="#ffffff" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_footer_bg_hex">#ffffff</span>
+                </div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون نص الفوتر" data-label-en="Footer Text">لون نص الفوتر</label>
+                    <input type="color" id="lc_footer_text" value="#6b7280" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_footer_text_hex">#6b7280</span>
+                </div>
+            </div>
+            <div class="st-layout-color-group">
+                <div class="st-layout-color-group-title"><span>📂</span> <span data-label-ar="السايدبار (القائمة الجانبية)" data-label-en="Sidebar (Side Menu)">السايدبار (القائمة الجانبية)</span></div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون نص السايدبار" data-label-en="Sidebar Text">لون نص السايدبار</label>
+                    <input type="color" id="lc_sidebar_text" value="#ffffff" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_sidebar_text_hex">#ffffff</span>
+                </div>
+                <div class="st-layout-color-row">
+                    <label data-label-ar="لون خلفية العنصر النشط" data-label-en="Active Item Background">لون خلفية العنصر النشط</label>
+                    <input type="color" id="lc_sidebar_active_bg" value="#3a513a" onchange="SettingsPage.updateLayoutPreview()">
+                    <span class="st-lc-hex" id="lc_sidebar_active_bg_hex">#3a513a</span>
+                </div>
+            </div>
+        </div>
+        <div class="st-layout-save-bar">
+            <button class="btn-save" style="background:var(--primary-main);color:#fff;border:none;padding:10px 28px;border-radius:10px;cursor:pointer;font-size:.9rem;font-weight:600" onclick="SettingsPage.saveLayoutColors()" data-label-ar="💾 حفظ ألوان التخطيط" data-label-en="💾 Save Layout Colors">💾 حفظ ألوان التخطيط</button>
+        </div>
+    </div>
+
     <div class="st-section-header">
         <div class="st-section-title" data-label-ar="ألوان المظهر النشط" data-label-en="Active Theme Colors">ألوان المظهر النشط</div>
         <button class="btn-add" onclick="SettingsPage.addColorForActive()" data-label-ar="➕ إضافة لون" data-label-en="➕ Add Color">➕ إضافة لون</button>
@@ -499,43 +578,76 @@ ob_start();
     function renderThemes(){
         const c=$('themesList');
         let h='';
-        allThemes.forEach(t=>{
+        allThemes.forEach((t,idx)=>{
             const isActive=!!t.is_active;
+            const isDefault=(idx===0||parseInt(t.id)===1);
             h+='<div class="st-theme-card'+(isActive?' active':'')+'" data-id="'+t.id+'">';
-            if(isActive) h+='<div class="st-active-badge" data-label-ar="مفعّل" data-label-en="Active">مفعّل</div>';
+            if(isActive) h+='<div class="st-active-badge" data-label-ar="✅ مفعّل" data-label-en="✅ Active">✅ مفعّل</div>';
+            if(isDefault) h+='<div class="st-default-badge" data-label-ar="افتراضي" data-label-en="Default">افتراضي</div>';
             if(canManageThemes){
-                h+='<div class="st-item-actions" style="top:'+( isActive?'36':'8')+'px">';
-                h+='<button class="btn-crud" onclick="SettingsPage.editTheme('+t.id+')" title="تعديل">✏️</button>';
-                if(!isActive) h+='<button class="btn-crud del" onclick="SettingsPage.deleteTheme('+t.id+')" title="حذف">🗑️</button>';
+                h+='<div class="st-item-actions" style="top:'+(isActive||isDefault?'36':'8')+'px">';
+                h+='<button class="btn-crud" onclick="event.stopPropagation();SettingsPage.editTheme('+t.id+')" title="تعديل">✏️</button>';
+                if(!isActive) h+='<button class="btn-crud del" onclick="event.stopPropagation();SettingsPage.deleteTheme('+t.id+')" title="حذف">🗑️</button>';
                 h+='</div>';
             }
             h+='<div class="st-theme-name">'+esc(t.name)+'</div>';
             h+='<div class="st-theme-meta">'+esc(t.slug)+(t.version?' v'+esc(t.version):'')+(t.author?' — '+esc(t.author):'')+'</div>';
             h+='<div class="st-theme-desc">'+esc(t.description||'')+'</div>';
+            /* Layout preview strip */
+            h+='<div class="st-layout-preview" id="themeLayoutPreview'+t.id+'"></div>';
             h+='<div class="st-theme-colors" id="themeColors'+t.id+'"></div>';
             h+='<div class="st-theme-actions">';
             if(canManageThemes){
-                if(!isActive) h+='<button class="btn-save" style="background:var(--primary-main);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.switchTheme(\''+esc(t.slug)+'\')" data-label-ar="تفعيل" data-label-en="Activate">تفعيل</button>';
-                h+='<button class="btn-save" style="background:var(--accent-gold,#c69c3f);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editColors('+t.id+')" data-label-ar="🎨 الألوان" data-label-en="🎨 Colors">🎨 الألوان</button>';
-                h+='<button class="btn-save" style="background:var(--status-info);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editDesign('+t.id+')" data-label-ar="⚙️ التصميم" data-label-en="⚙️ Design">⚙️ التصميم</button>';
+                if(!isActive) h+='<button class="btn-save" style="background:var(--primary-main);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600" onclick="event.stopPropagation();SettingsPage.switchTheme(\''+esc(t.slug)+'\')" data-label-ar="🔄 تفعيل هذا المظهر" data-label-en="🔄 Activate This Theme">🔄 تفعيل هذا المظهر</button>';
+                h+='<button class="btn-save" style="background:var(--accent-gold,#c69c3f);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="event.stopPropagation();SettingsPage.editColors('+t.id+')" data-label-ar="🎨 الألوان" data-label-en="🎨 Colors">🎨 الألوان</button>';
+                h+='<button class="btn-save" style="background:var(--status-info);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="event.stopPropagation();SettingsPage.editDesign('+t.id+')" data-label-ar="⚙️ التصميم" data-label-en="⚙️ Design">⚙️ التصميم</button>';
             }
             h+='</div></div>';
         });
         c.innerHTML=h;
+        /* Add click-to-activate on theme cards */
+        if(canManageThemes){
+            c.querySelectorAll('.st-theme-card').forEach(card=>{
+                card.addEventListener('click',function(){
+                    const id=this.dataset.id;
+                    const t=allThemes.find(th=>String(th.id)===String(id));
+                    if(t&&!t.is_active) SettingsPage.switchTheme(t.slug);
+                });
+            });
+        }
         allThemes.forEach(t=>loadThemeColors(t.id));
     }
 
     async function loadThemeColors(themeId){
         const container=$('themeColors'+themeId);
+        const previewContainer=$('themeLayoutPreview'+themeId);
         if(!container) return;
         try{
             const res=await API.get('/settings/themes/'+themeId);
             const colors=res.data?.colors||[];
             let h='';
+            /* Build color dots */
             colors.forEach(c=>{
                 h+='<span class="st-color-dot" style="background:'+esc(c.color_value)+'" title="'+esc(c.setting_name)+' ('+esc(c.color_value)+')"></span>';
             });
             container.innerHTML=h;
+            /* Build layout preview strip from header/footer/sidebar colors */
+            if(previewContainer){
+                const colorMap={};
+                colors.forEach(c=>{colorMap[c.setting_key]=c.color_value;});
+                const hdrBg=colorMap['header_bg']||'#2c3e2c';
+                const hdrTxt=colorMap['header_text']||'#ffffff';
+                const ftrBg=colorMap['footer_bg']||'#ffffff';
+                const ftrTxt=colorMap['footer_text']||'#6b7280';
+                const sidebarBg=colorMap['bg_sidebar']||'#1a2e1a';
+                const sidebarTxt=colorMap['sidebar_text']||'#ffffff';
+                let ph='<div class="st-layout-preview-row" style="background:'+esc(hdrBg)+';color:'+esc(hdrTxt)+'" data-label-ar="هيدر" data-label-en="Header">هيدر</div>';
+                ph+='<div style="display:flex;min-height:20px">';
+                ph+='<div style="min-width:40px;background:'+esc(sidebarBg)+';color:'+esc(sidebarTxt)+';display:flex;align-items:center;justify-content:center;font-size:.6rem">☰</div>';
+                ph+='<div style="flex:1;background:#f5f6f8"></div></div>';
+                ph+='<div class="st-layout-preview-row" style="background:'+esc(ftrBg)+';color:'+esc(ftrTxt)+'" data-label-ar="فوتر" data-label-en="Footer">فوتر</div>';
+                previewContainer.innerHTML=ph;
+            }
         }catch(e){container.innerHTML='';}
     }
 
@@ -710,6 +822,49 @@ ob_start();
         $('statThemes').textContent=allThemes.length;
         const active=allThemes.find(t=>t.is_active);
         $('statActive').textContent=active?active.name:'—';
+    }
+
+    /* ================================================================
+       LAYOUT COLORS (Header / Footer / Sidebar)
+       ================================================================ */
+    const layoutColorKeys=['header_bg','header_text','footer_bg','footer_text','sidebar_text','sidebar_active_bg'];
+    let layoutColorIds={};
+
+    async function loadLayoutColors(){
+        const active=allThemes.find(t=>t.is_active);
+        if(!active||!activeThemeData) return;
+        const colors=activeThemeData.colors||[];
+        layoutColorIds={};
+        colors.forEach(c=>{
+            if(layoutColorKeys.includes(c.setting_key)){
+                const el=$('lc_'+c.setting_key);
+                const hex=$('lc_'+c.setting_key+'_hex');
+                if(el){el.value=c.color_value;layoutColorIds[c.setting_key]=c.id;}
+                if(hex) hex.textContent=c.color_value;
+            }
+        });
+        updateLayoutPreviewInternal();
+    }
+
+    function updateLayoutPreviewInternal(){
+        const hdrBg=($('lc_header_bg')||{}).value||'#2c3e2c';
+        const hdrTxt=($('lc_header_text')||{}).value||'#ffffff';
+        const ftrBg=($('lc_footer_bg')||{}).value||'#ffffff';
+        const ftrTxt=($('lc_footer_text')||{}).value||'#6b7280';
+        const sidTxt=($('lc_sidebar_text')||{}).value||'#ffffff';
+        const sidActBg=($('lc_sidebar_active_bg')||{}).value||'#3a513a';
+        const ph=$('previewHeader');
+        const pf=$('previewFooter');
+        const ps=$('previewSidebar');
+        if(ph){ph.style.background=hdrBg;ph.style.color=hdrTxt;}
+        if(pf){pf.style.background=ftrBg;pf.style.color=ftrTxt;}
+        if(ps){ps.style.background=sidActBg;ps.style.color=sidTxt;}
+        /* Update hex labels */
+        layoutColorKeys.forEach(k=>{
+            const el=$('lc_'+k);
+            const hex=$('lc_'+k+'_hex');
+            if(el&&hex) hex.textContent=el.value;
+        });
     }
 
     /* ================================================================
@@ -1028,6 +1183,29 @@ ob_start();
                 UI.showToast('تم حذف الإعداد بنجاح','success');
                 loadSettings();
             }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
+        },
+
+        /* ---- Layout Colors (Header/Footer/Sidebar) ---- */
+        updateLayoutPreview(){
+            updateLayoutPreviewInternal();
+        },
+
+        async saveLayoutColors(){
+            const active=allThemes.find(t=>t.is_active);
+            if(!active){UI.showToast('لا يوجد مظهر نشط','error');return;}
+            const colors=[];
+            layoutColorKeys.forEach(k=>{
+                const el=$('lc_'+k);
+                if(el&&layoutColorIds[k]){
+                    colors.push({id:layoutColorIds[k],color_value:el.value});
+                }
+            });
+            if(!colors.length){UI.showToast('لا توجد ألوان لحفظها','error');return;}
+            try{
+                await API.put('/settings/themes/'+active.id+'/colors',{colors});
+                UI.showToast('تم حفظ ألوان التخطيط بنجاح','success');
+                setTimeout(()=>location.reload(),600);
+            }catch(e){UI.showToast(e.message||'حدث خطأ','error');}
         }
     };
 
@@ -1037,6 +1215,7 @@ ob_start();
         if(window.__pageDenied) return;
         checkThemePermission();
         await loadThemes();
+        loadLayoutColors();
         loadColorsTab();
         loadActiveDesign();
         loadSettings();
