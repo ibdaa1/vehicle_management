@@ -31,12 +31,18 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .st-tab.active{color:var(--primary-main);border-bottom-color:var(--primary-main)}
 .st-panel{display:none}.st-panel.active{display:block}
 /* ---- Themes ---- */
+.st-active-summary{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--primary-main),var(--primary-light,#4a8a4a));color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.st-active-summary-icon{font-size:2rem}
+.st-active-summary-info{flex:1}
+.st-active-summary-label{font-size:.75rem;opacity:.85;margin-bottom:2px}
+.st-active-summary-name{font-size:1.15rem;font-weight:700}
+.st-active-summary-default{background:rgba(255,255,255,.2);padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:600}
 .st-themes{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px}
 .st-theme-card{background:var(--bg-card);border-radius:12px;border:2px solid var(--border-default);padding:20px;min-width:240px;max-width:320px;flex:1;cursor:pointer;transition:all .3s;position:relative}
 .st-theme-card:hover{border-color:var(--primary-light);box-shadow:0 4px 12px rgba(0,0,0,.1)}
-.st-theme-card.active{border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
-.st-theme-card .st-active-badge{position:absolute;top:10px;inset-inline-end:10px;background:var(--status-success);color:#fff;font-size:.7rem;padding:2px 10px;border-radius:20px;font-weight:600}
-.st-theme-card .st-default-badge{position:absolute;top:10px;inset-inline-start:10px;background:var(--status-info);color:#fff;font-size:.7rem;padding:2px 10px;border-radius:20px;font-weight:600}
+.st-theme-card.active{border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15);background:linear-gradient(135deg,var(--bg-card),rgba(58,81,58,.04))}
+.st-theme-card .st-active-badge{position:absolute;top:10px;inset-inline-end:10px;background:var(--status-success);color:#fff;font-size:.75rem;padding:4px 12px;border-radius:20px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.st-theme-card .st-default-badge{position:absolute;top:10px;inset-inline-start:10px;background:var(--status-info);color:#fff;font-size:.75rem;padding:4px 12px;border-radius:20px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.15)}
 .st-theme-name{font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:4px}
 .st-theme-desc{font-size:.8rem;color:var(--text-secondary);margin-bottom:12px}
 .st-theme-colors{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
@@ -151,8 +157,21 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
 <!-- Panel 1: Themes -->
 <div class="st-panel active" id="panelThemes">
+    <!-- Current Active Theme Summary -->
+    <div class="st-active-summary" id="activeThemeSummary" style="display:none">
+        <div class="st-active-summary-icon">🎨</div>
+        <div class="st-active-summary-info">
+            <div class="st-active-summary-label" data-label-ar="المظهر النشط حالياً" data-label-en="Currently Active Theme">المظهر النشط حالياً</div>
+            <div class="st-active-summary-name" id="activeThemeSummaryName">—</div>
+        </div>
+        <div class="st-active-summary-default" id="activeThemeDefaultBadge" style="display:none" data-label-ar="⭐ افتراضي" data-label-en="⭐ Default">⭐ افتراضي</div>
+    </div>
+    <!-- Theme count & navigation -->
     <div class="st-section-header">
-        <div class="st-section-title" data-label-ar="اختيار المظهر" data-label-en="Theme Selection">اختيار المظهر</div>
+        <div style="display:flex;align-items:center;gap:12px">
+            <div class="st-section-title" data-label-ar="اختيار المظهر" data-label-en="Theme Selection">اختيار المظهر</div>
+            <span class="st-theme-count" id="themeCount" style="font-size:.8rem;color:var(--text-secondary);background:var(--bg-card);padding:2px 10px;border-radius:12px;border:1px solid var(--border-default)"></span>
+        </div>
         <button class="btn-add st-theme-admin" onclick="SettingsPage.openItemModal('theme','add')" data-label-ar="➕ إضافة مظهر" data-label-en="➕ Add Theme">➕ إضافة مظهر</button>
     </div>
     <div class="st-themes" id="themesList">
@@ -578,6 +597,26 @@ ob_start();
     function renderThemes(){
         const c=$('themesList');
         let h='';
+        // Update active theme summary
+        const activeTheme=allThemes.find(t=>t.is_active);
+        const summaryEl=$('activeThemeSummary');
+        if(summaryEl){
+            if(activeTheme){
+                summaryEl.style.display='flex';
+                $('activeThemeSummaryName').textContent=activeTheme.name||'—';
+                const isDefaultTheme=(allThemes.indexOf(activeTheme)===0||parseInt(activeTheme.id)===1);
+                var defBadge=$('activeThemeDefaultBadge');
+                if(defBadge) defBadge.style.display=isDefaultTheme?'inline-block':'none';
+            }else{
+                summaryEl.style.display='none';
+            }
+        }
+        // Update theme count
+        var countEl=$('themeCount');
+        if(countEl){
+            var activeIdx=activeTheme?allThemes.indexOf(activeTheme)+1:0;
+            countEl.textContent=allThemes.length+(activeTheme?' — '+(document.documentElement.dir==='ltr'?'Active: '+activeIdx+'/'+allThemes.length:'النشط: '+activeIdx+'/'+allThemes.length):'');
+        }
         allThemes.forEach((t,idx)=>{
             const isActive=!!t.is_active;
             const isDefault=(idx===0||parseInt(t.id)===1);
@@ -976,6 +1015,8 @@ ob_start();
         },
 
         async switchTheme(slug){
+            var themeName=(allThemes.find(t=>t.slug===slug)||{}).name||slug;
+            if(!confirm((document.documentElement.dir==='ltr'?'Activate theme "'+themeName+'"?':'تفعيل المظهر "'+themeName+'"؟'))) return;
             try{
                 await API.put('/settings/theme/'+slug,{});
                 UI.showToast('تم تغيير المظهر بنجاح','success');
