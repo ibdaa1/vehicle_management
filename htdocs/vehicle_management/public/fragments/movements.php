@@ -306,7 +306,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     const $=id=>document.getElementById(id);
     const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;};
     let allMovements=[], filteredMovements=[], currentPage=1, perPage=100, pendingPhotos=[];
-    let vehicleMap={}, latestByVehicle={};
+    let vehicleMap={}, latestByVehicle={}, userMap={};
     var allRefs={};
     var lastStats={};
     var mvUser=null;
@@ -362,6 +362,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             var pbSel=$('mvPerformedBy');
             users.forEach(function(u){
                 if(!u.emp_id) return;
+                userMap[u.emp_id]={name:u.username||u.email||u.emp_id,emp_id:u.emp_id};
                 var o=document.createElement('option');
                 o.value=u.emp_id;
                 o.textContent=u.emp_id+' - '+(u.username||u.email||'');
@@ -582,7 +583,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             h+='<td data-label="#">'+(start+i+1)+'</td>';
             h+='<td data-label="'+i18n.t('vehicle_code')+'"><strong>'+esc(m.vehicle_code)+'</strong></td>';
             h+='<td data-label="'+i18n.t('vehicle_type')+'"><span class="mv-badge '+m.operation_type+'">'+typeLabel(m.operation_type)+'</span></td>';
-            h+='<td data-label="'+i18n.t('by')+'">'+esc(m.performed_by)+'</td>';
+            h+='<td data-label="'+i18n.t('by')+'">'+esc((userMap[m.performed_by]||{}).name||m.performed_by)+'</td>';
             h+='<td data-label="'+i18n.t('date')+'">'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
             h+='<td data-label="'+i18n.t('condition')+'">'+(m.vehicle_condition?'<span class="mv-badge '+m.vehicle_condition+'">'+condLabel(m.vehicle_condition)+'</span>':'—')+'</td>';
             h+='<td data-label="'+i18n.t('fuel_level')+'">'+fuelLabel(m.fuel_level)+'</td>';
@@ -664,17 +665,44 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     });
     $('mvPhotoInput').addEventListener('change',e=>handleFiles(e.target.files));
 
+    function compressImage(file,maxW,maxH,quality){
+        return new Promise(function(resolve){
+            maxW=maxW||1200;maxH=maxH||1200;quality=quality||0.7;
+            var reader=new FileReader();
+            reader.onload=function(e){
+                var img=new Image();
+                img.onload=function(){
+                    var w=img.width,h=img.height;
+                    if(w>maxW||h>maxH){
+                        var ratio=Math.min(maxW/w,maxH/h);
+                        w=Math.round(w*ratio);h=Math.round(h*ratio);
+                    }
+                    var canvas=document.createElement('canvas');
+                    canvas.width=w;canvas.height=h;
+                    var ctx=canvas.getContext('2d');
+                    ctx.drawImage(img,0,0,w,h);
+                    var mime=file.type==='image/png'?'image/png':'image/jpeg';
+                    resolve(canvas.toDataURL(mime,quality));
+                };
+                img.onerror=function(){resolve(e.target.result);};
+                img.src=e.target.result;
+            };
+            reader.onerror=function(){resolve(null);};
+            reader.readAsDataURL(file);
+        });
+    }
+
     function handleFiles(files){
         const remaining=6-pendingPhotos.length;
         const arr=Array.from(files).slice(0,remaining);
         arr.forEach(f=>{
             if(!/^image\/(jpeg|png)$/.test(f.type))return;
-            const reader=new FileReader();
-            reader.onload=e=>{
-                pendingPhotos.push(e.target.result);
-                renderPhotosPrev();
-            };
-            reader.readAsDataURL(f);
+            compressImage(f,1200,1200,0.7).then(function(dataUrl){
+                if(dataUrl){
+                    pendingPhotos.push(dataUrl);
+                    renderPhotosPrev();
+                }
+            });
         });
     }
     var existingPhotosHtml='';
@@ -965,7 +993,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             const v=vehicleMap[m.vehicle_code]||{};
             html+='<tr><td>'+(i+1)+'</td><td>'+esc(m.vehicle_code)+'</td><td>'+typeLabel(m.operation_type)+'</td>';
             html+='<td>'+modeLabel(v.vehicle_mode)+'</td><td>'+catLabel(v.vehicle_category)+'</td>';
-            html+='<td>'+esc(m.performed_by)+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
+            html+='<td>'+esc((userMap[m.performed_by]||{}).name||m.performed_by)+'</td><td>'+esc((m.movement_datetime||'').replace('T',' ').substring(0,16))+'</td>';
             html+='<td>'+condLabel(m.vehicle_condition)+'</td><td>'+(m.fuel_level||'—')+'</td></tr>';
         });
         html+='</tbody></table></body></html>';
@@ -994,16 +1022,30 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 res=await API.put('/movements/'+id,data);
                 // Upload new photos if any
                 if(pendingPhotos.length){
-                    try{await API.post('/movements/'+id+'/photos',{photos:pendingPhotos});}catch(pe){console.error(pe);}
+                    try{
+                        await API.post('/movements/'+id+'/photos',{photos:pendingPhotos});
+                        UI.showToast(i18n.t('movement_updated_with_photos')||'Movement updated with photos','success');
+                    }catch(pe){
+                        console.error(pe);
+                        UI.showToast(i18n.t('movement_saved_photos_failed')||'Movement updated but photos failed to upload','warning');
+                    }
+                }else{
+                    UI.showToast(i18n.t('movement_updated')||'Movement updated','success');
                 }
-                UI.showToast('Movement updated','success');
             }else{
                 res=await API.post('/movements',data);
-                UI.showToast('Movement created','success');
                 // Upload photos if any
                 const newId=(res.data||res).id;
                 if(pendingPhotos.length&&newId){
-                    try{await API.post('/movements/'+newId+'/photos',{photos:pendingPhotos});}catch(pe){console.error(pe);}
+                    try{
+                        await API.post('/movements/'+newId+'/photos',{photos:pendingPhotos});
+                        UI.showToast(i18n.t('movement_created_with_photos')||'Movement created with photos','success');
+                    }catch(pe){
+                        console.error(pe);
+                        UI.showToast(i18n.t('movement_saved_photos_failed')||'Movement created but photos failed to upload','warning');
+                    }
+                }else{
+                    UI.showToast(i18n.t('movement_created')||'Movement created','success');
                 }
             }
             closeModal();
@@ -1023,24 +1065,30 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 const condL=c=>c==='clean'?i18n.t('clean'):c==='acceptable'?i18n.t('acceptable'):c==='damaged'?i18n.t('damaged'):'—';
                 const fuelL=f=>{const mp={full:i18n.t('fuel_full'),three_quarter:i18n.t('fuel_three_quarter'),half:i18n.t('fuel_half'),quarter:i18n.t('fuel_quarter'),empty:i18n.t('fuel_empty')};return mp[f]||'—';};
                 const typeL=t=>t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');
+                const userName=empId=>{var u=userMap[empId];return u?(u.name+' ('+empId+')'):empId;};
+                const v=vehicleMap[m.vehicle_code]||{};
                 let h='<div class="d-row"><span class="d-lbl">'+i18n.t('vehicle_code')+'</span><span class="d-val">'+esc(m.vehicle_code)+'</span></div>';
+                if(v.plate_number) h+='<div class="d-row"><span class="d-lbl" data-label-ar="رقم اللوحة" data-label-en="Plate Number">رقم اللوحة</span><span class="d-val">'+esc(v.plate_number)+'</span></div>';
+                if(v.vehicle_type||v.vehicle_category) h+='<div class="d-row"><span class="d-lbl" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">نوع المركبة</span><span class="d-val">'+esc(v.vehicle_type||v.vehicle_category||'—')+'</span></div>';
+                if(v.vehicle_mode) h+='<div class="d-row"><span class="d-lbl" data-label-ar="وضع المركبة" data-label-en="Vehicle Mode">وضع المركبة</span><span class="d-val">'+esc(v.vehicle_mode)+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('operation_type')+'</span><span class="d-val"><span class="mv-badge '+m.operation_type+'">'+typeL(m.operation_type)+'</span></span></div>';
-                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('by')+'</span><span class="d-val">'+esc(m.performed_by)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('date')+'</span><span class="d-val">'+esc(m.movement_datetime)+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('condition')+'</span><span class="d-val">'+condL(m.vehicle_condition)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('by')+'</span><span class="d-val">'+esc(userName(m.performed_by))+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('date')+'</span><span class="d-val">'+esc((m.movement_datetime||'').replace('T',' ').substring(0,19))+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('condition')+'</span><span class="d-val">'+(m.vehicle_condition?'<span class="mv-badge '+m.vehicle_condition+'">'+condL(m.vehicle_condition)+'</span>':condL(m.vehicle_condition))+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('fuel_level')+'</span><span class="d-val">'+fuelL(m.fuel_level)+'</span></div>';
                 if(m.latitude&&m.longitude){
                     h+='<div class="d-row"><span class="d-lbl">'+i18n.t('location')+'</span><span class="d-val"><a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank">📍 '+m.latitude+', '+m.longitude+'</a></span></div>';
                 }
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
-                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(m.created_by||'—')+'</span></div>';
-                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">آخر تعديل بواسطة</span><span class="d-val">'+esc(m.updated_by)+'</span></div>';
+                h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(userName(m.created_by||'—'))+'</span></div>';
+                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">آخر تعديل بواسطة</span><span class="d-val">'+esc(userName(m.updated_by))+'</span></div>';
                 if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">تاريخ الإنشاء</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
                 if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">تاريخ التحديث</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
                 // Photos
                 const photos=m.photos||[];
+                h+='<h4 style="margin-top:16px" data-label-ar="📷 الصور" data-label-en="📷 Photos">📷 '+(i18n.t('photos')||'Photos')+' ('+photos.length+')</h4>';
                 if(photos.length){
-                    h+='<h4 style="margin-top:16px">📷 Photos</h4><div class="d-photos">';
+                    h+='<div class="d-photos">';
                     photos.forEach(p=>{
                         var pu=p.photo_url||'';
                         // Fix legacy URLs missing base path (e.g. /public/uploads/... → /vehicle_management/public/uploads/...)
@@ -1048,13 +1096,16 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                         try{basePath=(new URL(API.baseUrl)).pathname;}catch(e){basePath=API.baseUrl||'';}
                         basePath=basePath.replace(/\/+$/,'');
                         if(basePath && basePath!=='/' && pu.indexOf('/public/uploads/')===0 && pu.indexOf(basePath)!==0) pu=basePath+pu;
-                        h+='<img src="'+esc(pu)+'" onclick="window.open(this.src,\'_blank\')">';
+                        h+='<img src="'+esc(pu)+'" onclick="window.open(this.src,\'_blank\')" title="'+esc(p.taken_by?((i18n.t('taken_by')||'Taken by')+': '+userName(p.taken_by)):'')+'">';
                     });
                     h+='</div>';
+                }else{
+                    h+='<div style="color:var(--text-secondary,#999);font-size:.9rem;padding:8px 0">'+(i18n.t('no_photos')||'No photos')+'</div>';
                 }
                 $('mvDetailBody').innerHTML=h;
-                $('mvDetailTitle').textContent='Movement #'+id;
+                $('mvDetailTitle').textContent=(i18n.t('movement_details')||'Movement Details')+' #'+id;
                 $('mvDetailModal').classList.add('show');
+                if(typeof applyLang==='function')applyLang();
             }catch(e){UI.showToast('Failed to load details','error');}
         },
         async edit(id){
