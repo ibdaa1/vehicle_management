@@ -54,7 +54,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="pfPageTitle" data-label-ar="الملف الشخصي" data-label-en="My Profile">الملف الشخصي</h2>
+    <h2 id="pfPageTitle" data-label-ar="الملف الشخصي" data-label-en="My Profile">My Profile</h2>
 </div>
 
 <!-- ===== PROFILE INFO & EDIT SECTION ===== -->
@@ -63,61 +63,61 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <div class="pf-card">
         <div class="pf-card-title">
             <span>👤</span>
-            <span id="pfInfoTitle" data-label-ar="البيانات الشخصية" data-label-en="Personal Information">البيانات الشخصية</span>
+            <span id="pfInfoTitle" data-label-ar="البيانات الشخصية" data-label-en="Personal Information">Personal Information</span>
         </div>
         <form id="pfEditForm" class="pf-form" onsubmit="return false;">
             <div class="fg">
-                <label id="pfLblEmpId" data-label-ar="رقم الموظف" data-label-en="Employee ID">رقم الموظف</label>
+                <label id="pfLblEmpId" data-label-ar="رقم الموظف" data-label-en="Employee ID">Employee ID</label>
                 <input type="text" id="pfEmpId" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblUsername" data-label-ar="اسم المستخدم" data-label-en="Username">اسم المستخدم</label>
+                <label id="pfLblUsername" data-label-ar="اسم المستخدم" data-label-en="Username">Username</label>
                 <input type="text" id="pfUsername" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblEmail" data-label-ar="البريد الإلكتروني" data-label-en="Email">البريد الإلكتروني</label>
+                <label id="pfLblEmail" data-label-ar="البريد الإلكتروني" data-label-en="Email">Email</label>
                 <input type="email" id="pfEmail">
             </div>
             <div class="fg">
-                <label id="pfLblPhone" data-label-ar="الهاتف" data-label-en="Phone">الهاتف</label>
+                <label id="pfLblPhone" data-label-ar="الهاتف" data-label-en="Phone">Phone</label>
                 <input type="text" id="pfPhone">
             </div>
             <div class="fg">
-                <label id="pfLblGender" data-label-ar="الجنس" data-label-en="Gender">الجنس</label>
+                <label id="pfLblGender" data-label-ar="الجنس" data-label-en="Gender">Gender</label>
                 <input type="text" id="pfGender" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblRole" data-label-ar="الدور" data-label-en="Role">الدور</label>
+                <label id="pfLblRole" data-label-ar="الدور" data-label-en="Role">Role</label>
                 <input type="text" id="pfRole" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblSector" data-label-ar="القطاع" data-label-en="Sector">القطاع</label>
+                <label id="pfLblSector" data-label-ar="القطاع" data-label-en="Sector">Sector</label>
                 <input type="text" id="pfSector" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblDept" data-label-ar="الإدارة" data-label-en="Department">الإدارة</label>
+                <label id="pfLblDept" data-label-ar="الإدارة" data-label-en="Department">Department</label>
                 <input type="text" id="pfDept" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblSection" data-label-ar="القسم" data-label-en="Section">القسم</label>
+                <label id="pfLblSection" data-label-ar="القسم" data-label-en="Section">Section</label>
                 <input type="text" id="pfSection" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblDivision" data-label-ar="الشعبة" data-label-en="Division">الشعبة</label>
+                <label id="pfLblDivision" data-label-ar="الشعبة" data-label-en="Division">Division</label>
                 <input type="text" id="pfDivision" disabled>
             </div>
             <div class="fg">
-                <label id="pfLblLang" data-label-ar="اللغة المفضلة" data-label-en="Preferred Language">اللغة المفضلة</label>
+                <label id="pfLblLang" data-label-ar="اللغة المفضلة" data-label-en="Preferred Language">Preferred Language</label>
                 <select id="pfLang">
-                    <option value="ar">العربية</option>
+                    <option value="ar" data-label-ar="العربية" data-label-en="Arabic">Arabic</option>
                     <option value="en">English</option>
                 </select>
             </div>
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
                 <button type="button" class="pf-btn pf-btn-primary" id="pfSaveBtn" onclick="ProfilePage.saveProfile()">
-                    <span>💾</span> <span data-label-ar="حفظ التعديلات" data-label-en="Save Changes">حفظ التعديلات</span>
+                    <span>💾</span> <span data-label-ar="حفظ التعديلات" data-label-en="Save Changes">Save Changes</span>
                 </button>
-                <span class="pf-success" id="pfSaveSuccess" data-label-ar="تم الحفظ بنجاح" data-label-en="Saved successfully">تم الحفظ بنجاح</span>
+                <span class="pf-success" id="pfSaveSuccess" data-label-ar="تم الحفظ بنجاح" data-label-en="Saved successfully">Saved successfully</span>
                 <span class="pf-error" id="pfSaveError"></span>
             </div>
         </form>
@@ -127,26 +127,26 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <div class="pf-card">
         <div class="pf-card-title">
             <span>🔑</span>
-            <span id="pfPwdTitle" data-label-ar="تغيير كلمة المرور" data-label-en="Change Password">تغيير كلمة المرور</span>
+            <span id="pfPwdTitle" data-label-ar="تغيير كلمة المرور" data-label-en="Change Password">Change Password</span>
         </div>
         <form id="pfPwdForm" class="pf-form" onsubmit="return false;">
             <div class="fg">
-                <label id="pfLblCurPwd" data-label-ar="كلمة المرور الحالية" data-label-en="Current Password">كلمة المرور الحالية</label>
+                <label id="pfLblCurPwd" data-label-ar="كلمة المرور الحالية" data-label-en="Current Password">Current Password</label>
                 <input type="password" id="pfCurPwd" autocomplete="current-password">
             </div>
             <div class="fg">
-                <label id="pfLblNewPwd" data-label-ar="كلمة المرور الجديدة" data-label-en="New Password">كلمة المرور الجديدة</label>
+                <label id="pfLblNewPwd" data-label-ar="كلمة المرور الجديدة" data-label-en="New Password">New Password</label>
                 <input type="password" id="pfNewPwd" autocomplete="new-password">
             </div>
             <div class="fg">
-                <label id="pfLblConfPwd" data-label-ar="تأكيد كلمة المرور" data-label-en="Confirm Password">تأكيد كلمة المرور</label>
+                <label id="pfLblConfPwd" data-label-ar="تأكيد كلمة المرور" data-label-en="Confirm Password">Confirm Password</label>
                 <input type="password" id="pfConfPwd" autocomplete="new-password">
             </div>
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
                 <button type="button" class="pf-btn pf-btn-warning" id="pfPwdBtn" onclick="ProfilePage.changePassword()">
-                    <span>🔒</span> <span data-label-ar="تغيير كلمة المرور" data-label-en="Change Password">تغيير كلمة المرور</span>
+                    <span>🔒</span> <span data-label-ar="تغيير كلمة المرور" data-label-en="Change Password">Change Password</span>
                 </button>
-                <span class="pf-success" id="pfPwdSuccess" data-label-ar="تم تغيير كلمة المرور بنجاح" data-label-en="Password changed successfully">تم تغيير كلمة المرور بنجاح</span>
+                <span class="pf-success" id="pfPwdSuccess" data-label-ar="تم تغيير كلمة المرور بنجاح" data-label-en="Password changed successfully">Password changed successfully</span>
                 <span class="pf-error" id="pfPwdError"></span>
             </div>
         </form>
@@ -158,23 +158,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <div class="pf-card" style="max-width:100%">
         <div class="pf-card-title">
             <span>🚗</span>
-            <span id="pfMvTitle" data-label-ar="سجل حركات المركبات" data-label-en="Vehicle Movement History">سجل حركات المركبات</span>
+            <span id="pfMvTitle" data-label-ar="سجل حركات المركبات" data-label-en="Vehicle Movement History">Vehicle Movement History</span>
         </div>
         <div style="overflow-x:auto">
             <table class="pf-mv-table" id="pfMvTable">
                 <thead>
                     <tr>
                         <th data-label-ar="#" data-label-en="#">#</th>
-                        <th id="pfMvThCode" data-label-ar="رمز المركبة" data-label-en="Vehicle Code">رمز المركبة</th>
-                        <th id="pfMvThType" data-label-ar="نوع العملية" data-label-en="Operation">نوع العملية</th>
-                        <th id="pfMvThDate" data-label-ar="التاريخ والوقت" data-label-en="Date & Time">التاريخ والوقت</th>
-                        <th id="pfMvThVType" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">نوع المركبة</th>
-                        <th id="pfMvThCond" data-label-ar="حالة المركبة" data-label-en="Condition">حالة المركبة</th>
-                        <th id="pfMvThNotes" data-label-ar="ملاحظات" data-label-en="Notes">ملاحظات</th>
+                        <th id="pfMvThCode" data-label-ar="رمز المركبة" data-label-en="Vehicle Code">Vehicle Code</th>
+                        <th id="pfMvThType" data-label-ar="نوع العملية" data-label-en="Operation">Operation</th>
+                        <th id="pfMvThDate" data-label-ar="التاريخ والوقت" data-label-en="Date & Time">Date &amp; Time</th>
+                        <th id="pfMvThVType" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">Vehicle Type</th>
+                        <th id="pfMvThCond" data-label-ar="حالة المركبة" data-label-en="Condition">Condition</th>
+                        <th id="pfMvThNotes" data-label-ar="ملاحظات" data-label-en="Notes">Notes</th>
                     </tr>
                 </thead>
                 <tbody id="pfMvBody">
-                    <tr><td colspan="7" class="pf-empty"><div class="spinner spinner-sm"></div><span data-label-ar="جارٍ التحميل..." data-label-en="Loading...">جارٍ التحميل...</span></td></tr>
+                    <tr><td colspan="7" class="pf-empty"><div class="spinner spinner-sm"></div><span data-label-ar="جارٍ التحميل..." data-label-en="Loading...">Loading...</span></td></tr>
                 </tbody>
             </table>
         </div>
@@ -186,23 +186,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <div class="pf-card" style="max-width:100%">
         <div class="pf-card-title">
             <span>⚠️</span>
-            <span id="pfVlTitle" data-label-ar="المخالفات المرتبطة بي" data-label-en="My Violations">المخالفات المرتبطة بي</span>
+            <span id="pfVlTitle" data-label-ar="المخالفات المرتبطة بي" data-label-en="My Violations">My Violations</span>
         </div>
         <div style="overflow-x:auto">
             <table class="pf-mv-table" id="pfVlTable">
                 <thead>
                     <tr>
                         <th data-label-ar="#" data-label-en="#">#</th>
-                        <th id="pfVlThCode" data-label-ar="رمز المركبة" data-label-en="Vehicle Code">رمز المركبة</th>
-                        <th id="pfVlThDate" data-label-ar="تاريخ المخالفة" data-label-en="Violation Date">تاريخ المخالفة</th>
-                        <th id="pfVlThAmount" data-label-ar="المبلغ" data-label-en="Amount">المبلغ</th>
-                        <th id="pfVlThStatus" data-label-ar="الحالة" data-label-en="Status">الحالة</th>
-                        <th id="pfVlThVType" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">نوع المركبة</th>
-                        <th id="pfVlThNotes" data-label-ar="ملاحظات" data-label-en="Notes">ملاحظات</th>
+                        <th id="pfVlThCode" data-label-ar="رمز المركبة" data-label-en="Vehicle Code">Vehicle Code</th>
+                        <th id="pfVlThDate" data-label-ar="تاريخ المخالفة" data-label-en="Violation Date">Violation Date</th>
+                        <th id="pfVlThAmount" data-label-ar="المبلغ" data-label-en="Amount">Amount</th>
+                        <th id="pfVlThStatus" data-label-ar="الحالة" data-label-en="Status">Status</th>
+                        <th id="pfVlThVType" data-label-ar="نوع المركبة" data-label-en="Vehicle Type">Vehicle Type</th>
+                        <th id="pfVlThNotes" data-label-ar="ملاحظات" data-label-en="Notes">Notes</th>
                     </tr>
                 </thead>
                 <tbody id="pfVlBody">
-                    <tr><td colspan="7" class="pf-empty"><div class="spinner spinner-sm"></div><span data-label-ar="جارٍ التحميل..." data-label-en="Loading...">جارٍ التحميل...</span></td></tr>
+                    <tr><td colspan="7" class="pf-empty"><div class="spinner spinner-sm"></div><span data-label-ar="جارٍ التحميل..." data-label-en="Loading...">Loading...</span></td></tr>
                 </tbody>
             </table>
         </div>
