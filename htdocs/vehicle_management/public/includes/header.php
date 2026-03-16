@@ -56,6 +56,12 @@ if ($theme && !empty($theme['colors'])) {
         'status_warning' => '--status-warning',
         'status_danger'  => '--status-danger',
         'status_info'    => '--status-info',
+        'header_bg'      => '--header-bg',
+        'header_text'    => '--header-text',
+        'footer_bg'      => '--footer-bg',
+        'footer_text'    => '--footer-text',
+        'sidebar_text'   => '--sidebar-text',
+        'sidebar_active_bg' => '--sidebar-active-bg',
     ];
     $vars = [];
     foreach ($colorMap as $dbKey => $cssKey) {

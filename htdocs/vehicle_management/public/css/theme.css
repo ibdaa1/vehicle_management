@@ -150,8 +150,8 @@ input, button, select, textarea {
   right: 0;
   left: 0;
   height: var(--header-height);
-  background: var(--primary-dark);
-  color: var(--text-light);
+  background: var(--header-bg, var(--primary-dark));
+  color: var(--header-text, var(--text-light));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -211,7 +211,7 @@ input, button, select, textarea {
   bottom: 0;
   width: var(--sidebar-width);
   background: var(--bg-sidebar);
-  color: var(--text-light);
+  color: var(--sidebar-text, var(--text-light));
   overflow-y: auto;
   transition: width var(--transition);
   z-index: 900;
@@ -254,7 +254,7 @@ body[dir="ltr"] .app-sidebar {
 }
 
 .app-sidebar .menu-item.active {
-  background: var(--primary-main);
+  background: var(--sidebar-active-bg, var(--primary-main));
   color: var(--accent-gold);
   border-inline-start: 3px solid var(--accent-gold);
 }
@@ -311,9 +311,9 @@ body[dir="ltr"] .app-sidebar.collapsed ~ .app-main {
   padding: 16px var(--layout-padding);
   text-align: center;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--footer-text, var(--text-secondary));
   border-top: 1px solid var(--border-default);
-  background: var(--bg-card);
+  background: var(--footer-bg, var(--bg-card));
   transition: margin var(--transition);
 }
 
