@@ -8,6 +8,12 @@
  */
 ?>
 <style>
+/* Fix LTR layout flash: html[dir] is set before CSS renders, body[dir] after */
+html[dir="ltr"] body{direction:ltr;font-family:var(--font-en)}
+html[dir="ltr"] .app-sidebar{right:auto;left:0}
+html[dir="ltr"] .app-main{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-footer{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(--sidebar-collapsed-width)}
 /* === My Vehicles Fragment Styles === */
 .mv-section-title{font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .mv-section-card{background:var(--bg-card);border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);padding:20px;margin-bottom:28px}

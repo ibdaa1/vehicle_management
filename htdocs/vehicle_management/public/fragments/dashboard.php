@@ -5,6 +5,12 @@
  */
 ?>
 <style>
+/* Fix LTR layout flash: html[dir] is set before CSS renders, body[dir] after */
+html[dir="ltr"] body{direction:ltr;font-family:var(--font-en)}
+html[dir="ltr"] .app-sidebar{right:auto;left:0}
+html[dir="ltr"] .app-main{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-footer{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(--sidebar-collapsed-width)}
 .dashboard-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;margin-bottom:32px}
 .dash-stat{display:flex;gap:16px;align-items:center;background:var(--bg-card);padding:20px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);border-inline-start:4px solid var(--border-default);transition:transform .3s,box-shadow .3s;position:relative;overflow:hidden}
 .dash-stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.12)}

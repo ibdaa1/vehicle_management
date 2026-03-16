@@ -10,6 +10,12 @@
  */
 ?>
 <style>
+/* Fix LTR layout flash: html[dir] is set before CSS renders, body[dir] after */
+html[dir="ltr"] body{direction:ltr;font-family:var(--font-en)}
+html[dir="ltr"] .app-sidebar{right:auto;left:0}
+html[dir="ltr"] .app-main{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-footer{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(--sidebar-collapsed-width)}
 .r-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .r-toolbar .search-box{position:relative;flex:1;min-width:200px;max-width:360px}
 .r-toolbar .search-box input{width:100%;padding-inline-end:36px}

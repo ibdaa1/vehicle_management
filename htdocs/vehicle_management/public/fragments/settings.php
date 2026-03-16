@@ -13,6 +13,12 @@
  */
 ?>
 <style>
+/* Fix LTR layout flash: html[dir] is set before CSS renders, body[dir] after */
+html[dir="ltr"] body{direction:ltr;font-family:var(--font-en)}
+html[dir="ltr"] .app-sidebar{right:auto;left:0}
+html[dir="ltr"] .app-main{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-footer{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(--sidebar-collapsed-width)}
 /* ---- Stats ---- */
 .st-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px}
 .st-stat{background:var(--bg-card);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);text-align:center}
@@ -130,7 +136,7 @@
 <div class="st-panel active" id="panelThemes">
     <div class="st-section-header">
         <div class="st-section-title" data-label-ar="اختيار المظهر" data-label-en="Theme Selection">اختيار المظهر</div>
-        <button class="btn-add" onclick="SettingsPage.openItemModal('theme','add')" data-label-ar="➕ إضافة مظهر" data-label-en="➕ Add Theme">➕ إضافة مظهر</button>
+        <button class="btn-add st-theme-admin" onclick="SettingsPage.openItemModal('theme','add')" data-label-ar="➕ إضافة مظهر" data-label-en="➕ Add Theme">➕ إضافة مظهر</button>
     </div>
     <div class="st-themes" id="themesList">
         <div class="st-empty">جارٍ التحميل...</div>
@@ -259,6 +265,18 @@ ob_start();
     let allThemes=[], activeThemeData=null, editThemeId=null;
     /* Current modal context */
     let modalCtx={type:null,mode:null,data:null,themeId:null};
+    /* Super admin check: only role_id=1 can create/edit/delete themes */
+    let canManageThemes=false;
+    function checkThemePermission(){
+        try{
+            var u=Auth.getUser();
+            if(u&&(parseInt(u.role_id)===1||(u.permissions&&(u.permissions.includes('manage_themes')||u.permissions.includes('*'))))) canManageThemes=true;
+        }catch(e){}
+        /* Hide add buttons if not super admin */
+        if(!canManageThemes){
+            document.querySelectorAll('.st-theme-admin').forEach(function(el){el.style.display='none';});
+        }
+    }
 
     /* ---- Helpers ---- */
     function getActiveThemeId(){
@@ -485,18 +503,22 @@ ob_start();
             const isActive=!!t.is_active;
             h+='<div class="st-theme-card'+(isActive?' active':'')+'" data-id="'+t.id+'">';
             if(isActive) h+='<div class="st-active-badge" data-label-ar="مفعّل" data-label-en="Active">مفعّل</div>';
-            h+='<div class="st-item-actions" style="top:'+( isActive?'36':'8')+'px">';
-            h+='<button class="btn-crud" onclick="SettingsPage.editTheme('+t.id+')" title="تعديل">✏️</button>';
-            if(!isActive) h+='<button class="btn-crud del" onclick="SettingsPage.deleteTheme('+t.id+')" title="حذف">🗑️</button>';
-            h+='</div>';
+            if(canManageThemes){
+                h+='<div class="st-item-actions" style="top:'+( isActive?'36':'8')+'px">';
+                h+='<button class="btn-crud" onclick="SettingsPage.editTheme('+t.id+')" title="تعديل">✏️</button>';
+                if(!isActive) h+='<button class="btn-crud del" onclick="SettingsPage.deleteTheme('+t.id+')" title="حذف">🗑️</button>';
+                h+='</div>';
+            }
             h+='<div class="st-theme-name">'+esc(t.name)+'</div>';
             h+='<div class="st-theme-meta">'+esc(t.slug)+(t.version?' v'+esc(t.version):'')+(t.author?' — '+esc(t.author):'')+'</div>';
             h+='<div class="st-theme-desc">'+esc(t.description||'')+'</div>';
             h+='<div class="st-theme-colors" id="themeColors'+t.id+'"></div>';
             h+='<div class="st-theme-actions">';
-            if(!isActive) h+='<button class="btn-save" style="background:var(--primary-main);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.switchTheme(\''+esc(t.slug)+'\')" data-label-ar="تفعيل" data-label-en="Activate">تفعيل</button>';
-            h+='<button class="btn-save" style="background:var(--accent-gold,#c69c3f);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editColors('+t.id+')" data-label-ar="🎨 الألوان" data-label-en="🎨 Colors">🎨 الألوان</button>';
-            h+='<button class="btn-save" style="background:var(--status-info);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editDesign('+t.id+')" data-label-ar="⚙️ التصميم" data-label-en="⚙️ Design">⚙️ التصميم</button>';
+            if(canManageThemes){
+                if(!isActive) h+='<button class="btn-save" style="background:var(--primary-main);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.switchTheme(\''+esc(t.slug)+'\')" data-label-ar="تفعيل" data-label-en="Activate">تفعيل</button>';
+                h+='<button class="btn-save" style="background:var(--accent-gold,#c69c3f);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editColors('+t.id+')" data-label-ar="🎨 الألوان" data-label-en="🎨 Colors">🎨 الألوان</button>';
+                h+='<button class="btn-save" style="background:var(--status-info);color:#fff;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem" onclick="SettingsPage.editDesign('+t.id+')" data-label-ar="⚙️ التصميم" data-label-en="⚙️ Design">⚙️ التصميم</button>';
+            }
             h+='</div></div>';
         });
         c.innerHTML=h;
@@ -1013,6 +1035,7 @@ ob_start();
     document.addEventListener('DOMContentLoaded',async()=>{
         await new Promise(r=>setTimeout(r,200));
         if(window.__pageDenied) return;
+        checkThemePermission();
         await loadThemes();
         loadColorsTab();
         loadActiveDesign();

@@ -6,6 +6,12 @@
  */
 ?>
 <style>
+/* Fix LTR layout flash: html[dir] is set before CSS renders, body[dir] after */
+html[dir="ltr"] body{direction:ltr;font-family:var(--font-en)}
+html[dir="ltr"] .app-sidebar{right:auto;left:0}
+html[dir="ltr"] .app-main{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-footer{margin-right:0;margin-left:var(--sidebar-width)}
+html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(--sidebar-collapsed-width)}
 /* === Profile Fragment Styles === */
 .pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
 .pf-card{background:var(--bg-card,#fff);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:1px solid var(--border-default,#eee);padding:24px}
