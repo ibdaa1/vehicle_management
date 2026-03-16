@@ -1,5 +1,5 @@
 -- Migration 006: Create user_activations table for email-based account activation
--- Required by api/users/register_user.php
+-- Required by AuthController::register() for user activation tokens
 
 CREATE TABLE IF NOT EXISTS `user_activations` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
