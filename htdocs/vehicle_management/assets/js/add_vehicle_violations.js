@@ -86,7 +86,7 @@ class VehicleViolationsManager {
     
     async loadUserData() {
         try {
-            const response = await fetch('../api/users/session_check.php', {
+            const response = await fetch('../api/v1/auth/check', {
                 headers: {
                     'Cache-Control': 'no-cache',
                     'Pragma': 'no-cache'
@@ -644,7 +644,7 @@ class VehicleViolationsManager {
     
     async loadVehicles() {
         try {
-            const response = await fetch('../api/vehicle/violations_api.php?action=vehicles');
+            const response = await fetch('../api/v1/violations?action=vehicles');
             const data = await response.json();
             
             if (data.success) {
@@ -674,7 +674,7 @@ class VehicleViolationsManager {
     
     async loadAllVehiclesForSearch() {
         try {
-            const response = await fetch('../api/vehicle/violations_api.php?action=all_vehicles');
+            const response = await fetch('../api/v1/violations?action=all_vehicles');
             const data = await response.json();
             
             if (data.success && data.data) {
@@ -816,7 +816,7 @@ class VehicleViolationsManager {
     
     async loadDepartments() {
         try {
-            const response = await fetch(`../api/helper/get_references.php?type=departments&lang=${this.currentLanguage}`);
+            const response = await fetch(`../api/v1/references?type=departments&lang=${this.currentLanguage}`);
             const data = await response.json();
             
             if (data.success && data.departments) {
@@ -839,7 +839,7 @@ class VehicleViolationsManager {
     
     async loadSections(departmentId) {
         try {
-            const response = await fetch(`../api/helper/get_references.php?type=sections&lang=${this.currentLanguage}&parent_id=${departmentId}`);
+            const response = await fetch(`../api/v1/references?type=sections&lang=${this.currentLanguage}&parent_id=${departmentId}`);
             const data = await response.json();
             
             const select = document.getElementById('sectionFilter');
@@ -862,7 +862,7 @@ class VehicleViolationsManager {
     
     async loadDivisions(sectionId) {
         try {
-            const response = await fetch(`../api/helper/get_references.php?type=divisions&lang=${this.currentLanguage}&parent_id=${sectionId}`);
+            const response = await fetch(`../api/v1/references?type=divisions&lang=${this.currentLanguage}&parent_id=${sectionId}`);
             const data = await response.json();
             
             const select = document.getElementById('divisionFilter');
@@ -895,7 +895,7 @@ class VehicleViolationsManager {
                 }
             });
             
-            const response = await fetch(`../api/vehicle/violations_api.php?action=statistics&${params.toString()}`);
+            const response = await fetch(`../api/v1/violations?action=statistics&${params.toString()}`);
             const data = await response.json();
             
             if (data.success) {
@@ -949,7 +949,7 @@ class VehicleViolationsManager {
             params.append('page', this.currentPage);
             params.append('per_page', this.itemsPerPage);
             
-            const response = await fetch(`../api/vehicle/violations_api.php?${params.toString()}`);
+            const response = await fetch(`../api/v1/violations?${params.toString()}`);
             const data = await response.json();
             
             if (data.success) {
@@ -1347,7 +1347,7 @@ class VehicleViolationsManager {
         const notes = document.getElementById('notes')?.value;
         if (notes) formData.append('notes', notes);
         
-        const response = await fetch('../api/vehicle/violations_api.php', {
+        const response = await fetch('../api/v1/violations', {
             method: 'POST',
             body: formData
         });
@@ -1385,7 +1385,7 @@ class VehicleViolationsManager {
             formData.append('payment_attachment', attachmentInput.files[0]);
         }
         
-        const response = await fetch('../api/vehicle/violations_api.php', {
+        const response = await fetch('../api/v1/violations', {
             method: 'POST',
             body: formData
         });
@@ -1408,7 +1408,7 @@ class VehicleViolationsManager {
         try {
             this.showLoading('violationsTableBody');
             
-            const response = await fetch(`../api/vehicle/violations_api.php?action=single&id=${violationId}`);
+            const response = await fetch(`../api/v1/violations?action=single&id=${violationId}`);
             const data = await response.json();
             
             if (data.success) {
@@ -1520,7 +1520,7 @@ class VehicleViolationsManager {
         }
         
         try {
-            const response = await fetch('../api/vehicle/violations_api.php', {
+            const response = await fetch('../api/v1/violations', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: violationId })

@@ -1,14 +1,14 @@
 // /vehicle_management/assets/js/add_Vehicles.js
 (function () {
   'use strict';
-  const API_HELPER = '/vehicle_management/api/helper/get_references.php';
-  const API_SESSION = '/vehicle_management/api/users/session_check.php';
-  const API_VEHICLE_ADD = '/vehicle_management/api/vehicle/add_Vehicles.php';
-  const API_VEHICLE_GET = '/vehicle_management/api/vehicle/get.php';
-  const API_VEHICLE_LIST = '/vehicle_management/api/vehicle/list.php';
-  const API_VEHICLE_DELETE = '/vehicle_management/api/vehicle/delete.php';
-  const API_PERMISSIONS = '/vehicle_management/api/permissions/get_permissions.php';
-  const SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
+  const API_HELPER = '/vehicle_management/api/v1/references';
+  const API_SESSION = '/vehicle_management/api/v1/auth/check';
+  const API_VEHICLE_ADD = '/vehicle_management/api/v1/vehicles';
+  const API_VEHICLE_GET = '/vehicle_management/api/v1/vehicles';
+  const API_VEHICLE_LIST = '/vehicle_management/api/v1/vehicles';
+  const API_VEHICLE_DELETE = '/vehicle_management/api/v1/vehicles';
+  const API_PERMISSIONS = '/vehicle_management/api/v1/permissions/my';
+  const SESSION_INIT = '/vehicle_management/api/v1/auth/check';
   const REPORT_PATH = '/vehicle_management/public/report_add_Vehicles.html'; // مسار التقرير
   const form = document.getElementById('vehicleForm');
   const deptSel = document.getElementById('department_id');

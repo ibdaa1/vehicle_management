@@ -2,10 +2,10 @@
 class VehicleManagementPage {
     constructor() {
         // API endpoints
-        this.API_SESSION = '/vehicle_management/api/users/session_check.php';
-        this.API_MANAGEMENTS = '/vehicle_management/api/vehicle/get_vehicle_management.php';
-        this.API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
-        this.API_EMPLOYEES = '/vehicle_management/api/users/search_employees.php';
+        this.API_SESSION = '/vehicle_management/api/v1/auth/check';
+        this.API_MANAGEMENTS = '/vehicle_management/api/v1/vehicles';
+        this.API_REFERENCES = '/vehicle_management/api/v1/references';
+        this.API_EMPLOYEES = '/vehicle_management/api/v1/users';
         this.ADD_MANAGEMENT_PAGE = '/vehicle_management/public/add_vehicle_movements.html';
        
         // System settings

@@ -1,7 +1,7 @@
 const AdminUsers=(function(){
-const API_BASE='/vehicle_management/api/users/admin';
-const ROLES_API='/vehicle_management/api/permissions/roles/list.php';
-const REFS_HELPER='/vehicle_management/api/helper/get_references.php';
+const API_BASE='/vehicle_management/api/v1/users';
+const ROLES_API='/vehicle_management/api/v1/roles';
+const REFS_HELPER='/vehicle_management/api/v1/references';
 let currentRoles=[];
 let currentLang='ar';
 function log(...a){try{console.debug('[AdminUsers]',...a);}catch(e){}}

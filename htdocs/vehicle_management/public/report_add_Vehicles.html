@@ -149,10 +149,10 @@
   <script>
     (function () {
       'use strict';
-      const API_HELPER = '/vehicle_management/api/helper/get_references.php';
-      const API_SESSION = '/vehicle_management/api/users/session_check.php';
-      const API_VEHICLE_LIST = '/vehicle_management/api/vehicle/list.php';
-      const SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
+      const API_HELPER = '/vehicle_management/api/v1/references';
+      const API_SESSION = '/vehicle_management/api/v1/auth/check';
+      const API_VEHICLE_LIST = '/vehicle_management/api/v1/vehicles';
+      const SESSION_INIT = '/vehicle_management/api/v1/auth/check';
       const searchInput = document.getElementById('searchInput');
       const deptFilter = document.getElementById('deptFilter');
       const sectionFilter = document.getElementById('sectionFilter');

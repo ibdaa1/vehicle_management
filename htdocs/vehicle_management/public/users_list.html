@@ -1,15 +1,10 @@
 // AdminUsers module: list / edit (modal) / delete / activate users (Admin only)
-// Reuses API endpoints under /vehicle_management/api/users/admin/
-// - list.php
-// - get.php?id=...
-// - update.php (POST)
-// - delete.php (POST)
-// - activate.php (POST)
-// Also fetches roles from /vehicle_management/api/permissions/roles/list.php to populate role select.
+// Uses MVC API endpoints under /vehicle_management/api/v1/users
+// Also fetches roles from /vehicle_management/api/v1/roles to populate role select.
 
 const AdminUsers = (function(){
-  const API_BASE = '/vehicle_management/api/users/admin';
-  const ROLES_API = '/vehicle_management/api/permissions/roles/list.php';
+  const API_BASE = '/vehicle_management/api/v1/users';
+  const ROLES_API = '/vehicle_management/api/v1/roles';
 
   function escapeHTML(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
 

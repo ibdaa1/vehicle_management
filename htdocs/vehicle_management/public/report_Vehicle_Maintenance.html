@@ -159,9 +159,9 @@
     const from = urlParams.get('from_date') || '';
     const to = urlParams.get('to_date') || '';
    
-    const API_MAINTENANCE = '/vehicle_management/api/vehicle/Vehicle_Maintenance.php';
-    const API_VEHICLES = '/vehicle_management/api/vehicle/list.php';
-    const API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
+    const API_MAINTENANCE = '/vehicle_management/api/v1/maintenance';
+    const API_VEHICLES = '/vehicle_management/api/v1/vehicles';
+    const API_REFERENCES = '/vehicle_management/api/v1/references';
     const maintenanceTableBody = document.getElementById('maintenanceTableBody');
     const totalCount = document.getElementById('totalCount');
     const printReportBtn = document.getElementById('printReportBtn');
