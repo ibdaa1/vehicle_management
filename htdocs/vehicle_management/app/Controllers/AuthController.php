@@ -64,6 +64,27 @@ class AuthController extends BaseController
             return;
         }
 
+        // Ensure user_sessions table exists (safety net for fresh installs)
+        try {
+            $db = \App\Core\Database::getInstance();
+            $db->execute("CREATE TABLE IF NOT EXISTS `user_sessions` (
+                `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+                `user_id` INT(11) NOT NULL,
+                `token` CHAR(64) NOT NULL,
+                `user_agent` TEXT DEFAULT NULL,
+                `ip` VARCHAR(45) DEFAULT NULL,
+                `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+                `expires_at` DATETIME DEFAULT NULL,
+                `revoked` TINYINT(1) DEFAULT 0,
+                `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uk_token` (`token`),
+                KEY `idx_user_id` (`user_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        } catch (\Throwable $e) {
+            error_log("AuthController::login user_sessions table check: " . $e->getMessage());
+        }
+
         // Create session token
         try {
             $token = $this->userModel->createSessionToken(
