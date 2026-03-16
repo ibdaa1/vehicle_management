@@ -107,7 +107,8 @@ $pageScripts = <<<'SCRIPT'
         out_of_service:{en:'Out of Service',ar:'خارج الخدمة',badge:'badge-danger'},
         default:{en:'Unknown',ar:'غير محدد',badge:'badge-info'}
     };
-    function statusBadge(s){const m=STATUS_MAP[s]||STATUS_MAP.default;return '<span class="badge '+m.badge+'">'+m.en+'</span>';}
+    const isEn = (localStorage.getItem('lang')==='en');
+    function statusBadge(s){const m=STATUS_MAP[s]||STATUS_MAP.default;return '<span class="badge '+m.badge+'">'+(isEn?m.en:m.ar)+'</span>';}
 
     async function loadStats(){
         try{
