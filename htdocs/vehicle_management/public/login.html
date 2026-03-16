@@ -258,8 +258,7 @@
     refSections: d => BASE+'/api/v1/references/sections/'+d,
     refDivisions: s => BASE+'/api/v1/references/divisions/'+s,
     authLogin: BASE+'/api/v1/auth/login',
-    legacyRefs: BASE+'/api/v1/references',
-    legacyRegister: BASE+'/api/v1/auth/register',
+    authRegister: BASE+'/api/v1/auth/register',
     langFile: l => BASE+'/public/languages/'+l+'.json'
   };
 
@@ -476,9 +475,9 @@
   async function loadRefs() {
     let d = await api(API.references);
     if(d){ const r=d.data||d; allDepts=r.departments||[]; allSectors=r.sectors||[]; fillSel(el.sectorId, allSectors, 'selectSector'); fillSel(el.deptId, allDepts, 'selectDept'); return; }
-    d = await api(API.legacyRefs+'?type=departments&lang='+lang);
+    d = await api(API.references+'?type=departments&lang='+lang);
     if(d){ allDepts=d.departments||d.items||d.data||[]; fillSel(el.deptId, allDepts, 'selectDept'); }
-    let s = await api(API.legacyRefs+'?type=sectors&lang='+lang);
+    let s = await api(API.references+'?type=sectors&lang='+lang);
     if(s){ allSectors=s.sectors||s.items||s.data||[]; fillSel(el.sectorId, allSectors, 'selectSector'); }
   }
   function fillSel(s, items, phKey) {
@@ -494,13 +493,13 @@
   }
   async function loadSections(dId) {
     if(!dId){fillSel(el.sectionId,[],'selectSection'); fillSel(el.divisionId,[],'selectDivision'); return;}
-    let d=await api(API.refSections(dId)); if(!d) d=await api(API.legacyRefs+'?type=sections&parent_id='+dId+'&lang='+lang);
+    let d=await api(API.refSections(dId)); if(!d) d=await api(API.references+'?type=sections&parent_id='+dId+'&lang='+lang);
     fillSel(el.sectionId, d?(d.data||d.sections||d.items||[]):[], 'selectSection');
     fillSel(el.divisionId, [], 'selectDivision');
   }
   async function loadDivisions(sId) {
     if(!sId){fillSel(el.divisionId,[],'selectDivision'); return;}
-    let d=await api(API.refDivisions(sId)); if(!d) d=await api(API.legacyRefs+'?type=divisions&parent_id='+sId+'&lang='+lang);
+    let d=await api(API.refDivisions(sId)); if(!d) d=await api(API.references+'?type=divisions&parent_id='+sId+'&lang='+lang);
     fillSel(el.divisionId, d?(d.data||d.divisions||d.items||[]):[], 'selectDivision');
   }
 
@@ -566,7 +565,7 @@
       p.append('division_id',el.divisionId?el.divisionId.value:'');
       p.append('phone',el.phone?el.phone.value.trim():'');
       p.append('preferred_language',lang);
-      const r=await fetch(API.legacyRegister,{method:'POST',credentials:'same-origin',
+      const r=await fetch(API.authRegister,{method:'POST',credentials:'same-origin',
         headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:p.toString()});
       const j=await r.json().catch(()=>({success:false,message:'Invalid response'}));
       if(j.success){
