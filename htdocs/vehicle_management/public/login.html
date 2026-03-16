@@ -453,7 +453,7 @@
     rolesData.forEach(r => {
       const id=r.id??r.role_id; if(id==null) return;
       const opt=document.createElement('option'); opt.value=id;
-      opt.textContent=lang==='en'?(r.name_en||r.name||r.name_ar):(r.name_ar||r.name||r.name_en);
+      opt.textContent=lang==='en'?(r.name_en||r.display_name||r.name||r.name_ar):(r.name_ar||r.display_name||r.name||r.name_en);
       try{opt.dataset.perms=JSON.stringify(r.permissions||r.perms||[]);}catch(e){opt.dataset.perms='[]';}
       s.appendChild(opt);
     });

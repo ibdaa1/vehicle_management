@@ -358,7 +358,7 @@ class AuthController extends BaseController
             // Build insert
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
             $fields = 'emp_id, username, email, password_hash, preferred_language, phone, role_id, is_active, created_at, updated_at';
-            $placeholders = '?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW()';
+            $placeholders = '?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW()';
             $types = 'ssssssi';
             $binds = [$emp_id, $username, $email, $passwordHash, $preferred_language, $phone, $role_id];
 
