@@ -265,6 +265,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     var currentUser = null;
     var allVehiclesData = [];
     var allRefs = { sectors: [], departments: [], sections: [], divisions: [] };
+    var userMap = {}; /* emp_id → { name, sector_name } */
     var activeView = 'private'; /* 'private' or 'shift' */
 
     /* ---------- Helpers ---------- */
@@ -433,8 +434,17 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             html += '<div class="av-v-detail"><span class="icon">🏢</span> ' + esc(isEn ? 'Dept' : 'الإدارة') + ': ' + esc(v.department_name) + '</div>';
         }
         if (!isAvailable && v.last_holder) {
+            var holderInfo = userMap[v.last_holder] || {};
+            var holderName = holderInfo.name || v.last_holder;
+            var holderSector = holderInfo.sector_name || '';
             html += '<div class="av-holder-info">';
-            html += '<div class="av-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + esc(isEn ? 'Recipient' : 'المستلم') + ': <strong>' + esc(v.last_holder) + '</strong></div>';
+            html += '<div class="av-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + esc(isEn ? 'Recipient' : 'المستلم') + ': <strong>' + esc(holderName) + '</strong></div>';
+            if (holderSector) {
+                html += '<div class="av-v-detail"><span class="icon">🏛️</span> ' + esc(isEn ? 'Sector' : 'القطاع') + ': ' + esc(holderSector) + '</div>';
+            }
+            if (v.movement_datetime) {
+                html += '<div class="av-v-detail"><span class="icon">🕐</span> ' + esc(isEn ? 'Pickup Time' : 'وقت الاستلام') + ': ' + esc(formatDateTime(v.movement_datetime)) + '</div>';
+            }
             html += '</div>';
         }
 
@@ -477,6 +487,24 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 return;
             }
             allVehiclesData = (res && res.data) || [];
+
+            /* Fetch users to resolve holder names & sectors */
+            try {
+                var uRes = await API.get('/users');
+                var users = (uRes && uRes.data) || (Array.isArray(uRes) ? uRes : []);
+                userMap = {};
+                users.forEach(function(u) {
+                    if (!u.emp_id) return;
+                    userMap[u.emp_id] = {
+                        name: u.username || u.email || u.emp_id,
+                        sector_name: u.sector_name || u.sector_name_en || '',
+                        department_name: u.department_name_ar || u.department_name || ''
+                    };
+                });
+            } catch (ue) {
+                console.warn('admin_vehicles: Could not load users for holder names', ue);
+            }
+
             renderAll();
         } catch (e) {
             console.error('Failed to load vehicles:', e);
@@ -903,12 +931,26 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (vehicle.notes) html += detailRow(isEn ? 'Notes' : 'ملاحظات', vehicle.notes);
         html += '</div>';
 
-        /* Show holder info if checked out */
+        /* Show holder info if checked out — placeholder, will be enriched with movement data */
+        var holderSectionHtml = '';
         if (!vehicle.available && vehicle.last_holder) {
-            html += '<div class="av-detail-section">';
-            html += '<div class="av-detail-section-title">👤 ' + esc(isEn ? 'Current Holder' : 'المستلم الحالي') + '</div>';
-            html += detailRow(isEn ? 'Holder ID' : 'رقم المستلم', vehicle.last_holder);
-            html += '</div>';
+            var holderInfo = userMap[vehicle.last_holder] || {};
+            var holderName = holderInfo.name || vehicle.last_holder;
+            var holderSector = holderInfo.sector_name || '';
+            var holderDept = holderInfo.department_name || '';
+            holderSectionHtml += '<div class="av-detail-section">';
+            holderSectionHtml += '<div class="av-detail-section-title">👤 ' + esc(isEn ? 'Current Holder' : 'المستلم الحالي') + '</div>';
+            holderSectionHtml += detailRow(isEn ? 'Holder ID' : 'رقم المستلم', vehicle.last_holder);
+            holderSectionHtml += detailRow(isEn ? 'Name' : 'الاسم', holderName);
+            if (holderSector) {
+                holderSectionHtml += detailRow(isEn ? 'Sector' : 'القطاع', holderSector);
+            }
+            if (holderDept) {
+                holderSectionHtml += detailRow(isEn ? 'Department' : 'الإدارة', holderDept);
+            }
+            /* pickup time placeholder — will be filled from movement data below */
+            holderSectionHtml += '<!--PICKUP_TIME_PLACEHOLDER-->';
+            holderSectionHtml += '</div>';
         }
 
         /* Try to fetch movement data for this vehicle */
@@ -927,13 +969,34 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 return new Date(b.movement_datetime || b.created_at || 0) - new Date(a.movement_datetime || a.created_at || 0);
             });
 
+            /* Enrich holder section with pickup time from latest pickup movement */
+            if (vehicleMovements.length > 0 && holderSectionHtml) {
+                var latestPickup = null;
+                for (var mi = 0; mi < vehicleMovements.length; mi++) {
+                    if (vehicleMovements[mi].operation_type === 'pickup') {
+                        latestPickup = vehicleMovements[mi];
+                        break;
+                    }
+                }
+                if (latestPickup && latestPickup.movement_datetime) {
+                    holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->',
+                        detailRow(isEn ? 'Pickup Time' : 'وقت الاستلام', formatDateTime(latestPickup.movement_datetime)));
+                } else {
+                    holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->', '');
+                }
+            } else {
+                holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->', '');
+            }
+            html += holderSectionHtml;
+
             if (vehicleMovements.length > 0) {
                 var lastMov = vehicleMovements[0];
                 html += '<div class="av-detail-section">';
                 html += '<div class="av-detail-section-title">📋 ' + esc(isEn ? 'Last Movement' : 'آخر حركة') + '</div>';
                 var opLabel = lastMov.operation_type === 'pickup' ? (isEn ? 'Pickup' : 'تسليم') : (isEn ? 'Return' : 'إرجاع');
                 html += detailRow(isEn ? 'Operation' : 'العملية', opLabel);
-                html += detailRow(isEn ? 'Performed By' : 'بواسطة', lastMov.performed_by);
+                var performedByName = (userMap[lastMov.performed_by] || {}).name || lastMov.performed_by;
+                html += detailRow(isEn ? 'Performed By' : 'بواسطة', performedByName + (lastMov.performed_by !== performedByName ? ' (' + lastMov.performed_by + ')' : ''));
                 if (lastMov.movement_datetime) {
                     html += detailRow(isEn ? 'Date/Time' : 'التاريخ والوقت', formatDateTime(lastMov.movement_datetime));
                 }
@@ -976,6 +1039,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             }
         } catch (e) {
             console.warn('admin_vehicles: Failed to load movements', e);
+            /* Still show holder section without pickup time */
+            if (holderSectionHtml) {
+                holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->', '');
+                html += holderSectionHtml;
+            }
             html += '<div class="av-detail-section"><p style="color:var(--text-secondary);font-size:.85rem">' + esc(isEn ? 'Could not load movement history' : 'تعذر تحميل سجل الحركات') + '</p></div>';
         }
 
