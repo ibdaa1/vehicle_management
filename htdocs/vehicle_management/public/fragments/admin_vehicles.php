@@ -331,10 +331,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!sel) return;
         var isEn = (i18n.lang === 'en');
         var first = '<option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">' + (isEn ? 'All Sections' : 'كل الأقسام') + '</option>';
-        if (!deptId) { sel.innerHTML = first; populateDivisionFilter(''); return; }
-        var secs = (allRefs.sections || []).filter(function(s) {
-            return String(s.department_id) === String(deptId);
-        });
+        var secs = allRefs.sections || [];
+        if (deptId) {
+            secs = secs.filter(function(s) {
+                return String(s.department_id) === String(deptId);
+            });
+        }
         var opts = secs.map(function(s) {
             var sid = s.section_id || s.id || '';
             var label = isEn ? (s.name_en || s.name_ar || s.name || '') : (s.name_ar || s.name || s.name_en || '');
@@ -349,8 +351,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!sel) return;
         var isEn = (i18n.lang === 'en');
         var first = '<option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">' + (isEn ? 'All Divisions' : 'كل الشعب') + '</option>';
-        if (!sectionId) { sel.innerHTML = first; return; }
-        var divs = (allRefs.divisions || []).filter(function(d) { return String(d.section_id) === String(sectionId); });
+        var divs = allRefs.divisions || [];
+        if (sectionId) {
+            divs = divs.filter(function(d) { return String(d.section_id) === String(sectionId); });
+        }
         var opts = divs.map(function(d) {
             var did = d.division_id || d.id || '';
             var label = isEn ? (d.name_en || d.name_ar || d.name || '') : (d.name_ar || d.name || d.name_en || '');
