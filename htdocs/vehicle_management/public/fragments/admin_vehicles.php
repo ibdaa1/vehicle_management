@@ -60,14 +60,17 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .av-stat-value{font-size:1.3rem;font-weight:700;color:var(--text-primary)}
 .av-stat-label{font-size:.78rem;color:var(--text-secondary)}
 .av-section-count{font-size:.85rem;color:var(--text-secondary);font-weight:400;margin-inline-start:8px}
-.av-filter-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}
+.av-filter-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center}
 .av-filter-bar select,.av-filter-bar input{padding:8px 12px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.85rem}
 .av-filter-bar select{min-width:140px}
 .av-filter-bar input[type="text"]{min-width:200px}
+.av-filter-row2{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}
+.av-filter-row2 select{padding:8px 12px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.85rem;min-width:140px}
+.av-dept-group-title{font-size:.95rem;font-weight:700;color:var(--text-primary);margin:16px 0 10px;display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(var(--primary-main-rgb,59,130,246),.06);border-radius:8px;border-inline-start:3px solid var(--primary-main)}
 @media(max-width:768px){
     .av-vehicles-grid{grid-template-columns:1fr}
     .av-stats-bar{flex-direction:column}
-    .av-filter-bar{flex-direction:column;align-items:stretch}
+    .av-filter-bar,.av-filter-row2{flex-direction:column;align-items:stretch}
 }
 </style>
 
@@ -143,6 +146,27 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     </select>
 </div>
 
+<!-- Advanced Filter Row -->
+<div class="av-filter-row2" id="avFilterRow2">
+    <select id="avFilterSector">
+        <option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">كل القطاعات</option>
+    </select>
+    <select id="avFilterDepartment">
+        <option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">كل الإدارات</option>
+    </select>
+    <select id="avFilterSection">
+        <option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">كل الأقسام</option>
+    </select>
+    <select id="avFilterDivision">
+        <option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">كل الشعب</option>
+    </select>
+    <select id="avFilterGender">
+        <option value="" data-label-ar="كل الجنس" data-label-en="All Genders">كل الجنس</option>
+        <option value="men" data-label-ar="رجال" data-label-en="Men">رجال</option>
+        <option value="women" data-label-ar="نساء" data-label-en="Women">نساء</option>
+    </select>
+</div>
+
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
 <div class="av-section-card" id="avPrivateSection">
     <div class="av-section-title">
@@ -195,6 +219,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     var currentUser = null;
     var allVehiclesData = [];
+    var allRefs = { sectors: [], departments: [], sections: [], divisions: [] };
 
     /* ---------- Helpers ---------- */
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -228,6 +253,77 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             return '<span class="av-v-mode-badge shift">' + esc(isEn ? 'Shift' : 'ورديات') + '</span>';
         }
         return '<span class="av-v-mode-badge dept">' + esc(isEn ? 'Rotation' : 'بالدور') + '</span>';
+    }
+
+    /* ---------- Load reference data for filters ---------- */
+    async function loadReferences() {
+        try {
+            var res = await API.get('/references');
+            allRefs = (res && res.data) || res || { sectors: [], departments: [], sections: [], divisions: [] };
+            populateSectorFilter();
+            populateDepartmentFilter();
+        } catch (e) {
+            console.warn('admin_vehicles: Failed to load references', e);
+        }
+    }
+
+    function populateSectorFilter() {
+        var sel = document.getElementById('avFilterSector');
+        if (!sel) return;
+        var isEn = (i18n.lang === 'en');
+        var first = '<option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">' + (isEn ? 'All Sectors' : 'كل القطاعات') + '</option>';
+        var opts = (allRefs.sectors || []).map(function(s) {
+            var label = isEn ? (s.name_en || s.name || s.sector_name || '') : (s.name || s.sector_name || '');
+            return '<option value="' + esc(String(s.id)) + '">' + esc(label) + '</option>';
+        }).join('');
+        sel.innerHTML = first + opts;
+    }
+
+    function populateDepartmentFilter(sectorId) {
+        var sel = document.getElementById('avFilterDepartment');
+        if (!sel) return;
+        var isEn = (i18n.lang === 'en');
+        var first = '<option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">' + (isEn ? 'All Departments' : 'كل الإدارات') + '</option>';
+        var depts = allRefs.departments || [];
+        if (sectorId) {
+            depts = depts.filter(function(d) { return String(d.sector_id) === String(sectorId); });
+        }
+        var opts = depts.map(function(d) {
+            var label = isEn ? (d.name_en || d.name || d.department_name_en || d.department_name_ar || '') : (d.name || d.department_name_ar || d.department_name_en || '');
+            return '<option value="' + esc(String(d.id)) + '">' + esc(label) + '</option>';
+        }).join('');
+        sel.innerHTML = first + opts;
+        /* Reset cascading */
+        populateSectionFilter('');
+    }
+
+    function populateSectionFilter(deptId) {
+        var sel = document.getElementById('avFilterSection');
+        if (!sel) return;
+        var isEn = (i18n.lang === 'en');
+        var first = '<option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">' + (isEn ? 'All Sections' : 'كل الأقسام') + '</option>';
+        if (!deptId) { sel.innerHTML = first; populateDivisionFilter(''); return; }
+        var secs = (allRefs.sections || []).filter(function(s) { return String(s.department_id) === String(deptId); });
+        var opts = secs.map(function(s) {
+            var label = isEn ? (s.name_en || s.name || s.section_name_en || s.section_name_ar || '') : (s.name || s.section_name_ar || s.section_name_en || '');
+            return '<option value="' + esc(String(s.id)) + '">' + esc(label) + '</option>';
+        }).join('');
+        sel.innerHTML = first + opts;
+        populateDivisionFilter('');
+    }
+
+    function populateDivisionFilter(sectionId) {
+        var sel = document.getElementById('avFilterDivision');
+        if (!sel) return;
+        var isEn = (i18n.lang === 'en');
+        var first = '<option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">' + (isEn ? 'All Divisions' : 'كل الشعب') + '</option>';
+        if (!sectionId) { sel.innerHTML = first; return; }
+        var divs = (allRefs.divisions || []).filter(function(d) { return String(d.section_id) === String(sectionId); });
+        var opts = divs.map(function(d) {
+            var label = isEn ? (d.name_en || d.name || d.division_name_en || d.division_name_ar || '') : (d.name || d.division_name_ar || d.division_name_en || '');
+            return '<option value="' + esc(String(d.id)) + '">' + esc(label) + '</option>';
+        }).join('');
+        sel.innerHTML = first + opts;
     }
 
     /* ---------- Build a vehicle card ---------- */
@@ -326,10 +422,18 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* ---------- Categorize & render ---------- */
     function renderAll() {
+        /* Clear stale next-turn marks before re-rendering */
+        allVehiclesData.forEach(function(v) { delete v._markedNextTurn; });
+
         var search = (document.getElementById('avSearchInput') || {}).value || '';
         search = search.trim().toLowerCase();
         var statusFilter = (document.getElementById('avFilterStatus') || {}).value || '';
         var availFilter = (document.getElementById('avFilterAvailability') || {}).value || '';
+        var sectorFilter = (document.getElementById('avFilterSector') || {}).value || '';
+        var deptFilter = (document.getElementById('avFilterDepartment') || {}).value || '';
+        var sectionFilter = (document.getElementById('avFilterSection') || {}).value || '';
+        var divisionFilter = (document.getElementById('avFilterDivision') || {}).value || '';
+        var genderFilter = (document.getElementById('avFilterGender') || {}).value || '';
 
         var filtered = allVehiclesData.filter(function(v) {
             if (search) {
@@ -344,6 +448,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             if (statusFilter && v.status !== statusFilter) return false;
             if (availFilter === 'available' && !v.available) return false;
             if (availFilter === 'checked_out' && v.available) return false;
+            if (sectorFilter && String(v.sector_id || '') !== sectorFilter) return false;
+            if (deptFilter && String(v.department_id || '') !== deptFilter) return false;
+            if (sectionFilter && String(v.section_id || '') !== sectionFilter) return false;
+            if (divisionFilter && String(v.division_id || '') !== divisionFilter) return false;
+            if (genderFilter && (v.gender || '') !== genderFilter) return false;
             return true;
         });
 
@@ -363,13 +472,20 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             }
         });
 
-        /* Sort shift and dept by vehicle_code for consistent turn order */
-        shiftVehicles.sort(function(a, b) { return (a.vehicle_code || '').localeCompare(b.vehicle_code || ''); });
-        deptVehicles.sort(function(a, b) { return (a.vehicle_code || '').localeCompare(b.vehicle_code || ''); });
+        /* Sort shift and dept vehicles by department then vehicle_code for grouped display */
+        var deptSorter = function(a, b) {
+            var dA = (a.department_name || a.department_name_ar || '').toLowerCase();
+            var dB = (b.department_name || b.department_name_ar || '').toLowerCase();
+            if (dA < dB) return -1;
+            if (dA > dB) return 1;
+            return (a.vehicle_code || '').localeCompare(b.vehicle_code || '');
+        };
+        shiftVehicles.sort(deptSorter);
+        deptVehicles.sort(deptSorter);
 
         renderSection('avPrivateGrid', privateVehicles, 'private');
-        renderSection('avShiftGrid', shiftVehicles, 'shift');
-        renderSection('avDeptGrid', deptVehicles, 'dept');
+        renderGroupedSection('avShiftGrid', shiftVehicles, 'shift');
+        renderGroupedSection('avDeptGrid', deptVehicles, 'dept');
         updateStats(privateVehicles, shiftVehicles, deptVehicles);
         updateCounts(privateVehicles.length, shiftVehicles.length, deptVehicles.length);
     }
@@ -410,6 +526,58 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             return buildCard(v, opts);
         }).join('');
         container.innerHTML = cards;
+    }
+
+    /* ---------- Render grouped section (by department) ---------- */
+    function renderGroupedSection(containerId, vehicles, sectionType) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var isEn = (i18n.lang === 'en');
+
+        if (!vehicles.length) {
+            var emptyIcon = sectionType === 'shift' ? '🔄' : '🏢';
+            var emptyMsg = isEn ? 'No vehicles found' : 'لا توجد مركبات';
+            container.innerHTML = '<div class="av-empty-state"><div class="empty-icon">' + emptyIcon + '</div><p>' + esc(emptyMsg) + '</p></div>';
+            return;
+        }
+
+        /* Group vehicles by department */
+        var groups = {};
+        var groupOrder = [];
+        vehicles.forEach(function(v) {
+            var deptKey = v.department_name || v.department_name_ar || (isEn ? 'Unassigned' : 'غير محدد');
+            if (!groups[deptKey]) {
+                groups[deptKey] = [];
+                groupOrder.push(deptKey);
+            }
+            groups[deptKey].push(v);
+        });
+
+        var html = '';
+        var globalIdx = 0;
+        groupOrder.forEach(function(deptName) {
+            var groupVehicles = groups[deptName];
+            html += '<div class="av-dept-group-title"><span>🏢</span> ' + esc(deptName) + ' <span style="font-size:.8rem;font-weight:400;color:var(--text-secondary)">(' + groupVehicles.length + ')</span></div>';
+            html += '<div class="av-vehicles-grid">';
+            groupVehicles.forEach(function(v) {
+                globalIdx++;
+                var opts = { displayMode: sectionType === 'dept' ? 'dept' : v.vehicle_mode, turnOrder: globalIdx };
+                /* First available operational vehicle in each group is next in turn */
+                if (!v._markedNextTurn && v.available && v.status === 'operational') {
+                    var alreadyMarked = false;
+                    for (var j = 0; j < groupVehicles.indexOf(v); j++) {
+                        if (groupVehicles[j]._markedNextTurn) { alreadyMarked = true; break; }
+                    }
+                    if (!alreadyMarked) {
+                        opts.isNextTurn = true;
+                        v._markedNextTurn = true;
+                    }
+                }
+                html += buildCard(v, opts);
+            });
+            html += '</div>';
+        });
+        container.innerHTML = html;
     }
 
     /* ---------- Update stats bar ---------- */
@@ -518,6 +686,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var searchInput = document.getElementById('avSearchInput');
         var statusSelect = document.getElementById('avFilterStatus');
         var availSelect = document.getElementById('avFilterAvailability');
+        var sectorSelect = document.getElementById('avFilterSector');
+        var deptSelect = document.getElementById('avFilterDepartment');
+        var sectionSelect = document.getElementById('avFilterSection');
+        var divisionSelect = document.getElementById('avFilterDivision');
+        var genderSelect = document.getElementById('avFilterGender');
         var debounceTimer = null;
 
         if (searchInput) {
@@ -535,6 +708,34 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         }
         if (availSelect) {
             availSelect.addEventListener('change', function() {
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (sectorSelect) {
+            sectorSelect.addEventListener('change', function() {
+                populateDepartmentFilter(this.value);
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (deptSelect) {
+            deptSelect.addEventListener('change', function() {
+                populateSectionFilter(this.value);
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (sectionSelect) {
+            sectionSelect.addEventListener('change', function() {
+                populateDivisionFilter(this.value);
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (divisionSelect) {
+            divisionSelect.addEventListener('change', function() {
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (genderSelect) {
+            genderSelect.addEventListener('change', function() {
                 if (allVehiclesData.length) renderAll();
             });
         }
@@ -564,6 +765,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
         applyFragmentLang();
         setupFilters();
+        loadReferences();
         loadAllVehicles();
     })();
 })();
