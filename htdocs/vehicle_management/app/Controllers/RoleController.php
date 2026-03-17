@@ -323,14 +323,21 @@ class RoleController extends BaseController
             $roles = [];
         }
 
-        // Filter to basic info only
-        $publicRoles = array_map(function ($role) {
-            return [
+        // Exclude admin roles from self-registration
+        $blockedKeys = ['superadmin', 'admin'];
+
+        // Filter to basic info only and exclude blocked roles
+        $publicRoles = [];
+        foreach ($roles as $role) {
+            if (in_array($role['key_name'] ?? '', $blockedKeys, true)) {
+                continue;
+            }
+            $publicRoles[] = [
                 'id'           => (int)$role['id'],
                 'key_name'     => $role['key_name'],
                 'display_name' => $role['display_name'],
             ];
-        }, $roles);
+        }
 
         Response::json([
             'success' => true,

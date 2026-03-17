@@ -319,6 +319,17 @@ class AuthController extends BaseController
 
             // Validate optional references
             $invalid = [];
+            // Validate role_id exists and is allowed for self-registration
+            $roleRow = $db->fetchOne("SELECT `id`, `key_name` FROM `roles` WHERE `id` = ? LIMIT 1", 'i', [$role_id]);
+            if (!$roleRow) {
+                Response::error('Invalid role_id.', 400);
+                return;
+            }
+            $blockedRoles = ['superadmin', 'admin'];
+            if (in_array($roleRow['key_name'], $blockedRoles, true)) {
+                Response::error('Self-registration is not allowed for this role.', 403);
+                return;
+            }
             if ($sector_id !== null) {
                 $r = $db->fetchOne("SELECT 1 FROM `sectors` WHERE `id` = ? LIMIT 1", 'i', [$sector_id]);
                 if (!$r) $invalid[] = "sector_id:{$sector_id}";

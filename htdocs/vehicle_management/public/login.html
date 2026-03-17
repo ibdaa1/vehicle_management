@@ -448,7 +448,7 @@
   }
   function fillRoles() {
     const t=i18n[lang]||{}, s=el.roleId; if(!s) return;
-    const prev=s.value; s.innerHTML='';
+    const prev=s.value||'4'; s.innerHTML='';
     const o=document.createElement('option'); o.value=''; o.textContent=t.selectRole||''; s.appendChild(o);
     rolesData.forEach(r => {
       const id=r.id??r.role_id; if(id==null) return;
@@ -458,6 +458,11 @@
       s.appendChild(opt);
     });
     if(prev) s.value=prev;
+    if(!s.value){
+      const def=document.createElement('option'); def.value='4';
+      def.textContent=lang==='ar'?'موظف / Employee':'Employee / موظف';
+      def.selected=true; s.appendChild(def); s.value='4';
+    }
   }
   function showRolePerms(id) {
     const box=el.rolePermsBox; if(!box) return;
