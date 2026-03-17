@@ -67,10 +67,18 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .av-filter-row2{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;align-items:center}
 .av-filter-row2 select{padding:8px 12px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.85rem;min-width:140px}
 .av-dept-group-title{font-size:.95rem;font-weight:700;color:var(--text-primary);margin:16px 0 10px;display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(var(--primary-main-rgb,59,130,246),.06);border-radius:8px;border-inline-start:3px solid var(--primary-main)}
+.av-btn-clear-filters{padding:8px 16px;border:1px solid var(--status-danger);border-radius:8px;background:rgba(220,53,69,.08);color:var(--status-danger);font-size:.85rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+.av-btn-clear-filters:hover{background:rgba(220,53,69,.18)}
+.av-view-toggle{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border-default);border-radius:10px;overflow:hidden;width:fit-content}
+.av-toggle-btn{padding:10px 24px;border:none;background:var(--bg-card);color:var(--text-secondary);font-size:.9rem;font-weight:600;cursor:pointer;transition:background .2s,color .2s}
+.av-toggle-btn.active{background:var(--primary-main);color:var(--text-light)}
+.av-toggle-btn:hover:not(.active){background:rgba(var(--primary-main-rgb,59,130,246),.08)}
 @media(max-width:768px){
     .av-vehicles-grid{grid-template-columns:1fr}
     .av-stats-bar{flex-direction:column}
     .av-filter-bar,.av-filter-row2{flex-direction:column;align-items:stretch}
+    .av-view-toggle{width:100%}
+    .av-toggle-btn{flex:1;text-align:center}
 }
 </style>
 
@@ -165,6 +173,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         <option value="men" data-label-ar="رجال" data-label-en="Men">رجال</option>
         <option value="women" data-label-ar="نساء" data-label-en="Women">نساء</option>
     </select>
+    <button type="button" class="btn av-btn-clear-filters" id="avClearFilters">
+        <span>🗑️</span> <span data-label-ar="إلغاء الفلاتر" data-label-en="Clear Filters">إلغاء الفلاتر</span>
+    </button>
+</div>
+
+<!-- View Toggle -->
+<div class="av-view-toggle" id="avViewToggle">
+    <button type="button" class="av-toggle-btn active" id="avTogglePrivate" data-label-ar="🔒 خاصة" data-label-en="🔒 Private">🔒 خاصة</button>
+    <button type="button" class="av-toggle-btn" id="avToggleShift" data-label-ar="🔄 ورديات وبالدور" data-label-en="🔄 Shift &amp; Rotation">🔄 ورديات وبالدور</button>
 </div>
 
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
@@ -220,6 +237,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     var currentUser = null;
     var allVehiclesData = [];
     var allRefs = { sectors: [], departments: [], sections: [], divisions: [] };
+    var activeView = 'private'; /* 'private' or 'shift' */
 
     /* ---------- Helpers ---------- */
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -285,12 +303,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn = (i18n.lang === 'en');
         var first = '<option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">' + (isEn ? 'All Departments' : 'كل الإدارات') + '</option>';
         var depts = allRefs.departments || [];
+        /* Departments don't have sector_id; filter via vehicle data when sector is chosen */
         if (sectorId) {
-            depts = depts.filter(function(d) { return String(d.sector_id) === String(sectorId); });
+            var deptIdsInSector = {};
+            allVehiclesData.forEach(function(v) {
+                if (String(v.sector_id || '') === String(sectorId) && v.department_id) {
+                    deptIdsInSector[String(v.department_id)] = true;
+                }
+            });
+            depts = depts.filter(function(d) {
+                var did = String(d.department_id || d.id || '');
+                return deptIdsInSector[did];
+            });
         }
         var opts = depts.map(function(d) {
-            var label = isEn ? (d.name_en || d.name || d.department_name_en || d.department_name_ar || '') : (d.name || d.department_name_ar || d.department_name_en || '');
-            return '<option value="' + esc(String(d.id)) + '">' + esc(label) + '</option>';
+            var did = d.department_id || d.id || '';
+            var label = isEn ? (d.name_en || d.name_ar || d.name || '') : (d.name_ar || d.name || d.name_en || '');
+            return '<option value="' + esc(String(did)) + '">' + esc(label) + '</option>';
         }).join('');
         sel.innerHTML = first + opts;
         /* Reset cascading */
@@ -303,10 +332,13 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn = (i18n.lang === 'en');
         var first = '<option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">' + (isEn ? 'All Sections' : 'كل الأقسام') + '</option>';
         if (!deptId) { sel.innerHTML = first; populateDivisionFilter(''); return; }
-        var secs = (allRefs.sections || []).filter(function(s) { return String(s.department_id) === String(deptId); });
+        var secs = (allRefs.sections || []).filter(function(s) {
+            return String(s.department_id) === String(deptId);
+        });
         var opts = secs.map(function(s) {
-            var label = isEn ? (s.name_en || s.name || s.section_name_en || s.section_name_ar || '') : (s.name || s.section_name_ar || s.section_name_en || '');
-            return '<option value="' + esc(String(s.id)) + '">' + esc(label) + '</option>';
+            var sid = s.section_id || s.id || '';
+            var label = isEn ? (s.name_en || s.name_ar || s.name || '') : (s.name_ar || s.name || s.name_en || '');
+            return '<option value="' + esc(String(sid)) + '">' + esc(label) + '</option>';
         }).join('');
         sel.innerHTML = first + opts;
         populateDivisionFilter('');
@@ -320,8 +352,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (!sectionId) { sel.innerHTML = first; return; }
         var divs = (allRefs.divisions || []).filter(function(d) { return String(d.section_id) === String(sectionId); });
         var opts = divs.map(function(d) {
-            var label = isEn ? (d.name_en || d.name || d.division_name_en || d.division_name_ar || '') : (d.name || d.division_name_ar || d.division_name_en || '');
-            return '<option value="' + esc(String(d.id)) + '">' + esc(label) + '</option>';
+            var did = d.division_id || d.id || '';
+            var label = isEn ? (d.name_en || d.name_ar || d.name || '') : (d.name_ar || d.name || d.name_en || '');
+            return '<option value="' + esc(String(did)) + '">' + esc(label) + '</option>';
         }).join('');
         sel.innerHTML = first + opts;
     }
@@ -488,6 +521,14 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         renderGroupedSection('avDeptGrid', deptVehicles, 'dept');
         updateStats(privateVehicles, shiftVehicles, deptVehicles);
         updateCounts(privateVehicles.length, shiftVehicles.length, deptVehicles.length);
+
+        /* Toggle view visibility */
+        var privSection = document.getElementById('avPrivateSection');
+        var shiftSection = document.getElementById('avShiftSection');
+        var deptSection = document.getElementById('avDeptSection');
+        if (privSection) privSection.style.display = (activeView === 'private') ? '' : 'none';
+        if (shiftSection) shiftSection.style.display = (activeView === 'shift') ? '' : 'none';
+        if (deptSection) deptSection.style.display = (activeView === 'shift') ? '' : 'none';
     }
 
     /* ---------- Render section ---------- */
@@ -736,6 +777,40 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         }
         if (genderSelect) {
             genderSelect.addEventListener('change', function() {
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+
+        /* View toggle buttons */
+        var togglePrivate = document.getElementById('avTogglePrivate');
+        var toggleShift = document.getElementById('avToggleShift');
+        if (togglePrivate) {
+            togglePrivate.addEventListener('click', function() {
+                activeView = 'private';
+                togglePrivate.classList.add('active');
+                if (toggleShift) toggleShift.classList.remove('active');
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+        if (toggleShift) {
+            toggleShift.addEventListener('click', function() {
+                activeView = 'shift';
+                toggleShift.classList.add('active');
+                if (togglePrivate) togglePrivate.classList.remove('active');
+                if (allVehiclesData.length) renderAll();
+            });
+        }
+
+        /* Clear all filters button */
+        var clearBtn = document.getElementById('avClearFilters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                if (searchInput) searchInput.value = '';
+                if (statusSelect) statusSelect.value = '';
+                if (availSelect) availSelect.value = '';
+                if (sectorSelect) sectorSelect.value = '';
+                if (genderSelect) genderSelect.value = '';
+                populateDepartmentFilter('');
                 if (allVehiclesData.length) renderAll();
             });
         }
