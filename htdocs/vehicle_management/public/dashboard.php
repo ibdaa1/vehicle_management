@@ -29,7 +29,8 @@ $page = isset($_GET['page']) ? preg_replace('/[^a-z0-9_-]/i', '', $_GET['page'])
 // 'perm' key defines the required permission to access this page (null = no permission required)
 $pageMeta = [
     'dashboard'    => ['title' => 'لوحة التحكم',           'active' => 'dashboard',     'perm' => null],
-    'my_vehicles'  => ['title' => 'مركباتي',               'active' => 'my_vehicles',   'perm' => null],
+    'my_vehicles'      => ['title' => 'مركباتي',               'active' => 'my_vehicles',      'perm' => null],
+    'admin_vehicles'   => ['title' => 'إدارة جميع المركبات',  'active' => 'admin_vehicles',   'perm' => 'manage_movements'],
     'vehicle_list' => ['title' => 'إدارة المركبات',         'active' => 'vehicle_list',  'perm' => 'manage_vehicles'],
     'movements'    => ['title' => 'حركات المركبات',         'active' => 'movements',     'perm' => 'manage_movements'],
     'maintenance'  => ['title' => 'الصيانة',               'active' => 'maintenance',   'perm' => 'manage_maintenance'],
