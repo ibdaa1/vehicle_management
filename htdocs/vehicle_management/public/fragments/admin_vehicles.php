@@ -53,6 +53,24 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .av-v-card.next-turn{border:2px solid var(--primary-main);box-shadow:0 0 12px rgba(var(--primary-main-rgb,59,130,246),.25)}
 .av-next-label{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;background:var(--primary-main);color:var(--text-light);margin-inline-start:6px}
 .av-v-card.checked-out{border:2px solid var(--status-danger);box-shadow:0 0 8px rgba(220,53,69,.15)}
+.av-btn-details{padding:8px 16px;font-size:.85rem;border-radius:8px;border:1px solid rgba(111,66,193,.3);cursor:pointer;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:background .2s;background:rgba(111,66,193,.12);color:#6f42c1}
+.av-btn-details:hover{background:rgba(111,66,193,.22)}
+.av-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.av-modal-content{background:var(--bg-card);border-radius:16px;width:90%;max-width:600px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.av-modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border-default)}
+.av-modal-header h3{margin:0;font-size:1.1rem;color:var(--text-primary)}
+.av-modal-close{border:none;background:none;font-size:1.5rem;cursor:pointer;color:var(--text-secondary);padding:0 4px;line-height:1}
+.av-modal-close:hover{color:var(--status-danger)}
+.av-modal-body{padding:24px}
+.av-detail-section{margin-bottom:20px}
+.av-detail-section-title{font-size:.95rem;font-weight:700;color:var(--text-primary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.av-detail-row{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:.85rem;color:var(--text-secondary);border-bottom:1px solid rgba(200,200,200,.2)}
+.av-detail-row .dlabel{font-weight:600;color:var(--text-primary);min-width:130px}
+.av-detail-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:10px}
+.av-detail-photos img{width:100%;border-radius:8px;object-fit:cover;aspect-ratio:1;cursor:pointer;border:1px solid var(--border-default)}
+.av-detail-photos img:hover{opacity:.85}
+.av-rotation-banner{background:rgba(111,66,193,.06);border:1px solid rgba(111,66,193,.15);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:.85rem;color:var(--text-primary);display:flex;align-items:center;gap:10px}
+.av-holder-info{background:rgba(220,53,69,.06);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.8rem}
 .av-stats-bar{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px}
 .av-stat-card{background:var(--bg-card);border-radius:10px;padding:14px 20px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);display:flex;align-items:center;gap:12px;min-width:160px;flex:1}
 .av-stat-icon{font-size:1.5rem}
@@ -111,15 +129,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <div class="av-stat-card">
         <span class="av-stat-icon">🔄</span>
         <div class="av-stat-info">
-            <span class="av-stat-value" id="avStatShift">—</span>
-            <span class="av-stat-label" data-label-ar="ورديات" data-label-en="Shift">ورديات</span>
-        </div>
-    </div>
-    <div class="av-stat-card">
-        <span class="av-stat-icon">🏢</span>
-        <div class="av-stat-info">
             <span class="av-stat-value" id="avStatDept">—</span>
-            <span class="av-stat-label" data-label-ar="بالدور" data-label-en="Department">بالدور</span>
+            <span class="av-stat-label" data-label-ar="بالدور" data-label-en="Rotation">بالدور</span>
         </div>
     </div>
     <div class="av-stat-card">
@@ -181,7 +192,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <!-- View Toggle -->
 <div class="av-view-toggle" id="avViewToggle">
     <button type="button" class="av-toggle-btn active" id="avTogglePrivate" data-label-ar="🔒 خاصة" data-label-en="🔒 Private">🔒 خاصة</button>
-    <button type="button" class="av-toggle-btn" id="avToggleShift" data-label-ar="🔄 ورديات وبالدور" data-label-en="🔄 Shift &amp; Rotation">🔄 ورديات وبالدور</button>
+    <button type="button" class="av-toggle-btn" id="avToggleShift" data-label-ar="🔄 بالدور" data-label-en="🔄 Rotation">🔄 بالدور</button>
 </div>
 
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
@@ -211,12 +222,29 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <!-- ===== DEPARTMENT VEHICLES SECTION (بالدور) ===== -->
 <div class="av-section-card" id="avDeptSection">
     <div class="av-section-title">
-        <span>🏢</span>
+        <span>🔄</span>
         <span id="avDeptTitle" data-label-ar="مركبات بالدور" data-label-en="Rotation Vehicles">مركبات بالدور</span>
         <span class="av-section-count" id="avDeptCount"></span>
     </div>
+    <div class="av-rotation-banner" id="avRotationBanner">
+        <span>🔁</span>
+        <span id="avRotationText" data-label-ar="يتم التسليم بالدور كحلقة — المركبة التي تم تسليمها يأتي دورها بعد تسليم جميع المركبات الأخرى" data-label-en="Round-robin delivery — a vehicle's next turn comes after all other vehicles have been delivered">يتم التسليم بالدور كحلقة — المركبة التي تم تسليمها يأتي دورها بعد تسليم جميع المركبات الأخرى</span>
+    </div>
     <div id="avDeptGrid" class="av-vehicles-grid">
         <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+    </div>
+</div>
+
+<!-- ===== Vehicle Detail Modal ===== -->
+<div id="avDetailModal" class="av-modal-overlay" style="display:none">
+    <div class="av-modal-content">
+        <div class="av-modal-header">
+            <h3 id="avDetailTitle" data-label-ar="تفاصيل المركبة" data-label-en="Vehicle Details">تفاصيل المركبة</h3>
+            <button class="av-modal-close" onclick="AdminVehiclesFragment.closeDetails()">&times;</button>
+        </div>
+        <div class="av-modal-body" id="avDetailBody">
+            <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+        </div>
     </div>
 </div>
 
@@ -266,9 +294,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn = (i18n.lang === 'en');
         if (mode === 'private') {
             return '<span class="av-v-mode-badge private">' + esc(isEn ? 'Private' : 'خاصة') + '</span>';
-        }
-        if (mode === 'shift') {
-            return '<span class="av-v-mode-badge shift">' + esc(isEn ? 'Shift' : 'ورديات') + '</span>';
         }
         return '<span class="av-v-mode-badge dept">' + esc(isEn ? 'Rotation' : 'بالدور') + '</span>';
     }
@@ -408,7 +433,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             html += '<div class="av-v-detail"><span class="icon">🏢</span> ' + esc(isEn ? 'Dept' : 'الإدارة') + ': ' + esc(v.department_name) + '</div>';
         }
         if (!isAvailable && v.last_holder) {
-            html += '<div class="av-v-detail"><span class="icon">📋</span> ' + esc(isEn ? 'Current Holder' : 'المستلم الحالي') + ': ' + esc(v.last_holder) + '</div>';
+            html += '<div class="av-holder-info">';
+            html += '<div class="av-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + esc(isEn ? 'Recipient' : 'المستلم') + ': <strong>' + esc(v.last_holder) + '</strong></div>';
+            html += '</div>';
         }
 
         /* Admin Pickup/Return buttons */
@@ -421,6 +448,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (canReturn) {
             html += '<button class="btn av-btn-return" onclick="AdminVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
             html += '<span>↩️</span> ' + esc(isEn ? 'Return' : 'إرجاع');
+            html += '</button>';
+        }
+        if (!isAvailable) {
+            html += '<button class="btn av-btn-details" onclick="AdminVehiclesFragment.showDetails(\'' + esc(v.vehicle_code) + '\')">';
+            html += '<span>📋</span> ' + esc(isEn ? 'View Details' : 'عرض التفاصيل');
             html += '</button>';
         }
         html += '</div>';
@@ -501,10 +533,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             var mode = v.vehicle_mode || '';
             if (mode === 'private') {
                 privateVehicles.push(v);
-            } else if (mode === 'shift') {
-                shiftVehicles.push(v);
             } else {
-                /* department / rotation / unassigned mode */
+                /* All non-private vehicles are بالدور (round-robin rotation) */
                 deptVehicles.push(v);
             }
         });
@@ -521,7 +551,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         deptVehicles.sort(deptSorter);
 
         renderSection('avPrivateGrid', privateVehicles, 'private');
-        renderGroupedSection('avShiftGrid', shiftVehicles, 'shift');
         renderGroupedSection('avDeptGrid', deptVehicles, 'dept');
         updateStats(privateVehicles, shiftVehicles, deptVehicles);
         updateCounts(privateVehicles.length, shiftVehicles.length, deptVehicles.length);
@@ -531,7 +560,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var shiftSection = document.getElementById('avShiftSection');
         var deptSection = document.getElementById('avDeptSection');
         if (privSection) privSection.style.display = (activeView === 'private') ? '' : 'none';
-        if (shiftSection) shiftSection.style.display = (activeView === 'shift') ? '' : 'none';
+        if (shiftSection) shiftSection.style.display = 'none'; /* merged into بالدور */
         if (deptSection) deptSection.style.display = (activeView === 'shift') ? '' : 'none';
     }
 
@@ -627,7 +656,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* ---------- Update stats bar ---------- */
     function updateStats(priv, shift, dept) {
-        var all = priv.concat(shift).concat(dept);
+        var all = priv.concat(dept);
         var total = all.length;
         var availCount = 0;
         var checkedCount = 0;
@@ -637,7 +666,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         });
         setText('avStatTotal', total);
         setText('avStatPrivate', priv.length);
-        setText('avStatShift', shift.length);
         setText('avStatDept', dept.length);
         setText('avStatAvailable', availCount);
         setText('avStatCheckedOut', checkedCount);
@@ -646,7 +674,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function updateCounts(privCount, shiftCount, deptCount) {
         var isEn = (i18n.lang === 'en');
         setText('avPrivateCount', '(' + privCount + (isEn ? ' vehicles' : ' مركبة') + ')');
-        setText('avShiftCount', '(' + shiftCount + (isEn ? ' vehicles' : ' مركبة') + ')');
         setText('avDeptCount', '(' + deptCount + (isEn ? ' vehicles' : ' مركبة') + ')');
     }
 
@@ -820,8 +847,149 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         }
     }
 
+    /* ---------- Detail modal helpers ---------- */
+    function detailRow(label, value) {
+        return '<div class="av-detail-row"><span class="dlabel">' + esc(label) + '</span><span>' + esc(value || '—') + '</span></div>';
+    }
+
+    function statusAr(status) {
+        var map = { operational: 'تعمل', maintenance: 'صيانة', out_of_service: 'خارج الخدمة' };
+        return map[status] || status || '—';
+    }
+
+    function formatDateTime(dt) {
+        try {
+            var d = new Date(dt);
+            if (isNaN(d.getTime())) return dt;
+            var lang = (i18n.lang === 'en') ? 'en-US' : 'ar-SA';
+            return d.toLocaleDateString(lang) + ' ' + d.toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return dt;
+        }
+    }
+
+    /* ---------- Show vehicle details modal ---------- */
+    async function showDetails(vehicleCode) {
+        var modal = document.getElementById('avDetailModal');
+        var body = document.getElementById('avDetailBody');
+        var title = document.getElementById('avDetailTitle');
+        if (!modal || !body) return;
+
+        var isEn = (i18n.lang === 'en');
+        var vehicle = null;
+        for (var i = 0; i < allVehiclesData.length; i++) {
+            if (allVehiclesData[i].vehicle_code === vehicleCode) { vehicle = allVehiclesData[i]; break; }
+        }
+        if (!vehicle) return;
+
+        title.textContent = (isEn ? 'Vehicle Details: ' : 'تفاصيل المركبة: ') + vehicleCode;
+        body.innerHTML = '<div class="av-empty-state"><div class="spinner spinner-sm"></div><span>' + esc(isEn ? 'Loading...' : 'جاري التحميل...') + '</span></div>';
+        modal.style.display = 'flex';
+
+        /* Build vehicle info */
+        var html = '<div class="av-detail-section">';
+        html += '<div class="av-detail-section-title">🚗 ' + esc(isEn ? 'Vehicle Information' : 'معلومات المركبة') + '</div>';
+        html += detailRow(isEn ? 'Code' : 'الكود', vehicle.vehicle_code);
+        html += detailRow(isEn ? 'Type' : 'النوع', vehicle.type || vehicle.vehicle_type);
+        html += detailRow(isEn ? 'Category' : 'الفئة', vehicle.vehicle_category);
+        html += detailRow(isEn ? 'Status' : 'الحالة', isEn ? vehicle.status : statusAr(vehicle.status));
+        html += detailRow(isEn ? 'Availability' : 'التوفر', vehicle.available ? (isEn ? 'Available' : 'متاحة') : (isEn ? 'Checked Out' : 'مستلمة'));
+        html += detailRow(isEn ? 'Driver' : 'السائق', vehicle.driver_name);
+        if (vehicle.emp_id) html += detailRow(isEn ? 'Emp ID' : 'الرقم الوظيفي', vehicle.emp_id);
+        if (vehicle.sector_name) html += detailRow(isEn ? 'Sector' : 'القطاع', vehicle.sector_name);
+        var deptName = vehicle.department_name || vehicle.department_name_ar;
+        if (deptName) html += detailRow(isEn ? 'Department' : 'الإدارة', deptName);
+        if (vehicle.gender) html += detailRow(isEn ? 'Gender' : 'الجنس', vehicle.gender === 'men' ? (isEn ? 'Men' : 'رجال') : (isEn ? 'Women' : 'نساء'));
+        if (vehicle.notes) html += detailRow(isEn ? 'Notes' : 'ملاحظات', vehicle.notes);
+        html += '</div>';
+
+        /* Show holder info if checked out */
+        if (!vehicle.available && vehicle.last_holder) {
+            html += '<div class="av-detail-section">';
+            html += '<div class="av-detail-section-title">👤 ' + esc(isEn ? 'Current Holder' : 'المستلم الحالي') + '</div>';
+            html += detailRow(isEn ? 'Holder ID' : 'رقم المستلم', vehicle.last_holder);
+            html += '</div>';
+        }
+
+        /* Try to fetch movement data for this vehicle */
+        try {
+            var movRes = await API.get('/movements');
+            var movements = [];
+            if (movRes && Array.isArray(movRes.data)) {
+                movements = movRes.data;
+            } else if (Array.isArray(movRes)) {
+                movements = movRes;
+            }
+
+            var vehicleMovements = movements.filter(function(m) {
+                return m.vehicle_code === vehicleCode;
+            }).sort(function(a, b) {
+                return new Date(b.movement_datetime || b.created_at || 0) - new Date(a.movement_datetime || a.created_at || 0);
+            });
+
+            if (vehicleMovements.length > 0) {
+                var lastMov = vehicleMovements[0];
+                html += '<div class="av-detail-section">';
+                html += '<div class="av-detail-section-title">📋 ' + esc(isEn ? 'Last Movement' : 'آخر حركة') + '</div>';
+                var opLabel = lastMov.operation_type === 'pickup' ? (isEn ? 'Pickup' : 'تسليم') : (isEn ? 'Return' : 'إرجاع');
+                html += detailRow(isEn ? 'Operation' : 'العملية', opLabel);
+                html += detailRow(isEn ? 'Performed By' : 'بواسطة', lastMov.performed_by);
+                if (lastMov.movement_datetime) {
+                    html += detailRow(isEn ? 'Date/Time' : 'التاريخ والوقت', formatDateTime(lastMov.movement_datetime));
+                }
+                if (lastMov.vehicle_condition) {
+                    var condMap = { clean: isEn ? 'Clean' : 'نظيفة', acceptable: isEn ? 'Acceptable' : 'مقبولة', damaged: isEn ? 'Damaged' : 'متضررة' };
+                    html += detailRow(isEn ? 'Condition' : 'حالة المركبة', condMap[lastMov.vehicle_condition] || lastMov.vehicle_condition);
+                }
+                if (lastMov.fuel_level) {
+                    var fuelMap = { full: isEn ? 'Full' : 'ممتلئ', three_quarter: '3/4', half: isEn ? 'Half' : 'نصف', quarter: '1/4', empty: isEn ? 'Empty' : 'فارغ' };
+                    html += detailRow(isEn ? 'Fuel Level' : 'مستوى الوقود', fuelMap[lastMov.fuel_level] || lastMov.fuel_level);
+                }
+                if (lastMov.notes) {
+                    html += detailRow(isEn ? 'Notes' : 'ملاحظات', lastMov.notes);
+                }
+                html += '</div>';
+
+                /* Fetch photos for this movement */
+                if (lastMov.id) {
+                    try {
+                        var photoRes = await API.get('/movements/' + lastMov.id + '/photos');
+                        var photos = [];
+                        if (photoRes && Array.isArray(photoRes.data)) photos = photoRes.data;
+                        else if (Array.isArray(photoRes)) photos = photoRes;
+                        if (photos.length > 0) {
+                            html += '<div class="av-detail-section">';
+                            html += '<div class="av-detail-section-title">📷 ' + esc(isEn ? 'Photos' : 'الصور') + ' (' + photos.length + ')</div>';
+                            html += '<div class="av-detail-photos">';
+                            photos.forEach(function(p) {
+                                var url = p.photo_url || p.url || '';
+                                if (url) {
+                                    html += '<img src="' + esc(url) + '" alt="' + esc(isEn ? 'Photo' : 'صورة') + '" onclick="window.open(this.src,\'_blank\')">';
+                                }
+                            });
+                            html += '</div></div>';
+                        }
+                    } catch (pe) {
+                        console.warn('admin_vehicles: Failed to load movement photos', pe);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('admin_vehicles: Failed to load movements', e);
+            html += '<div class="av-detail-section"><p style="color:var(--text-secondary);font-size:.85rem">' + esc(isEn ? 'Could not load movement history' : 'تعذر تحميل سجل الحركات') + '</p></div>';
+        }
+
+        body.innerHTML = html;
+    }
+
+    /* ---------- Close detail modal ---------- */
+    function closeDetails() {
+        var modal = document.getElementById('avDetailModal');
+        if (modal) modal.style.display = 'none';
+    }
+
     /* ---------- Expose globally ---------- */
-    window.AdminVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadAllVehicles };
+    window.AdminVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadAllVehicles, showDetails: showDetails, closeDetails: closeDetails };
 
     /* ---------- Init with retry for Auth ---------- */
     var _initAttempts = 0;
@@ -846,6 +1014,14 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         setupFilters();
         loadReferences();
         loadAllVehicles();
+
+        /* Close detail modal on overlay click */
+        var modal = document.getElementById('avDetailModal');
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeDetails();
+            });
+        }
     })();
 })();
 </script>
