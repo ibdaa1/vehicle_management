@@ -144,7 +144,8 @@ $pageScripts = <<<'SCRIPT'
         loadStats();
         setInterval(loadStats, 60000);
 
-        // Show quick actions based on user permissions
+        // Wait for Auth to be ready then show quick actions based on permissions
+        for(var _a=0;_a<60&&!Auth.getUser();_a++) await new Promise(r=>setTimeout(r,50));
         var user = Auth.getUser();
         if(user){
             var perms = user.permissions || [];

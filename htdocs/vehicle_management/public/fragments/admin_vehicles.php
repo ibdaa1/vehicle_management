@@ -754,6 +754,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* ---------- Apply language to fragment labels ---------- */
     function applyFragmentLang() {
+        /* Wait until i18n strings are loaded (i18n.load is async) */
+        if (!i18n.strings || !Object.keys(i18n.strings).length) {
+            setTimeout(applyFragmentLang, 100);
+            return;
+        }
         var isEn = (i18n.lang === 'en');
         document.querySelectorAll('[data-label-ar]').forEach(function(el) {
             el.textContent = el.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || el.textContent;
