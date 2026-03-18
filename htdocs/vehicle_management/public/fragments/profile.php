@@ -210,11 +210,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     function $(id) { return document.getElementById(id); }
 
-    function esc(s) {
-        return typeof UI !== 'undefined' && UI._escapeHtml
-            ? UI._escapeHtml(String(s || ''))
-            : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+    function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
     function getLang() { return localStorage.getItem('lang') || 'ar'; }
     function t(key, fallback) { return (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback; }

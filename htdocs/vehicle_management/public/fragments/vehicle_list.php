@@ -251,7 +251,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     if(window.__pageDenied) return;
 
     var $=function(id){return document.getElementById(id);};
-    function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
     var allVehicles=[], canCreate=false, canEdit=false, canDelete=false;
     var vlRefs={sectors:[],departments:[],sections:[],divisions:[]};
 
