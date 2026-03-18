@@ -52,23 +52,23 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="mvPageTitle">My Vehicles</h2>
+    <h2 id="mvPageTitle" data-label-en="My Vehicles" data-label-ar="مركباتي">My Vehicles</h2>
 </div>
 
 <!-- Info Banner -->
 <div class="mv-info-banner" id="mvInfoBanner">
     <span class="icon">ℹ️</span>
-    <span id="mvInfoText">Your private vehicles, shift vehicles, and available department vehicles are displayed here.</span>
+    <span id="mvInfoText" data-label-en="Shows only your private vehicle, and for shifts shows the next vehicle in turn based on gender" data-label-ar="يتم عرض المركبة الخاصة بك فقط، وللورديات يظهر المركبة التي عليها الدور بحسب الجنس">Shows only your private vehicle, and for shifts shows the next vehicle in turn based on gender</span>
 </div>
 
 <!-- PRIVATE VEHICLES SECTION -->
 <div class="mv-section-card" id="mvPrivateSection">
     <div class="mv-section-title">
         <span>🔒</span>
-        <span id="mvPrivateTitle">My Private Vehicles</span>
+        <span id="mvPrivateTitle" data-label-en="My Private Vehicles" data-label-ar="مركباتي الخاصة">My Private Vehicles</span>
     </div>
     <div id="mvPrivateGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_private_loading">Loading...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_private_loading" data-label-en="Loading..." data-label-ar="جاري التحميل...">Loading...</span></div>
     </div>
 </div>
 
@@ -76,10 +76,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mv-section-card" id="mvShiftSection">
     <div class="mv-section-title">
         <span>🔄</span>
-        <span id="mvShiftTitle">Shift Vehicles</span>
+        <span id="mvShiftTitle" data-label-en="Shift Vehicles" data-label-ar="مركبات الشفتات">Shift Vehicles</span>
     </div>
     <div id="mvShiftGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_shift_loading">Loading...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_shift_loading" data-label-en="Loading..." data-label-ar="جاري التحميل...">Loading...</span></div>
     </div>
 </div>
 
@@ -87,10 +87,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mv-section-card" id="mvDeptSection">
     <div class="mv-section-title">
         <span>🏢</span>
-        <span id="mvDeptTitle">Available Department Vehicles</span>
+        <span id="mvDeptTitle" data-label-en="Available Department Vehicles" data-label-ar="مركبات الإدارة المتاحة">Available Department Vehicles</span>
     </div>
     <div id="mvDeptGrid" class="mv-vehicles-grid">
-        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_dept_loading">Loading...</span></div>
+        <div class="mv-empty-state"><div class="spinner spinner-sm"></div><span id="lbl_dept_loading" data-label-en="Loading..." data-label-ar="جاري التحميل...">Loading...</span></div>
     </div>
 </div>
 
@@ -116,20 +116,16 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             setTimeout(applyFragmentLang,100);
             return;
         }
-        var map = {
-            'mvPageTitle':    'my_vehicles',
-            'mvInfoText':     'my_vehicles_info',
-            'mvPrivateTitle': 'my_private_vehicles',
-            'mvShiftTitle':   'shift_vehicles',
-            'mvDeptTitle':    'available_dept_vehicles'
-        };
-        if (typeof i18n === 'undefined') return;
-        Object.keys(map).forEach(function(id) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            var val = i18n.t(map[id]);
-            if (val && val !== map[id]) el.textContent = val;
-        });
+        var tt=function(k){return i18n.t(k);};
+        var setEl=function(id,k){var el=document.getElementById(id);if(el){var val=tt(k);if(val&&val!==k)el.textContent=val;}};
+        setEl('mvPageTitle','my_vehicles');
+        setEl('mvInfoText','my_vehicles_info');
+        setEl('mvPrivateTitle','my_private_vehicles');
+        setEl('mvShiftTitle','shift_vehicles');
+        setEl('mvDeptTitle','available_dept_vehicles');
+        setEl('lbl_private_loading','loading');
+        setEl('lbl_shift_loading','loading');
+        setEl('lbl_dept_loading','loading');
     }
 
     function statusBadge(status) {
