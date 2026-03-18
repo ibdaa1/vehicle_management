@@ -373,5 +373,8 @@
   "st_theme_created": "Theme created successfully",
   "st_theme_deleted": "Theme deleted successfully",
   "st_theme_not_found": "Theme not found",
-  "st_theme_updated": "Theme updated successfully"
+  "st_theme_updated": "Theme updated successfully",
+  "updated_by": "Updated By",
+  "current_photos": "Current Photos",
+  "language_arabic": "Arabic"
 }

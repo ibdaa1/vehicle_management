@@ -1047,9 +1047,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 }
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('notes')+'</span><span class="d-val">'+esc(m.notes||'—')+'</span></div>';
                 h+='<div class="d-row"><span class="d-lbl">'+i18n.t('added_by')+'</span><span class="d-val">'+esc(m.created_by||'—')+'</span></div>';
-                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">آخر تعديل بواسطة</span><span class="d-val">'+esc(m.updated_by)+'</span></div>';
-                if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">تاريخ الإنشاء</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
-                if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">تاريخ التحديث</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
+                if(m.updated_by) h+='<div class="d-row"><span class="d-lbl" data-label-ar="آخر تعديل بواسطة" data-label-en="Updated By">Updated By</span><span class="d-val">'+esc(m.updated_by)+'</span></div>';
+                if(m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ الإنشاء" data-label-en="Created At">Created At</span><span class="d-val">'+esc((m.created_at||'').replace('T',' ').substring(0,19))+'</span></div>';
+                if(m.updated_at && m.updated_at!==m.created_at) h+='<div class="d-row"><span class="d-lbl" data-label-ar="تاريخ التحديث" data-label-en="Updated At">Updated At</span><span class="d-val">'+esc((m.updated_at||'').replace('T',' ').substring(0,19))+'</span></div>';
                 // Photos
                 const photos=m.photos||[];
                 if(photos.length){
@@ -1088,7 +1088,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 var ePhotos=m.photos||[];
                 existingPhotosHtml='';
                 if(ePhotos.length){
-                    existingPhotosHtml='<div style="margin-bottom:8px"><strong data-label-ar="الصور الحالية" data-label-en="Current Photos">الصور الحالية:</strong></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
+                    existingPhotosHtml='<div style="margin-bottom:8px"><strong data-label-ar="الصور الحالية" data-label-en="Current Photos">Current Photos:</strong></div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">';
                     ePhotos.forEach(function(p){
                         var pu=p.photo_url||'';
                         var basePath='';

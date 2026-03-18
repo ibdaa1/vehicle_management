@@ -373,5 +373,8 @@
   "st_theme_created": "تم إنشاء المظهر بنجاح",
   "st_theme_deleted": "تم حذف المظهر بنجاح",
   "st_theme_not_found": "لم يتم العثور على المظهر",
-  "st_theme_updated": "تم تحديث المظهر بنجاح"
+  "st_theme_updated": "تم تحديث المظهر بنجاح",
+  "updated_by": "آخر تعديل بواسطة",
+  "current_photos": "الصور الحالية",
+  "language_arabic": "العربية"
 }

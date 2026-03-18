@@ -288,14 +288,14 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn=(lang==='en');
         var sf=$('vlFilterSector');
         var prevSector=sf.value;
-        sf.innerHTML='<option value="">'+(isEn?'All Sectors':'كل القطاعات')+'</option>';
+        sf.innerHTML='<option value="">'+esc(i18n.t('all_sectors'))+'</option>';
         (vlRefs.sectors||[]).forEach(function(s){
             sf.innerHTML+='<option value="'+(s.id||'')+'">'+((isEn?(s.name_en||s.name):(s.name||s.name_en))||'—')+'</option>';
         });
         if(prevSector) sf.value=prevSector;
         var df=$('vlFilterDept');
         var prevDept=df.value;
-        df.innerHTML='<option value="">'+(isEn?'All Departments':'كل الإدارات')+'</option>';
+        df.innerHTML='<option value="">'+esc(i18n.t('all_departments'))+'</option>';
         (vlRefs.departments||[]).forEach(function(d){
             df.innerHTML+='<option value="'+(d.department_id||'')+'">'+((isEn?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—')+'</option>';
         });
@@ -308,7 +308,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn=(lang==='en');
         var sf=$('vlFilterSection');
         var prevVal=sf.value;
-        sf.innerHTML='<option value="">'+(isEn?'All Sections':'كل الأقسام')+'</option>';
+        sf.innerHTML='<option value="">'+esc(i18n.t('all_sections'))+'</option>';
         if(deptId){
             (vlRefs.sections||[]).filter(function(s){return s.department_id==deptId;}).forEach(function(s){
                 sf.innerHTML+='<option value="'+(s.section_id||'')+'">'+((isEn?(s.name_en||s.name_ar):(s.name_ar||s.name_en))||'—')+'</option>';
@@ -323,7 +323,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isEn=(lang==='en');
         var df=$('vlFilterDivision');
         var prevVal=df.value;
-        df.innerHTML='<option value="">'+(isEn?'All Divisions':'كل الشعب')+'</option>';
+        df.innerHTML='<option value="">'+esc(i18n.t('all_divisions'))+'</option>';
         if(sectionId){
             (vlRefs.divisions||[]).filter(function(d){return d.section_id==sectionId;}).forEach(function(d){
                 df.innerHTML+='<option value="'+(d.division_id||'')+'">'+((isEn?(d.name_en||d.name_ar):(d.name_ar||d.name_en))||'—')+'</option>';

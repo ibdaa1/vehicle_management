@@ -100,7 +100,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             <div class="fg">
                 <label id="pfLblLang">Preferred Language</label>
                 <select id="pfLang">
-                    <option value="ar">العربية</option>
+                    <option value="ar" data-label-ar="العربية" data-label-en="Arabic">Arabic</option>
                     <option value="en">English</option>
                 </select>
             </div>

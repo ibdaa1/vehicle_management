@@ -3,10 +3,10 @@
  * Admin Vehicles Fragment — Super Admin / Admin Vehicle Management
  * Loaded inside dashboard.php shell.
  * Shows ALL vehicles separated by type:
- *   - Private vehicles (خاصة)
- *   - Shift vehicles (ورديات)
- *   - Department vehicles (بالدور)
- * Admin can pickup (تسليم) and return (ارجاع) any vehicle.
+ *   - Private vehicles
+ *   - Shift vehicles
+ *   - Department/Rotation vehicles
+ * Admin can pickup and return any vehicle.
  * Requires: manage_movements permission.
  */
 ?>
@@ -219,7 +219,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     </div>
 </div>
 
-<!-- ===== DEPARTMENT VEHICLES SECTION (بالدور) ===== -->
+<!-- ===== DEPARTMENT VEHICLES SECTION (Rotation) ===== -->
 <div class="av-section-card" id="avDeptSection">
     <div class="av-section-title">
         <span>🔄</span>
@@ -254,9 +254,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
    Admin Vehicles Fragment
    For Super Admin / Admin only.
    Shows ALL vehicles categorized:
-   - Private (خاصة)
-   - Shift (ورديات)
-   - Department/Rotation (بالدور)
+   - Private
+   - Shift
+   - Department/Rotation
    Admin can pickup/return any vehicle.
    ============================================ */
 (function () {
@@ -556,7 +556,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             if (mode === 'private') {
                 privateVehicles.push(v);
             } else {
-                /* All non-private vehicles are بالدور (round-robin rotation) */
+                /* All non-private vehicles are rotation (round-robin) */
                 deptVehicles.push(v);
             }
         });
@@ -582,7 +582,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var shiftSection = document.getElementById('avShiftSection');
         var deptSection = document.getElementById('avDeptSection');
         if (privSection) privSection.style.display = (activeView === 'private') ? '' : 'none';
-        if (shiftSection) shiftSection.style.display = 'none'; /* merged into بالدور */
+        if (shiftSection) shiftSection.style.display = 'none'; /* merged into rotation */
         if (deptSection) deptSection.style.display = (activeView === 'shift') ? '' : 'none';
     }
 
