@@ -47,6 +47,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .mv-v-card.next-turn{border:2px solid var(--primary-main);box-shadow:0 0 12px rgba(var(--primary-main-rgb,59,130,246),.25)}
 .mv-next-label{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600;background:var(--primary-main);color:var(--text-light);margin-inline-start:6px}
 .mv-v-card.my-current{border:2px solid var(--status-warning);box-shadow:0 0 12px rgba(255,193,7,.25)}
+.mv-holder-info{background:rgba(220,53,69,.06);border-radius:8px;padding:8px 12px;margin-top:8px;font-size:.8rem}
 @media(max-width:768px){.mv-vehicles-grid{grid-template-columns:1fr}}
 </style>
 
@@ -102,6 +103,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     var perms = [];
     var hasMovementPermission = false;
     var hasAdminMovementPermission = false;
+    var userMap = {};
 
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function getLang() { return localStorage.getItem('lang') || 'ar'; }
@@ -187,7 +189,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             html += '<div class="mv-v-detail"><span class="icon">🚗</span> ' + t('category', 'Category') + ': ' + esc(v.vehicle_category) + '</div>';
         }
         if (!isAvailable && v.last_holder) {
-            html += '<div class="mv-v-detail"><span class="icon">📋</span> ' + t('current_holder', 'Current Holder') + ': ' + esc(v.last_holder) + '</div>';
+            var holderInfo = userMap[v.last_holder] || {};
+            var holderName = holderInfo.name || v.last_holder;
+            var holderSector = holderInfo.sector_name || '';
+            html += '<div class="mv-holder-info">';
+            html += '<div class="mv-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + t('current_holder', 'Current Holder') + ': <strong>' + esc(holderName) + '</strong></div>';
+            if (holderSector) {
+                html += '<div class="mv-v-detail"><span class="icon">🏛️</span> ' + t('sector', 'Sector') + ': ' + esc(holderSector) + '</div>';
+            }
+            html += '</div>';
         }
 
         var isNotAvailable = !isAvailable;
@@ -226,6 +236,24 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 renderError('mvDeptGrid');
                 return;
             }
+
+            /* Fetch users to resolve holder names & sectors */
+            try {
+                var uRes = await API.get('/users');
+                var users = (uRes && uRes.data) || (Array.isArray(uRes) ? uRes : []);
+                userMap = {};
+                users.forEach(function(u) {
+                    if (!u.emp_id) return;
+                    userMap[u.emp_id] = {
+                        name: u.username || u.email || u.emp_id,
+                        sector_name: u.sector_name || u.sector_name_en || '',
+                        department_name: u.department_name_ar || u.department_name || ''
+                    };
+                });
+            } catch (ue) {
+                console.warn('my_vehicles: Could not load users for holder names', ue);
+            }
+
             var data = (res && res.data) || res || {};
             renderPrivate(data.private || []);
             renderShift(data.shift_vehicles || [], data.shift_total || 0);
