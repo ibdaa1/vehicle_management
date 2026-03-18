@@ -101,13 +101,13 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="avPageTitle" data-label-ar="إدارة جميع المركبات" data-label-en="All Vehicles Management">إدارة جميع المركبات</h2>
+    <h2 id="avPageTitle" data-label-ar="إدارة جميع المركبات" data-label-en="All Vehicles Management">All Vehicles Management</h2>
 </div>
 
 <!-- Info Banner -->
 <div class="av-info-banner" id="avInfoBanner">
     <span class="icon">🔑</span>
-    <span id="avInfoText" data-label-ar="صفحة المسؤول - عرض جميع المركبات مصنفة حسب النوع مع إمكانية التسليم والإرجاع" data-label-en="Admin page — All vehicles displayed by type with pickup and return capabilities">صفحة المسؤول - عرض جميع المركبات مصنفة حسب النوع مع إمكانية التسليم والإرجاع</span>
+    <span id="avInfoText" data-label-ar="صفحة المسؤول - عرض جميع المركبات مصنفة حسب النوع مع إمكانية التسليم والإرجاع" data-label-en="Admin page — All vehicles displayed by type with pickup and return capabilities">Admin page — All vehicles displayed by type with pickup and return capabilities</span>
 </div>
 
 <!-- Stats Bar -->
@@ -116,94 +116,94 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         <span class="av-stat-icon">🚗</span>
         <div class="av-stat-info">
             <span class="av-stat-value" id="avStatTotal">—</span>
-            <span class="av-stat-label" data-label-ar="إجمالي المركبات" data-label-en="Total Vehicles">إجمالي المركبات</span>
+            <span class="av-stat-label" data-label-ar="إجمالي المركبات" data-label-en="Total Vehicles">Total Vehicles</span>
         </div>
     </div>
     <div class="av-stat-card">
         <span class="av-stat-icon">🔒</span>
         <div class="av-stat-info">
             <span class="av-stat-value" id="avStatPrivate">—</span>
-            <span class="av-stat-label" data-label-ar="خاصة" data-label-en="Private">خاصة</span>
+            <span class="av-stat-label" data-label-ar="خاصة" data-label-en="Private">Private</span>
         </div>
     </div>
     <div class="av-stat-card">
         <span class="av-stat-icon">🔄</span>
         <div class="av-stat-info">
             <span class="av-stat-value" id="avStatDept">—</span>
-            <span class="av-stat-label" data-label-ar="بالدور" data-label-en="Rotation">بالدور</span>
+            <span class="av-stat-label" data-label-ar="بالدور" data-label-en="Rotation">Rotation</span>
         </div>
     </div>
     <div class="av-stat-card">
         <span class="av-stat-icon">✅</span>
         <div class="av-stat-info">
             <span class="av-stat-value" id="avStatAvailable">—</span>
-            <span class="av-stat-label" data-label-ar="متاحة" data-label-en="Available">متاحة</span>
+            <span class="av-stat-label" data-label-ar="متاحة" data-label-en="Available">Available</span>
         </div>
     </div>
     <div class="av-stat-card">
         <span class="av-stat-icon">🚫</span>
         <div class="av-stat-info">
             <span class="av-stat-value" id="avStatCheckedOut">—</span>
-            <span class="av-stat-label" data-label-ar="مستلمة" data-label-en="Checked Out">مستلمة</span>
+            <span class="av-stat-label" data-label-ar="مستلمة" data-label-en="Checked Out">Checked Out</span>
         </div>
     </div>
 </div>
 
 <!-- Filter Bar -->
 <div class="av-filter-bar" id="avFilterBar">
-    <input type="text" id="avSearchInput" placeholder="بحث بكود أو نوع المركبة..." data-placeholder-ar="بحث بكود أو نوع المركبة..." data-placeholder-en="Search by code or vehicle type...">
+    <input type="text" id="avSearchInput" placeholder="Search by code or vehicle type..." data-placeholder-ar="بحث بكود أو نوع المركبة..." data-placeholder-en="Search by code or vehicle type...">
     <select id="avFilterStatus">
-        <option value="" data-label-ar="جميع الحالات" data-label-en="All Status">جميع الحالات</option>
-        <option value="operational" data-label-ar="تعمل" data-label-en="Operational">تعمل</option>
-        <option value="maintenance" data-label-ar="صيانة" data-label-en="Maintenance">صيانة</option>
-        <option value="out_of_service" data-label-ar="خارج الخدمة" data-label-en="Out of Service">خارج الخدمة</option>
+        <option value="" data-label-ar="جميع الحالات" data-label-en="All Status">All Statuses</option>
+        <option value="operational" data-label-ar="تعمل" data-label-en="Operational">Operational</option>
+        <option value="maintenance" data-label-ar="صيانة" data-label-en="Maintenance">Under Maintenance</option>
+        <option value="out_of_service" data-label-ar="خارج الخدمة" data-label-en="Out of Service">Out of Service</option>
     </select>
     <select id="avFilterAvailability">
-        <option value="" data-label-ar="الكل" data-label-en="All">الكل</option>
-        <option value="available" data-label-ar="متاحة" data-label-en="Available">متاحة</option>
-        <option value="checked_out" data-label-ar="مستلمة" data-label-en="Checked Out">مستلمة</option>
+        <option value="" data-label-ar="الكل" data-label-en="All">All</option>
+        <option value="available" data-label-ar="متاحة" data-label-en="Available">Available</option>
+        <option value="checked_out" data-label-ar="مستلمة" data-label-en="Checked Out">Checked Out</option>
     </select>
 </div>
 
 <!-- Advanced Filter Row -->
 <div class="av-filter-row2" id="avFilterRow2">
     <select id="avFilterSector">
-        <option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">كل القطاعات</option>
+        <option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">All Sectors</option>
     </select>
     <select id="avFilterDepartment">
-        <option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">كل الإدارات</option>
+        <option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">All Departments</option>
     </select>
     <select id="avFilterSection">
-        <option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">كل الأقسام</option>
+        <option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">All Sections</option>
     </select>
     <select id="avFilterDivision">
-        <option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">كل الشعب</option>
+        <option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">All Divisions</option>
     </select>
     <select id="avFilterGender">
-        <option value="" data-label-ar="كل الجنس" data-label-en="All Genders">كل الجنس</option>
-        <option value="men" data-label-ar="رجال" data-label-en="Men">رجال</option>
-        <option value="women" data-label-ar="نساء" data-label-en="Women">نساء</option>
+        <option value="" data-label-ar="كل الجنس" data-label-en="All Genders">All Genders</option>
+        <option value="men" data-label-ar="رجال" data-label-en="Men">Men</option>
+        <option value="women" data-label-ar="نساء" data-label-en="Women">Women</option>
     </select>
     <button type="button" class="btn av-btn-clear-filters" id="avClearFilters">
-        <span>🗑️</span> <span data-label-ar="إلغاء الفلاتر" data-label-en="Clear Filters">إلغاء الفلاتر</span>
+        <span>🗑️</span> <span data-label-ar="إلغاء الفلاتر" data-label-en="Clear Filters">Clear Filters</span>
     </button>
 </div>
 
 <!-- View Toggle -->
 <div class="av-view-toggle" id="avViewToggle">
-    <button type="button" class="av-toggle-btn active" id="avTogglePrivate" data-label-ar="🔒 خاصة" data-label-en="🔒 Private">🔒 خاصة</button>
-    <button type="button" class="av-toggle-btn" id="avToggleShift" data-label-ar="🔄 بالدور" data-label-en="🔄 Rotation">🔄 بالدور</button>
+    <button type="button" class="av-toggle-btn active" id="avTogglePrivate" data-label-ar="🔒 خاصة" data-label-en="🔒 Private">🔒 Private</button>
+    <button type="button" class="av-toggle-btn" id="avToggleShift" data-label-ar="🔄 بالدور" data-label-en="🔄 Rotation">🔄 Rotation</button>
 </div>
 
 <!-- ===== PRIVATE VEHICLES SECTION ===== -->
 <div class="av-section-card" id="avPrivateSection">
     <div class="av-section-title">
         <span>🔒</span>
-        <span id="avPrivateTitle" data-label-ar="المركبات الخاصة" data-label-en="Private Vehicles">المركبات الخاصة</span>
+        <span id="avPrivateTitle" data-label-ar="المركبات الخاصة" data-label-en="Private Vehicles">Private Vehicles</span>
         <span class="av-section-count" id="avPrivateCount"></span>
     </div>
     <div id="avPrivateGrid" class="av-vehicles-grid">
-        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -211,11 +211,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="av-section-card" id="avShiftSection">
     <div class="av-section-title">
         <span>🔄</span>
-        <span id="avShiftTitle" data-label-ar="مركبات الورديات" data-label-en="Shift Vehicles">مركبات الورديات</span>
+        <span id="avShiftTitle" data-label-ar="مركبات الورديات" data-label-en="Shift Vehicles">Shift Vehicles</span>
         <span class="av-section-count" id="avShiftCount"></span>
     </div>
     <div id="avShiftGrid" class="av-vehicles-grid">
-        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -223,15 +223,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="av-section-card" id="avDeptSection">
     <div class="av-section-title">
         <span>🔄</span>
-        <span id="avDeptTitle" data-label-ar="مركبات بالدور" data-label-en="Rotation Vehicles">مركبات بالدور</span>
+        <span id="avDeptTitle" data-label-ar="مركبات بالدور" data-label-en="Rotation Vehicles">Rotation Vehicles</span>
         <span class="av-section-count" id="avDeptCount"></span>
     </div>
     <div class="av-rotation-banner" id="avRotationBanner">
         <span>🔁</span>
-        <span id="avRotationText" data-label-ar="يتم التسليم بالدور كحلقة — المركبة التي تم تسليمها يأتي دورها بعد تسليم جميع المركبات الأخرى" data-label-en="Round-robin delivery — a vehicle's next turn comes after all other vehicles have been delivered">يتم التسليم بالدور كحلقة — المركبة التي تم تسليمها يأتي دورها بعد تسليم جميع المركبات الأخرى</span>
+        <span id="avRotationText" data-label-ar="يتم التسليم بالدور كحلقة — المركبة التي تم تسليمها يأتي دورها بعد تسليم جميع المركبات الأخرى" data-label-en="Round-robin delivery — a vehicle's next turn comes after all other vehicles have been delivered">Round-robin delivery — a vehicle's next turn comes after all other vehicles have been delivered</span>
     </div>
     <div id="avDeptGrid" class="av-vehicles-grid">
-        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+        <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
     </div>
 </div>
 
@@ -239,11 +239,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div id="avDetailModal" class="av-modal-overlay" style="display:none">
     <div class="av-modal-content">
         <div class="av-modal-header">
-            <h3 id="avDetailTitle" data-label-ar="تفاصيل المركبة" data-label-en="Vehicle Details">تفاصيل المركبة</h3>
+            <h3 id="avDetailTitle" data-label-ar="تفاصيل المركبة" data-label-en="Vehicle Details">Vehicle Details</h3>
             <button class="av-modal-close" onclick="AdminVehiclesFragment.closeDetails()">&times;</button>
         </div>
         <div class="av-modal-body" id="avDetailBody">
-            <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">جاري التحميل...</span></div>
+            <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
         </div>
     </div>
 </div>
@@ -272,31 +272,27 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function esc(s) { return typeof UI !== 'undefined' && UI._escapeHtml ? UI._escapeHtml(String(s || '')) : String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
     function statusBadge(status) {
-        var isEn = (i18n.lang === 'en');
         var map = {
-            operational:    { cls: 'operational',    ar: 'تعمل',       en: 'Operational' },
-            maintenance:    { cls: 'maintenance',    ar: 'صيانة',       en: 'Maintenance' },
-            out_of_service: { cls: 'out_of_service', ar: 'خارج الخدمة', en: 'Out of Service' }
+            operational:    { cls: 'operational',    key: 'operational' },
+            maintenance:    { cls: 'maintenance',    key: 'under_maintenance' },
+            out_of_service: { cls: 'out_of_service', key: 'out_of_service' }
         };
         var s = map[status] || map.operational;
-        var label = isEn ? s.en : s.ar;
-        return '<span class="av-v-badge ' + s.cls + '">' + esc(label) + '</span>';
+        return '<span class="av-v-badge ' + s.cls + '">' + esc(i18n.t(s.key)) + '</span>';
     }
 
     function availBadge(available) {
-        var isEn = (i18n.lang === 'en');
         if (available) {
-            return '<span class="av-v-badge available">' + esc(isEn ? 'Available' : 'متاحة') + '</span>';
+            return '<span class="av-v-badge available">' + esc(i18n.t('available')) + '</span>';
         }
-        return '<span class="av-v-badge checked_out">' + esc(isEn ? 'Checked Out' : 'مستلمة') + '</span>';
+        return '<span class="av-v-badge checked_out">' + esc(i18n.t('checked_out')) + '</span>';
     }
 
     function modeBadge(mode) {
-        var isEn = (i18n.lang === 'en');
         if (mode === 'private') {
-            return '<span class="av-v-mode-badge private">' + esc(isEn ? 'Private' : 'خاصة') + '</span>';
+            return '<span class="av-v-mode-badge private">' + esc(i18n.t('private')) + '</span>';
         }
-        return '<span class="av-v-mode-badge dept">' + esc(isEn ? 'Rotation' : 'بالدور') + '</span>';
+        return '<span class="av-v-mode-badge dept">' + esc(i18n.t('av_rotation')) + '</span>';
     }
 
     /* ---------- Load reference data for filters ---------- */
@@ -314,8 +310,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function populateSectorFilter() {
         var sel = document.getElementById('avFilterSector');
         if (!sel) return;
+        var first = '<option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">' + esc(i18n.t('all_sectors')) + '</option>';
         var isEn = (i18n.lang === 'en');
-        var first = '<option value="" data-label-ar="كل القطاعات" data-label-en="All Sectors">' + (isEn ? 'All Sectors' : 'كل القطاعات') + '</option>';
         var opts = (allRefs.sectors || []).map(function(s) {
             var label = isEn ? (s.name_en || s.name || s.sector_name || '') : (s.name || s.sector_name || '');
             return '<option value="' + esc(String(s.id)) + '">' + esc(label) + '</option>';
@@ -327,7 +323,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var sel = document.getElementById('avFilterDepartment');
         if (!sel) return;
         var isEn = (i18n.lang === 'en');
-        var first = '<option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">' + (isEn ? 'All Departments' : 'كل الإدارات') + '</option>';
+        var first = '<option value="" data-label-ar="كل الإدارات" data-label-en="All Departments">' + esc(i18n.t('all_departments')) + '</option>';
         var depts = allRefs.departments || [];
         /* Departments don't have sector_id; filter via vehicle data when sector is chosen */
         if (sectorId) {
@@ -356,7 +352,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var sel = document.getElementById('avFilterSection');
         if (!sel) return;
         var isEn = (i18n.lang === 'en');
-        var first = '<option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">' + (isEn ? 'All Sections' : 'كل الأقسام') + '</option>';
+        var first = '<option value="" data-label-ar="كل الأقسام" data-label-en="All Sections">' + esc(i18n.t('all_sections')) + '</option>';
         var secs = allRefs.sections || [];
         if (deptId) {
             secs = secs.filter(function(s) {
@@ -376,7 +372,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var sel = document.getElementById('avFilterDivision');
         if (!sel) return;
         var isEn = (i18n.lang === 'en');
-        var first = '<option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">' + (isEn ? 'All Divisions' : 'كل الشعب') + '</option>';
+        var first = '<option value="" data-label-ar="كل الشعب" data-label-en="All Divisions">' + esc(i18n.t('all_divisions')) + '</option>';
         var divs = allRefs.divisions || [];
         if (sectionId) {
             divs = divs.filter(function(d) { return String(d.section_id) === String(sectionId); });
@@ -396,8 +392,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var isOperational = v.status === 'operational';
         var canPickup = isAvailable && isOperational;
         var canReturn = !isAvailable;
-        var isEn = (i18n.lang === 'en');
-
         var cardClass = 'av-v-card';
         if (opts.isNextTurn) cardClass += ' next-turn';
         if (!isAvailable) cardClass += ' checked-out';
@@ -407,7 +401,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (opts.turnOrder) {
             html += '<span><span class="av-order-badge">' + opts.turnOrder + '</span><span class="av-v-code">' + esc(v.vehicle_code) + '</span>';
             if (opts.isNextTurn) {
-                html += '<span class="av-next-label">' + esc(isEn ? 'Next Turn' : 'التالي بالدور') + '</span>';
+                html += '<span class="av-next-label">' + esc(i18n.t('av_next_turn')) + '</span>';
             }
             html += '</span>';
         } else {
@@ -420,30 +414,30 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         html += statusBadge(v.status);
         html += modeBadge(opts.displayMode || v.vehicle_mode);
 
-        html += '<div class="av-v-detail"><span class="icon">👤</span> ' + esc(isEn ? 'Driver' : 'السائق') + ': ' + esc(v.driver_name || '—') + '</div>';
+        html += '<div class="av-v-detail"><span class="icon">👤</span> ' + esc(i18n.t('driver')) + ': ' + esc(v.driver_name || '—') + '</div>';
         if (v.emp_id) {
-            html += '<div class="av-v-detail"><span class="icon">🆔</span> ' + esc(isEn ? 'Emp ID' : 'الرقم الوظيفي') + ': ' + esc(v.emp_id) + '</div>';
+            html += '<div class="av-v-detail"><span class="icon">🆔</span> ' + esc(i18n.t('emp_id')) + ': ' + esc(v.emp_id) + '</div>';
         }
         if (v.vehicle_category) {
-            html += '<div class="av-v-detail"><span class="icon">🚗</span> ' + esc(isEn ? 'Category' : 'الفئة') + ': ' + esc(v.vehicle_category) + '</div>';
+            html += '<div class="av-v-detail"><span class="icon">🚗</span> ' + esc(i18n.t('vehicle_category')) + ': ' + esc(v.vehicle_category) + '</div>';
         }
         if (v.sector_name) {
-            html += '<div class="av-v-detail"><span class="icon">🏛️</span> ' + esc(isEn ? 'Sector' : 'القطاع') + ': ' + esc(v.sector_name) + '</div>';
+            html += '<div class="av-v-detail"><span class="icon">🏛️</span> ' + esc(i18n.t('sector')) + ': ' + esc(v.sector_name) + '</div>';
         }
         if (v.department_name) {
-            html += '<div class="av-v-detail"><span class="icon">🏢</span> ' + esc(isEn ? 'Dept' : 'الإدارة') + ': ' + esc(v.department_name) + '</div>';
+            html += '<div class="av-v-detail"><span class="icon">🏢</span> ' + esc(i18n.t('department')) + ': ' + esc(v.department_name) + '</div>';
         }
         if (!isAvailable && v.last_holder) {
             var holderInfo = userMap[v.last_holder] || {};
             var holderName = holderInfo.name || v.last_holder;
             var holderSector = holderInfo.sector_name || '';
             html += '<div class="av-holder-info">';
-            html += '<div class="av-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + esc(isEn ? 'Recipient' : 'المستلم') + ': <strong>' + esc(holderName) + '</strong></div>';
+            html += '<div class="av-v-detail" style="margin-top:0"><span class="icon">👤</span> ' + esc(i18n.t('av_recipient')) + ': <strong>' + esc(holderName) + '</strong></div>';
             if (holderSector) {
-                html += '<div class="av-v-detail"><span class="icon">🏛️</span> ' + esc(isEn ? 'Sector' : 'القطاع') + ': ' + esc(holderSector) + '</div>';
+                html += '<div class="av-v-detail"><span class="icon">🏛️</span> ' + esc(i18n.t('sector')) + ': ' + esc(holderSector) + '</div>';
             }
             if (v.movement_datetime) {
-                html += '<div class="av-v-detail"><span class="icon">🕐</span> ' + esc(isEn ? 'Pickup Time' : 'وقت الاستلام') + ': ' + esc(formatDateTime(v.movement_datetime)) + '</div>';
+                html += '<div class="av-v-detail"><span class="icon">🕐</span> ' + esc(i18n.t('av_pickup_time')) + ': ' + esc(formatDateTime(v.movement_datetime)) + '</div>';
             }
             html += '</div>';
         }
@@ -452,17 +446,17 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         html += '<div class="av-v-actions">';
         if (canPickup) {
             html += '<button class="btn av-btn-pickup" onclick="AdminVehiclesFragment.pickup(\'' + esc(v.vehicle_code) + '\')">';
-            html += '<span>🚗</span> ' + esc(isEn ? 'Pickup' : 'تسليم');
+            html += '<span>🚗</span> ' + esc(i18n.t('av_pickup_btn'));
             html += '</button>';
         }
         if (canReturn) {
             html += '<button class="btn av-btn-return" onclick="AdminVehiclesFragment.returnVehicle(\'' + esc(v.vehicle_code) + '\')">';
-            html += '<span>↩️</span> ' + esc(isEn ? 'Return' : 'إرجاع');
+            html += '<span>↩️</span> ' + esc(i18n.t('av_return_btn'));
             html += '</button>';
         }
         if (!isAvailable) {
             html += '<button class="btn av-btn-details" onclick="AdminVehiclesFragment.showDetails(\'' + esc(v.vehicle_code) + '\')">';
-            html += '<span>📋</span> ' + esc(isEn ? 'View Details' : 'عرض التفاصيل');
+            html += '<span>📋</span> ' + esc(i18n.t('av_view_details'));
             html += '</button>';
         }
         html += '</div>';
@@ -476,7 +470,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         try {
             var res = await API.get('/vehicles');
             if (!res || res.success === false) {
-                var errMsg = (res && res.message) || (i18n.lang === 'en' ? 'Failed to load vehicles' : 'فشل تحميل المركبات');
+                var errMsg = (res && res.message) || i18n.t('load_failed');
                 console.error('vehicles API error:', errMsg);
                 if (typeof UI !== 'undefined' && UI.showToast) {
                     UI.showToast(errMsg, 'error');
@@ -509,7 +503,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         } catch (e) {
             console.error('Failed to load vehicles:', e);
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast((i18n.lang === 'en' ? 'Failed to load vehicles' : 'فشل تحميل المركبات'), 'error');
+                UI.showToast(i18n.t('load_failed'), 'error');
             }
             renderError('avPrivateGrid');
             renderError('avShiftGrid');
@@ -596,11 +590,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function renderSection(containerId, vehicles, sectionType) {
         var container = document.getElementById(containerId);
         if (!container) return;
-        var isEn = (i18n.lang === 'en');
-
         if (!vehicles.length) {
             var emptyIcon = sectionType === 'private' ? '🔒' : (sectionType === 'shift' ? '🔄' : '🏢');
-            var emptyMsg = isEn ? 'No vehicles found' : 'لا توجد مركبات';
+            var emptyMsg = i18n.t('no_vehicles');
             container.innerHTML = '<div class="av-empty-state"><div class="empty-icon">' + emptyIcon + '</div><p>' + esc(emptyMsg) + '</p></div>';
             return;
         }
@@ -634,11 +626,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function renderGroupedSection(containerId, vehicles, sectionType) {
         var container = document.getElementById(containerId);
         if (!container) return;
-        var isEn = (i18n.lang === 'en');
-
         if (!vehicles.length) {
             var emptyIcon = sectionType === 'shift' ? '🔄' : '🏢';
-            var emptyMsg = isEn ? 'No vehicles found' : 'لا توجد مركبات';
+            var emptyMsg = i18n.t('no_vehicles');
             container.innerHTML = '<div class="av-empty-state"><div class="empty-icon">' + emptyIcon + '</div><p>' + esc(emptyMsg) + '</p></div>';
             return;
         }
@@ -647,7 +637,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var groups = {};
         var groupOrder = [];
         vehicles.forEach(function(v) {
-            var deptKey = v.department_name || v.department_name_ar || (isEn ? 'Unassigned' : 'غير محدد');
+            var deptKey = v.department_name || v.department_name_ar || i18n.t('av_unassigned');
             if (!groups[deptKey]) {
                 groups[deptKey] = [];
                 groupOrder.push(deptKey);
@@ -700,9 +690,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     }
 
     function updateCounts(privCount, shiftCount, deptCount) {
-        var isEn = (i18n.lang === 'en');
-        setText('avPrivateCount', '(' + privCount + (isEn ? ' vehicles' : ' مركبة') + ')');
-        setText('avDeptCount', '(' + deptCount + (isEn ? ' vehicles' : ' مركبة') + ')');
+        setText('avPrivateCount', '(' + privCount + ' ' + i18n.t('av_vehicles_count') + ')');
+        setText('avDeptCount', '(' + deptCount + ' ' + i18n.t('av_vehicles_count') + ')');
     }
 
     function setText(id, val) {
@@ -714,18 +703,16 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     function renderError(containerId) {
         var container = document.getElementById(containerId);
         if (!container) return;
-        var isEn = (i18n.lang === 'en');
         container.innerHTML = '<div class="av-empty-state">' +
             '<div class="empty-icon">⚠️</div>' +
-            '<p>' + esc(isEn ? 'Error loading data' : 'خطأ في تحميل البيانات') + '</p>' +
+            '<p>' + esc(i18n.t('av_error_loading')) + '</p>' +
             '<button class="btn av-btn-pickup" onclick="AdminVehiclesFragment.reload()" style="margin-top:12px">' +
-            esc(isEn ? 'Retry' : 'إعادة المحاولة') + '</button></div>';
+            esc(i18n.t('av_retry')) + '</button></div>';
     }
 
     /* ---------- Pickup action (admin self-service) ---------- */
     async function pickup(vehicleCode) {
-        var isEn = (i18n.lang === 'en');
-        var msg = (isEn ? 'Confirm pickup for vehicle ' : 'تأكيد تسليم المركبة ') + vehicleCode + '?';
+        var msg = i18n.t('av_confirm_pickup') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
@@ -734,20 +721,19 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 operation_type: 'pickup'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(isEn ? 'Vehicle picked up successfully' : 'تم تسليم المركبة بنجاح', 'success');
+                UI.showToast(i18n.t('pickup_success'), 'success');
             }
             loadAllVehicles();
         } catch (e) {
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(e.message || (isEn ? 'Error' : 'خطأ'), 'error');
+                UI.showToast(e.message || i18n.t('error'), 'error');
             }
         }
     }
 
     /* ---------- Return action (admin self-service) ---------- */
     async function returnVehicle(vehicleCode) {
-        var isEn = (i18n.lang === 'en');
-        var msg = (isEn ? 'Confirm return for vehicle ' : 'تأكيد إرجاع المركبة ') + vehicleCode + '?';
+        var msg = i18n.t('av_confirm_return') + ' ' + vehicleCode + '?';
         if (!confirm(msg)) return;
 
         try {
@@ -756,12 +742,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 operation_type: 'return'
             });
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(isEn ? 'Vehicle returned successfully' : 'تم إرجاع المركبة بنجاح', 'success');
+                UI.showToast(i18n.t('vehicle_returned_success'), 'success');
             }
             loadAllVehicles();
         } catch (e) {
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(e.message || (isEn ? 'Error' : 'خطأ'), 'error');
+                UI.showToast(e.message || i18n.t('error'), 'error');
             }
         }
     }
@@ -880,9 +866,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         return '<div class="av-detail-row"><span class="dlabel">' + esc(label) + '</span><span>' + esc(value || '—') + '</span></div>';
     }
 
-    function statusAr(status) {
-        var map = { operational: 'تعمل', maintenance: 'صيانة', out_of_service: 'خارج الخدمة' };
-        return map[status] || status || '—';
+    function statusLabel(status) {
+        var map = { operational: 'operational', maintenance: 'under_maintenance', out_of_service: 'out_of_service' };
+        return map[status] ? i18n.t(map[status]) : (status || '—');
     }
 
     function formatDateTime(dt) {
@@ -903,32 +889,31 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var title = document.getElementById('avDetailTitle');
         if (!modal || !body) return;
 
-        var isEn = (i18n.lang === 'en');
         var vehicle = null;
         for (var i = 0; i < allVehiclesData.length; i++) {
             if (allVehiclesData[i].vehicle_code === vehicleCode) { vehicle = allVehiclesData[i]; break; }
         }
         if (!vehicle) return;
 
-        title.textContent = (isEn ? 'Vehicle Details: ' : 'تفاصيل المركبة: ') + vehicleCode;
-        body.innerHTML = '<div class="av-empty-state"><div class="spinner spinner-sm"></div><span>' + esc(isEn ? 'Loading...' : 'جاري التحميل...') + '</span></div>';
+        title.textContent = i18n.t('vehicle_details') + ': ' + vehicleCode;
+        body.innerHTML = '<div class="av-empty-state"><div class="spinner spinner-sm"></div><span>' + esc(i18n.t('loading')) + '</span></div>';
         modal.style.display = 'flex';
 
         /* Build vehicle info */
         var html = '<div class="av-detail-section">';
-        html += '<div class="av-detail-section-title">🚗 ' + esc(isEn ? 'Vehicle Information' : 'معلومات المركبة') + '</div>';
-        html += detailRow(isEn ? 'Code' : 'الكود', vehicle.vehicle_code);
-        html += detailRow(isEn ? 'Type' : 'النوع', vehicle.type || vehicle.vehicle_type);
-        html += detailRow(isEn ? 'Category' : 'الفئة', vehicle.vehicle_category);
-        html += detailRow(isEn ? 'Status' : 'الحالة', isEn ? vehicle.status : statusAr(vehicle.status));
-        html += detailRow(isEn ? 'Availability' : 'التوفر', vehicle.available ? (isEn ? 'Available' : 'متاحة') : (isEn ? 'Checked Out' : 'مستلمة'));
-        html += detailRow(isEn ? 'Driver' : 'السائق', vehicle.driver_name);
-        if (vehicle.emp_id) html += detailRow(isEn ? 'Emp ID' : 'الرقم الوظيفي', vehicle.emp_id);
-        if (vehicle.sector_name) html += detailRow(isEn ? 'Sector' : 'القطاع', vehicle.sector_name);
+        html += '<div class="av-detail-section-title">🚗 ' + esc(i18n.t('av_vehicle_info')) + '</div>';
+        html += detailRow(i18n.t('av_code'), vehicle.vehicle_code);
+        html += detailRow(i18n.t('av_type'), vehicle.type || vehicle.vehicle_type);
+        html += detailRow(i18n.t('vehicle_category'), vehicle.vehicle_category);
+        html += detailRow(i18n.t('status'), statusLabel(vehicle.status));
+        html += detailRow(i18n.t('av_availability'), vehicle.available ? i18n.t('available') : i18n.t('checked_out'));
+        html += detailRow(i18n.t('driver'), vehicle.driver_name);
+        if (vehicle.emp_id) html += detailRow(i18n.t('emp_id'), vehicle.emp_id);
+        if (vehicle.sector_name) html += detailRow(i18n.t('sector'), vehicle.sector_name);
         var deptName = vehicle.department_name || vehicle.department_name_ar;
-        if (deptName) html += detailRow(isEn ? 'Department' : 'الإدارة', deptName);
-        if (vehicle.gender) html += detailRow(isEn ? 'Gender' : 'الجنس', vehicle.gender === 'men' ? (isEn ? 'Men' : 'رجال') : (isEn ? 'Women' : 'نساء'));
-        if (vehicle.notes) html += detailRow(isEn ? 'Notes' : 'ملاحظات', vehicle.notes);
+        if (deptName) html += detailRow(i18n.t('department'), deptName);
+        if (vehicle.gender) html += detailRow(i18n.t('av_gender'), vehicle.gender === 'men' ? i18n.t('men') : i18n.t('women'));
+        if (vehicle.notes) html += detailRow(i18n.t('notes'), vehicle.notes);
         html += '</div>';
 
         /* Show holder info if checked out — placeholder, will be enriched with movement data */
@@ -939,14 +924,14 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             var holderSector = holderInfo.sector_name || '';
             var holderDept = holderInfo.department_name || '';
             holderSectionHtml += '<div class="av-detail-section">';
-            holderSectionHtml += '<div class="av-detail-section-title">👤 ' + esc(isEn ? 'Current Holder' : 'المستلم الحالي') + '</div>';
-            holderSectionHtml += detailRow(isEn ? 'Holder ID' : 'رقم المستلم', vehicle.last_holder);
-            holderSectionHtml += detailRow(isEn ? 'Name' : 'الاسم', holderName);
+            holderSectionHtml += '<div class="av-detail-section-title">👤 ' + esc(i18n.t('current_holder')) + '</div>';
+            holderSectionHtml += detailRow(i18n.t('av_holder_id'), vehicle.last_holder);
+            holderSectionHtml += detailRow(i18n.t('av_name'), holderName);
             if (holderSector) {
-                holderSectionHtml += detailRow(isEn ? 'Sector' : 'القطاع', holderSector);
+                holderSectionHtml += detailRow(i18n.t('sector'), holderSector);
             }
             if (holderDept) {
-                holderSectionHtml += detailRow(isEn ? 'Department' : 'الإدارة', holderDept);
+                holderSectionHtml += detailRow(i18n.t('department'), holderDept);
             }
             /* pickup time placeholder — will be filled from movement data below */
             holderSectionHtml += '<!--PICKUP_TIME_PLACEHOLDER-->';
@@ -980,7 +965,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 }
                 if (latestPickup && latestPickup.movement_datetime) {
                     holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->',
-                        detailRow(isEn ? 'Pickup Time' : 'وقت الاستلام', formatDateTime(latestPickup.movement_datetime)));
+                        detailRow(i18n.t('av_pickup_time'), formatDateTime(latestPickup.movement_datetime)));
                 } else {
                     holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->', '');
                 }
@@ -992,24 +977,24 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             if (vehicleMovements.length > 0) {
                 var lastMov = vehicleMovements[0];
                 html += '<div class="av-detail-section">';
-                html += '<div class="av-detail-section-title">📋 ' + esc(isEn ? 'Last Movement' : 'آخر حركة') + '</div>';
-                var opLabel = lastMov.operation_type === 'pickup' ? (isEn ? 'Pickup' : 'تسليم') : (isEn ? 'Return' : 'إرجاع');
-                html += detailRow(isEn ? 'Operation' : 'العملية', opLabel);
+                html += '<div class="av-detail-section-title">📋 ' + esc(i18n.t('av_last_movement')) + '</div>';
+                var opLabel = lastMov.operation_type === 'pickup' ? i18n.t('av_pickup_btn') : i18n.t('av_return_btn');
+                html += detailRow(i18n.t('av_operation'), opLabel);
                 var performedByName = (userMap[lastMov.performed_by] || {}).name || lastMov.performed_by;
-                html += detailRow(isEn ? 'Performed By' : 'بواسطة', performedByName + (lastMov.performed_by !== performedByName ? ' (' + lastMov.performed_by + ')' : ''));
+                html += detailRow(i18n.t('av_performed_by'), performedByName + (lastMov.performed_by !== performedByName ? ' (' + lastMov.performed_by + ')' : ''));
                 if (lastMov.movement_datetime) {
-                    html += detailRow(isEn ? 'Date/Time' : 'التاريخ والوقت', formatDateTime(lastMov.movement_datetime));
+                    html += detailRow(i18n.t('av_datetime'), formatDateTime(lastMov.movement_datetime));
                 }
                 if (lastMov.vehicle_condition) {
-                    var condMap = { clean: isEn ? 'Clean' : 'نظيفة', acceptable: isEn ? 'Acceptable' : 'مقبولة', damaged: isEn ? 'Damaged' : 'متضررة' };
-                    html += detailRow(isEn ? 'Condition' : 'حالة المركبة', condMap[lastMov.vehicle_condition] || lastMov.vehicle_condition);
+                    var condMap = { clean: i18n.t('clean'), acceptable: i18n.t('acceptable'), damaged: i18n.t('damaged') };
+                    html += detailRow(i18n.t('condition'), condMap[lastMov.vehicle_condition] || lastMov.vehicle_condition);
                 }
                 if (lastMov.fuel_level) {
-                    var fuelMap = { full: isEn ? 'Full' : 'ممتلئ', three_quarter: '3/4', half: isEn ? 'Half' : 'نصف', quarter: '1/4', empty: isEn ? 'Empty' : 'فارغ' };
-                    html += detailRow(isEn ? 'Fuel Level' : 'مستوى الوقود', fuelMap[lastMov.fuel_level] || lastMov.fuel_level);
+                    var fuelMap = { full: i18n.t('fuel_full'), three_quarter: '3/4', half: i18n.t('fuel_half'), quarter: '1/4', empty: i18n.t('fuel_empty') };
+                    html += detailRow(i18n.t('fuel_level'), fuelMap[lastMov.fuel_level] || lastMov.fuel_level);
                 }
                 if (lastMov.notes) {
-                    html += detailRow(isEn ? 'Notes' : 'ملاحظات', lastMov.notes);
+                    html += detailRow(i18n.t('notes'), lastMov.notes);
                 }
                 html += '</div>';
 
@@ -1022,12 +1007,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                         else if (Array.isArray(photoRes)) photos = photoRes;
                         if (photos.length > 0) {
                             html += '<div class="av-detail-section">';
-                            html += '<div class="av-detail-section-title">📷 ' + esc(isEn ? 'Photos' : 'الصور') + ' (' + photos.length + ')</div>';
+                            html += '<div class="av-detail-section-title">📷 ' + esc(i18n.t('av_photos')) + ' (' + photos.length + ')</div>';
                             html += '<div class="av-detail-photos">';
                             photos.forEach(function(p) {
                                 var url = p.photo_url || p.url || '';
                                 if (url) {
-                                    html += '<img src="' + esc(url) + '" alt="' + esc(isEn ? 'Photo' : 'صورة') + '" onclick="window.open(this.src,\'_blank\')">';
+                                    html += '<img src="' + esc(url) + '" alt="' + esc(i18n.t('av_photo')) + '" onclick="window.open(this.src,\'_blank\')">';
                                 }
                             });
                             html += '</div></div>';
@@ -1044,7 +1029,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 holderSectionHtml = holderSectionHtml.replace('<!--PICKUP_TIME_PLACEHOLDER-->', '');
                 html += holderSectionHtml;
             }
-            html += '<div class="av-detail-section"><p style="color:var(--text-secondary);font-size:.85rem">' + esc(isEn ? 'Could not load movement history' : 'تعذر تحميل سجل الحركات') + '</p></div>';
+            html += '<div class="av-detail-section"><p style="color:var(--text-secondary);font-size:.85rem">' + esc(i18n.t('av_movement_load_error')) + '</p></div>';
         }
 
         body.innerHTML = html;
