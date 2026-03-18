@@ -377,5 +377,6 @@
   "updated_by": "Updated By",
   "current_photos": "Current Photos",
   "language_arabic": "Arabic",
-  "admin_vehicles_action": "Admin Vehicles"
+  "admin_vehicles_action": "Admin Vehicles",
+  "violation_details": "Violation Details"
 }

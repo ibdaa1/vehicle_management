@@ -377,5 +377,6 @@
   "updated_by": "آخر تعديل بواسطة",
   "current_photos": "الصور الحالية",
   "language_arabic": "العربية",
-  "admin_vehicles_action": "مركبات الإدارة"
+  "admin_vehicles_action": "مركبات الإدارة",
+  "violation_details": "تفاصيل المخالفة"
 }

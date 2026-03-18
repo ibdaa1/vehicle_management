@@ -69,28 +69,28 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 @keyframes vl-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 
-<div class="page-header"><h2 id="vlPageTitle">Violations</h2></div>
+<div class="page-header"><h2 id="vlPageTitle" data-label-en="Violations" data-label-ar="المخالفات">Violations</h2></div>
 
 <!-- Stats -->
 <div class="vl-stats">
-    <div class="vl-stat"><div class="num" id="vlStatTotal">0</div><div class="lbl" id="vlLblTotal">Total Violations</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatAmount">0</div><div class="lbl" id="vlLblAmount">Total Amount</div><div class="amt">AED</div></div>
-    <div class="vl-stat paid"><div class="num" id="vlStatPaid">0</div><div class="lbl" id="vlLblPaid">Paid Amount</div><div class="amt" id="vlStatPaidAmt">0 AED</div></div>
-    <div class="vl-stat unpaid"><div class="num" id="vlStatUnpaid">0</div><div class="lbl" id="vlLblUnpaid">Unpaid Amount</div><div class="amt" id="vlStatUnpaidAmt">0 AED</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatTotal">0</div><div class="lbl" id="vlLblTotal" data-label-en="Total Violations" data-label-ar="إجمالي المخالفات">Total Violations</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatAmount">0</div><div class="lbl" id="vlLblAmount" data-label-en="Total Amount" data-label-ar="إجمالي المبالغ">Total Amount</div><div class="amt">AED</div></div>
+    <div class="vl-stat paid"><div class="num" id="vlStatPaid">0</div><div class="lbl" id="vlLblPaid" data-label-en="Paid" data-label-ar="المدفوعة">Paid Amount</div><div class="amt" id="vlStatPaidAmt">0 AED</div></div>
+    <div class="vl-stat unpaid"><div class="num" id="vlStatUnpaid">0</div><div class="lbl" id="vlLblUnpaid" data-label-en="Unpaid" data-label-ar="غير المدفوعة">Unpaid Amount</div><div class="amt" id="vlStatUnpaidAmt">0 AED</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="vl-toolbar">
     <div class="search-box">
         <span class="ico">🔍</span>
-        <input type="text" id="vlSearch" placeholder="Search violation...">
+        <input type="text" id="vlSearch" placeholder="Search violation..." data-placeholder-en="Search by vehicle code or holder..." data-placeholder-ar="بحث برقم المركبة أو المستلم...">
     </div>
     <select id="vlFilterStatus">
-        <option value="" id="vlOptAll">All Statuses</option>
-        <option value="paid" id="vlOptPaid">Paid</option>
-        <option value="unpaid" id="vlOptUnpaid">Unpaid</option>
+        <option value="" id="vlOptAll" data-label-en="All Statuses" data-label-ar="كل الحالات">All Statuses</option>
+        <option value="paid" id="vlOptPaid" data-label-en="Paid" data-label-ar="مدفوعة">Paid</option>
+        <option value="unpaid" id="vlOptUnpaid" data-label-en="Unpaid" data-label-ar="غير مدفوعة">Unpaid</option>
     </select>
-    <button class="btn btn-primary btn-sm btn-add" id="vlBtnAdd">➕ Add Violation</button>
+    <button class="btn btn-primary btn-sm btn-add" id="vlBtnAdd" data-label-en="➕ Add Violation" data-label-ar="➕ إضافة مخالفة">➕ Add Violation</button>
 </div>
 
 <!-- Table -->
@@ -98,15 +98,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <table class="vl-table data-table">
     <thead><tr>
         <th>#</th>
-        <th id="vlThVehicle">Vehicle Code</th>
-        <th id="vlThDate">Violation Date</th>
-        <th id="vlThAmount">Amount</th>
-        <th id="vlThStatus">Payment Status</th>
-        <th id="vlThHolder">Violation Holder</th>
-        <th id="vlThReceived">Received At</th>
-        <th id="vlThAddedBy">Added By</th>
-        <th id="vlThNotes">Notes</th>
-        <th id="vlThActions">Actions</th>
+        <th id="vlThVehicle" data-label-en="Vehicle Code" data-label-ar="رقم المركبة">Vehicle Code</th>
+        <th id="vlThDate" data-label-en="Violation Date" data-label-ar="تاريخ المخالفة">Violation Date</th>
+        <th id="vlThAmount" data-label-en="Amount" data-label-ar="المبلغ">Amount</th>
+        <th id="vlThStatus" data-label-en="Payment Status" data-label-ar="حالة الدفع">Payment Status</th>
+        <th id="vlThHolder" data-label-en="Violation Holder" data-label-ar="مستلم المركبة">Violation Holder</th>
+        <th id="vlThReceived" data-label-en="Received At" data-label-ar="وقت الاستلام">Received At</th>
+        <th id="vlThAddedBy" data-label-en="Added By" data-label-ar="أضيف بواسطة">Added By</th>
+        <th id="vlThNotes" data-label-en="Notes" data-label-ar="ملاحظات">Notes</th>
+        <th id="vlThActions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
     </tr></thead>
     <tbody id="vlTableBody"></tbody>
 </table>
@@ -118,7 +118,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="vl-modal-bg" id="vlModal">
     <div class="vl-modal">
         <div class="modal-hd">
-            <h3 id="vlModalTitle">➕ Add Violation</h3>
+            <h3 id="vlModalTitle" data-label-en="➕ Add Violation" data-label-ar="➕ إضافة مخالفة">➕ Add Violation</h3>
             <button class="close" id="vlModalClose">&times;</button>
         </div>
         <div class="modal-bd">
@@ -126,36 +126,36 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 <input type="hidden" id="vlId">
                 <div class="row2">
                     <div class="fg">
-                        <label id="vlLblVehicleCode">Vehicle Code *</label>
+                        <label id="vlLblVehicleCode" data-label-en="Vehicle Code *" data-label-ar="رقم المركبة *">Vehicle Code *</label>
                         <input type="text" id="vlVehicleCode" required placeholder="e.g.: SHJ-1234">
                     </div>
                     <div class="fg">
-                        <label id="vlLblDatetime">Violation Date *</label>
+                        <label id="vlLblDatetime" data-label-en="Violation Date *" data-label-ar="تاريخ المخالفة *">Violation Date *</label>
                         <input type="datetime-local" id="vlDatetime" required>
                     </div>
                 </div>
                 <div class="row2">
                     <div class="fg">
-                        <label id="vlLblAmountField">Amount (AED) *</label>
+                        <label id="vlLblAmountField" data-label-en="Amount (AED) *" data-label-ar="المبلغ (درهم) *">Amount (AED) *</label>
                         <input type="number" id="vlAmount" min="0" step="0.01" required placeholder="0.00">
                     </div>
                     <div class="fg">
-                        <label id="vlLblPayStatus">Payment Status</label>
+                        <label id="vlLblPayStatus" data-label-en="Payment Status" data-label-ar="حالة الدفع">Payment Status</label>
                         <select id="vlStatus">
-                            <option value="unpaid" id="vlFormOptUnpaid">Unpaid</option>
-                            <option value="paid" id="vlFormOptPaid">Paid</option>
+                            <option value="unpaid" id="vlFormOptUnpaid" data-label-en="Unpaid" data-label-ar="غير مدفوعة">Unpaid</option>
+                            <option value="paid" id="vlFormOptPaid" data-label-en="Paid" data-label-ar="مدفوعة">Paid</option>
                         </select>
                     </div>
                 </div>
                 <div class="fg">
-                    <label id="vlLblNotes">Notes</label>
+                    <label id="vlLblNotes" data-label-en="Notes" data-label-ar="ملاحظات">Notes</label>
                     <textarea id="vlNotes" rows="3" placeholder="Add additional notes here..."></textarea>
                 </div>
             </form>
         </div>
         <div class="modal-ft">
-            <button class="btn btn-ghost" id="vlCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="vlSaveBtn">💾 Save</button>
+            <button class="btn btn-ghost" id="vlCancelBtn" data-label-en="Cancel" data-label-ar="إلغاء">Cancel</button>
+            <button class="btn btn-primary" id="vlSaveBtn" data-label-en="💾 Save" data-label-ar="💾 حفظ">💾 Save</button>
         </div>
     </div>
 </div>
@@ -164,7 +164,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="vl-modal-bg" id="vlDetailModal">
     <div class="vl-modal">
         <div class="modal-hd">
-            <h3 id="vlDetailTitle">Violation Details</h3>
+            <h3 id="vlDetailTitle" data-label-en="Violation Details" data-label-ar="تفاصيل المخالفة">Violation Details</h3>
             <button class="close" id="vlDetailClose">&times;</button>
         </div>
         <div class="modal-bd vl-detail" id="vlDetailBody"></div>
