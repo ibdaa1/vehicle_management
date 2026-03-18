@@ -258,6 +258,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* Apply i18n to static labels */
     function applyLang() {
+        // Retry if i18n translations are not loaded yet
+        if(!i18n.strings || !Object.keys(i18n.strings).length){
+            setTimeout(applyLang,100);
+            return;
+        }
         var map = {
             'rolesPageTitle':   'roles_permissions',
             'lbl_total_roles':  'total_roles',

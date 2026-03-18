@@ -590,6 +590,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     /* --- Apply language via global i18n --- */
     function applyLang(){
+        // Retry if i18n translations are not loaded yet
+        if(!i18n.strings || !Object.keys(i18n.strings).length){
+            setTimeout(applyLang,100);
+            return;
+        }
         var t=function(k){return i18n.t(k);};
         var setEl=function(id,k){var el=$(''+id);if(el)el.textContent=t(k);};
         setEl('vlPageTitle','vehicle_management');

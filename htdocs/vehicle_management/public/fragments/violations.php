@@ -377,6 +377,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     // Translate static HTML elements
     function translateStatic(){
+        // Retry if i18n translations are not loaded yet
+        if(!i18n.strings || !Object.keys(i18n.strings).length){
+            setTimeout(translateStatic,100);
+            return;
+        }
         $('vlPageTitle').textContent=i18n.t('violations');
         $('vlLblTotal').textContent=i18n.t('total_violations');
         $('vlLblAmount').textContent=i18n.t('total_amount');
