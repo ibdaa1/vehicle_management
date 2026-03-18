@@ -631,9 +631,12 @@ $pageScripts = <<<'SCRIPT'
 
     /* --- Init --- */
     document.addEventListener('DOMContentLoaded',async()=>{
-        await new Promise(r=>setTimeout(r,150));
+        // Wait for i18n strings to load (i18n.load is async in app.js DOMContentLoaded)
+        for(var _w=0;_w<60&&(!i18n.strings||!Object.keys(i18n.strings).length);_w++) await new Promise(r=>setTimeout(r,50));
         // Load user permissions
         var user=Auth.getUser();
+        if(!user) await new Promise(r=>setTimeout(r,200));
+        user=user||Auth.getUser();
         var perms=(user&&user.permissions)||[];
         canCreate=perms.includes('manage_vehicles')||perms.includes('*');
         canEdit=perms.includes('manage_vehicles')||perms.includes('*');

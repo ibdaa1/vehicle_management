@@ -711,7 +711,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         document.getElementById('userSearch').placeholder = i18n.t('search_user');
     }
 
-    translateStatic();
     (function initUserPerms(){
         var user=Auth.getUser();
         if(!user){setTimeout(initUserPerms,100);return;}
@@ -720,6 +719,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         uCanEdit=perms.includes('manage_users')||perms.includes('*');
         uCanDelete=perms.includes('manage_users')||perms.includes('*');
         if(!uCanCreate){var ab=document.getElementById('btnAddUser');if(ab)ab.style.display='none';}
+        translateStatic();
         loadRoles().then(() => loadUserRefs()).then(() => loadUsers());
     })();
 })();

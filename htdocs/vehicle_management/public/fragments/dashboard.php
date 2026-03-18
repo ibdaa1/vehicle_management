@@ -89,6 +89,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=my_vehicles&_v=<?= time() ?>" data-requires="">
         <div class="action-icon">🚙</div><div class="action-label" id="dashActionMyVehicles">My Vehicles</div>
     </a>
+    <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=admin_vehicles&_v=<?= time() ?>" data-requires="manage_movements" style="display:none">
+        <div class="action-icon">🚐</div><div class="action-label" id="dashActionAdminVehicles">Admin Vehicles</div>
+    </a>
     <a class="action-card" href="<?= $publicUrl ?>/dashboard.php?page=users&_v=<?= time() ?>" data-requires="manage_users" style="display:none">
         <div class="action-icon">👥</div><div class="action-label" id="dashActionManageUsers">Manage Users</div>
     </a>
@@ -116,6 +119,7 @@ $pageScripts = <<<'SCRIPT'
         $('dashActionAddVehicle').textContent = t('add_vehicle_action');
         $('dashActionHandover').textContent = t('handover_receive');
         $('dashActionMyVehicles').textContent = t('my_vehicles_action');
+        $('dashActionAdminVehicles').textContent = t('admin_vehicles_action');
         $('dashActionManageUsers').textContent = t('manage_users_action');
     }
 
@@ -134,7 +138,8 @@ $pageScripts = <<<'SCRIPT'
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-        await new Promise(r => setTimeout(r, 150));
+        // Wait for i18n strings to load (i18n.load is async in app.js DOMContentLoaded)
+        for(var _w=0;_w<60&&(!i18n.strings||!Object.keys(i18n.strings).length);_w++) await new Promise(r=>setTimeout(r,50));
         translateStatic();
         loadStats();
         setInterval(loadStats, 60000);
