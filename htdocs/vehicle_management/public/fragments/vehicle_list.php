@@ -80,38 +80,38 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="vlPageTitle">Vehicle Management</h2>
+    <h2 id="vlPageTitle" data-label-en="Vehicle Management" data-label-ar="إدارة المركبات">Vehicle Management</h2>
 </div>
 
 <!-- Stats -->
 <div class="vl-stats">
-    <div class="vl-stat"><div class="num" id="vlStatTotal">—</div><div class="lbl" id="vlLblTotal">Total</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatOp" style="color:var(--status-success)">—</div><div class="lbl" id="vlLblOp">Operational</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatMaint" style="color:var(--status-warning)">—</div><div class="lbl" id="vlLblMaint">Maintenance</div></div>
-    <div class="vl-stat"><div class="num" id="vlStatOos" style="color:var(--status-danger)">—</div><div class="lbl" id="vlLblOos">Out of Service</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatTotal">—</div><div class="lbl" id="vlLblTotal" data-label-en="Total" data-label-ar="الإجمالي">Total</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatOp" style="color:var(--status-success)">—</div><div class="lbl" id="vlLblOp" data-label-en="Operational" data-label-ar="عاملة">Operational</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatMaint" style="color:var(--status-warning)">—</div><div class="lbl" id="vlLblMaint" data-label-en="Under Maintenance" data-label-ar="صيانة">Under Maintenance</div></div>
+    <div class="vl-stat"><div class="num" id="vlStatOos" style="color:var(--status-danger)">—</div><div class="lbl" id="vlLblOos" data-label-en="Out of Service" data-label-ar="خارج الخدمة">Out of Service</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="vl-toolbar">
     <div class="search-box">
-        <input type="text" id="vlSearch" placeholder="Search vehicles...">
+        <input type="text" id="vlSearch" placeholder="Search vehicles..." data-placeholder-en="Search by vehicle code or driver name..." data-placeholder-ar="بحث برقم المركبة أو اسم السائق...">
         <span class="ico">🔍</span>
     </div>
     <select id="vlFilterStatus">
-        <option value="" id="vlOptAllStatuses">All Statuses</option>
-        <option value="operational" id="vlOptOperational">Operational</option>
-        <option value="maintenance" id="vlOptMaintenance">Maintenance</option>
-        <option value="out_of_service" id="vlOptOos">Out of Service</option>
+        <option value="" id="vlOptAllStatuses" data-label-en="All Statuses" data-label-ar="كل الحالات">All Statuses</option>
+        <option value="operational" id="vlOptOperational" data-label-en="Operational" data-label-ar="عاملة">Operational</option>
+        <option value="maintenance" id="vlOptMaintenance" data-label-en="Under Maintenance" data-label-ar="صيانة">Under Maintenance</option>
+        <option value="out_of_service" id="vlOptOos" data-label-en="Out of Service" data-label-ar="خارج الخدمة">Out of Service</option>
     </select>
-    <button class="btn btn-primary btn-add" id="vlBtnAdd" style="display:none" onclick="VLForm.showAdd()">&#xff0b; <span id="vlBtnAddText">Add Vehicle</span></button>
+    <button class="btn btn-primary btn-add" id="vlBtnAdd" style="display:none" onclick="VLForm.showAdd()">&#xff0b; <span id="vlBtnAddText" data-label-en="Add Vehicle" data-label-ar="إضافة مركبة">Add Vehicle</span></button>
 </div>
 
 <!-- Filters Row -->
 <div class="vl-filters">
-    <select id="vlFilterSector"><option value="" id="vlOptAllSectors">All Sectors</option></select>
-    <select id="vlFilterDept"><option value="" id="vlOptAllDepts">All Departments</option></select>
-    <select id="vlFilterSection"><option value="" id="vlOptAllSections">All Sections</option></select>
-    <select id="vlFilterDivision"><option value="" id="vlOptAllDivisions">All Divisions</option></select>
+    <select id="vlFilterSector"><option value="" id="vlOptAllSectors" data-label-en="All Sectors" data-label-ar="كل القطاعات">All Sectors</option></select>
+    <select id="vlFilterDept"><option value="" id="vlOptAllDepts" data-label-en="All Departments" data-label-ar="كل الإدارات">All Departments</option></select>
+    <select id="vlFilterSection"><option value="" id="vlOptAllSections" data-label-en="All Sections" data-label-ar="كل الأقسام">All Sections</option></select>
+    <select id="vlFilterDivision"><option value="" id="vlOptAllDivisions" data-label-en="All Divisions" data-label-ar="كل الشعب">All Divisions</option></select>
 </div>
 
 <!-- Data Table -->
@@ -120,18 +120,18 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         <thead>
             <tr>
                 <th>#</th>
-                <th id="vlThCode">Vehicle Code</th>
-                <th id="vlThType">Type</th>
-                <th id="vlThEmpId">Emp ID</th>
-                <th id="vlThDriver">Driver Name</th>
-                <th id="vlThPhone">Driver Phone</th>
-                <th id="vlThSector">Sector</th>
-                <th id="vlThDept">Department</th>
-                <th id="vlThSection">Section</th>
-                <th id="vlThDivision">Division</th>
-                <th id="vlThStatus">Status</th>
-                <th id="vlThMode">Mode</th>
-                <th id="vlThActions">Actions</th>
+                <th id="vlThCode" data-label-en="Vehicle Code" data-label-ar="رقم المركبة">Vehicle Code</th>
+                <th id="vlThType" data-label-en="Vehicle Type" data-label-ar="نوع المركبة">Vehicle Type</th>
+                <th id="vlThEmpId" data-label-en="Employee ID" data-label-ar="الرقم الوظيفي">Employee ID</th>
+                <th id="vlThDriver" data-label-en="Driver Name" data-label-ar="اسم السائق">Driver Name</th>
+                <th id="vlThPhone" data-label-en="Driver Phone" data-label-ar="هاتف السائق">Driver Phone</th>
+                <th id="vlThSector" data-label-en="Sector" data-label-ar="القطاع">Sector</th>
+                <th id="vlThDept" data-label-en="Department" data-label-ar="الإدارة">Department</th>
+                <th id="vlThSection" data-label-en="Section" data-label-ar="القسم">Section</th>
+                <th id="vlThDivision" data-label-en="Division" data-label-ar="الشعبة">Division</th>
+                <th id="vlThStatus" data-label-en="Status" data-label-ar="الحالة">Status</th>
+                <th id="vlThMode" data-label-en="Vehicle Mode" data-label-ar="نمط المركبة">Vehicle Mode</th>
+                <th id="vlThActions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
             </tr>
         </thead>
         <tbody id="vlBody"></tbody>
@@ -139,93 +139,93 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </div>
 <div class="vl-empty" id="vlEmpty" style="display:none">
     <div class="ico">🚗</div>
-    <p id="vlEmptyText">No vehicles found</p>
+    <p id="vlEmptyText" data-label-en="No vehicles found" data-label-ar="لا توجد مركبات">No vehicles found</p>
 </div>
 
 <!-- Add/Edit Modal -->
 <div class="modal-overlay" id="vlModal">
     <div class="modal-box">
-        <h3 id="vlModalTitle">Add Vehicle</h3>
+        <h3 id="vlModalTitle" data-label-en="Add Vehicle" data-label-ar="إضافة مركبة">Add Vehicle</h3>
         <div class="modal-body">
         <input type="hidden" id="vlEditId">
         <div class="form-group">
-            <label id="vlLblCode">Vehicle Code *</label>
+            <label id="vlLblCode" data-label-en="Vehicle Code *" data-label-ar="رقم المركبة *">Vehicle Code *</label>
             <input type="text" id="vlFldCode">
         </div>
         <div class="form-group">
-            <label id="vlLblType">Type</label>
+            <label id="vlLblType" data-label-en="Vehicle Type" data-label-ar="نوع المركبة">Vehicle Type</label>
             <input type="text" id="vlFldType">
         </div>
         <div class="form-group">
-            <label id="vlLblCategory">Category</label>
+            <label id="vlLblCategory" data-label-en="Vehicle Category" data-label-ar="فئة المركبة">Vehicle Category</label>
             <select id="vlFldCategory">
-                <option value="sedan" id="vlFldCatSedan">Sedan</option>
-                <option value="pickup" id="vlFldCatPickup">Pickup</option>
-                <option value="bus" id="vlFldCatBus">Bus</option>
+                <option value="sedan" id="vlFldCatSedan" data-label-en="Sedan" data-label-ar="سيدان">Sedan</option>
+                <option value="pickup" id="vlFldCatPickup" data-label-en="Pickup" data-label-ar="بيك أب">Pickup</option>
+                <option value="bus" id="vlFldCatBus" data-label-en="Bus" data-label-ar="حافلة">Bus</option>
             </select>
         </div>
         <div class="form-group">
-            <label id="vlLblStatus">Status</label>
+            <label id="vlLblStatus" data-label-en="Status" data-label-ar="الحالة">Status</label>
             <select id="vlFldStatus">
-                <option value="operational" id="vlFldStatOp">Operational</option>
-                <option value="maintenance" id="vlFldStatMaint">Maintenance</option>
-                <option value="out_of_service" id="vlFldStatOos">Out of Service</option>
+                <option value="operational" id="vlFldStatOp" data-label-en="Operational" data-label-ar="عاملة">Operational</option>
+                <option value="maintenance" id="vlFldStatMaint" data-label-en="Under Maintenance" data-label-ar="صيانة">Under Maintenance</option>
+                <option value="out_of_service" id="vlFldStatOos" data-label-en="Out of Service" data-label-ar="خارج الخدمة">Out of Service</option>
             </select>
         </div>
         <div class="form-group">
-            <label id="vlLblMode">Mode</label>
+            <label id="vlLblMode" data-label-en="Vehicle Mode" data-label-ar="نمط المركبة">Vehicle Mode</label>
             <select id="vlFldMode">
-                <option value="private" id="vlFldModePrivate">Private</option>
-                <option value="shift" id="vlFldModeShift">Shift</option>
+                <option value="private" id="vlFldModePrivate" data-label-en="Private" data-label-ar="خاصة">Private</option>
+                <option value="shift" id="vlFldModeShift" data-label-en="Shift" data-label-ar="وردية">Shift</option>
             </select>
         </div>
         <div class="form-group">
-            <label id="vlLblGender">Gender</label>
+            <label id="vlLblGender" data-label-en="Gender" data-label-ar="الجنس">Gender</label>
             <select id="vlFldGender">
-                <option value="men" id="vlFldGenderMen">Male</option>
-                <option value="women" id="vlFldGenderWomen">Female</option>
+                <option value="men" id="vlFldGenderMen" data-label-en="Male" data-label-ar="ذكر">Male</option>
+                <option value="women" id="vlFldGenderWomen" data-label-en="Female" data-label-ar="أنثى">Female</option>
             </select>
         </div>
         <div class="form-group">
-            <label id="vlLblSector">Sector</label>
+            <label id="vlLblSector" data-label-en="Sector" data-label-ar="القطاع">Sector</label>
             <select id="vlFldSector"><option value="">—</option></select>
         </div>
         <div class="form-group">
-            <label id="vlLblDept">Department</label>
+            <label id="vlLblDept" data-label-en="Department" data-label-ar="الإدارة">Department</label>
             <select id="vlFldDept"><option value="">—</option></select>
         </div>
         <div class="form-group">
-            <label id="vlLblSection">Section</label>
+            <label id="vlLblSection" data-label-en="Section" data-label-ar="القسم">Section</label>
             <select id="vlFldSection"><option value="">—</option></select>
         </div>
         <div class="form-group">
-            <label id="vlLblDivision">Division</label>
+            <label id="vlLblDivision" data-label-en="Division" data-label-ar="الشعبة">Division</label>
             <select id="vlFldDivision"><option value="">—</option></select>
         </div>
         <div class="form-group">
-            <label id="vlLblYear">Year</label>
+            <label id="vlLblYear" data-label-en="Year" data-label-ar="السنة">Year</label>
             <input type="number" id="vlFldYear" min="2000" max="2099">
         </div>
         <div class="form-group">
-            <label id="vlLblEmpId">Emp ID</label>
+            <label id="vlLblEmpId" data-label-en="Employee ID" data-label-ar="الرقم الوظيفي">Employee ID</label>
             <input type="text" id="vlFldEmpId">
         </div>
         <div class="form-group">
-            <label id="vlLblDriverName">Driver Name</label>
+            <label id="vlLblDriverName" data-label-en="Driver Name" data-label-ar="اسم السائق">Driver Name</label>
             <input type="text" id="vlFldDriverName">
         </div>
         <div class="form-group">
-            <label id="vlLblDriverPhone">Driver Phone</label>
+            <label id="vlLblDriverPhone" data-label-en="Driver Phone" data-label-ar="هاتف السائق">Driver Phone</label>
             <input type="text" id="vlFldDriverPhone">
         </div>
         <div class="form-group">
-            <label id="vlLblNotes">Notes</label>
+            <label id="vlLblNotes" data-label-en="Notes" data-label-ar="ملاحظات">Notes</label>
             <textarea id="vlFldNotes" rows="3"></textarea>
         </div>
         </div><!-- end modal-body -->
         <div class="form-actions">
-            <button class="btn btn-secondary" id="vlCancelBtn" onclick="VLForm.hide()">Cancel</button>
-            <button class="btn btn-primary" id="vlSaveBtn" onclick="VLForm.save()">💾 Save</button>
+            <button class="btn btn-secondary" id="vlCancelBtn" data-label-en="Cancel" data-label-ar="إلغاء" onclick="VLForm.hide()">Cancel</button>
+            <button class="btn btn-primary" id="vlSaveBtn" data-label-en="💾 Save" data-label-ar="💾 حفظ" onclick="VLForm.save()">💾 Save</button>
         </div>
     </div>
 </div>
@@ -234,12 +234,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="modal-overlay" id="vlDeleteModal">
     <div class="modal-box" style="max-width:400px;text-align:center">
         <div style="font-size:3rem;margin-bottom:12px">⚠️</div>
-        <h3 id="vlDeleteTitle">Confirm Delete</h3>
-        <p id="vlDeleteMsg">Are you sure you want to delete this vehicle?</p>
+        <h3 id="vlDeleteTitle" data-label-en="Confirm Delete" data-label-ar="تأكيد الحذف">Confirm Delete</h3>
+        <p id="vlDeleteMsg" data-label-en="Are you sure you want to delete this vehicle?" data-label-ar="هل أنت متأكد من حذف هذه المركبة؟">Are you sure you want to delete this vehicle?</p>
         <input type="hidden" id="vlDeleteId">
         <div class="form-actions" style="justify-content:center">
-            <button class="btn btn-secondary" id="vlDeleteCancelBtn" onclick="document.getElementById('vlDeleteModal').classList.remove('active')">Cancel</button>
-            <button class="btn btn-danger" id="vlConfirmDeleteBtn" onclick="VLForm.confirmDelete()">🗑️ Delete</button>
+            <button class="btn btn-secondary" id="vlDeleteCancelBtn" data-label-en="Cancel" data-label-ar="إلغاء" onclick="document.getElementById('vlDeleteModal').classList.remove('active')">Cancel</button>
+            <button class="btn btn-danger" id="vlConfirmDeleteBtn" data-label-en="🗑️ Delete" data-label-ar="🗑️ حذف" onclick="VLForm.confirmDelete()">🗑️ Delete</button>
         </div>
     </div>
 </div>
@@ -603,7 +603,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         setEl('vlLblMaint','under_maintenance');
         setEl('vlLblOos','out_of_service');
         setEl('vlBtnAddText','add_vehicle');
+        // Table headers
         setEl('vlThCode','vehicle_code');
+        setEl('vlThType','vehicle_type');
         setEl('vlThEmpId','employee_id');
         setEl('vlThDriver','driver_name');
         setEl('vlThPhone','driver_phone');
@@ -612,25 +614,58 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         setEl('vlThSection','section');
         setEl('vlThDivision','division');
         setEl('vlThStatus','status');
-        setEl('vlLblCode','vehicle_code');
+        setEl('vlThMode','vehicle_mode');
+        setEl('vlThActions','actions');
+        // Form labels
+        if($('vlLblCode')) $('vlLblCode').textContent=t('vehicle_code')+' *';
+        setEl('vlLblType','vehicle_type');
+        setEl('vlLblCategory','vehicle_category');
+        setEl('vlLblStatus','status');
+        setEl('vlLblMode','vehicle_mode');
+        setEl('vlLblGender','gender');
         setEl('vlLblSector','sector');
         setEl('vlLblDept','department');
         setEl('vlLblSection','section');
         setEl('vlLblDivision','division');
+        setEl('vlLblYear','year');
+        setEl('vlLblEmpId','employee_id');
+        setEl('vlLblDriverName','driver_name');
+        setEl('vlLblDriverPhone','driver_phone');
         setEl('vlLblNotes','notes');
-        setEl('vlCancelBtn','cancel');
-        setEl('vlDeleteTitle','confirm_delete');
-        setEl('vlDeleteMsg','confirm_delete_vehicle');
-        setEl('vlEmptyText','no_vehicles');
+        // Filter & form select options
         setEl('vlOptAllStatuses','all_statuses');
+        setEl('vlOptOperational','operational');
+        setEl('vlOptMaintenance','under_maintenance');
+        setEl('vlOptOos','out_of_service');
         setEl('vlOptAllSectors','all_sectors');
         setEl('vlOptAllDepts','all_departments');
         setEl('vlOptAllSections','all_sections');
         setEl('vlOptAllDivisions','all_divisions');
-        if($('vlSearch')) $('vlSearch').placeholder=t('search_vehicle');
+        // Form category options
+        setEl('vlFldCatSedan','sedan');
+        setEl('vlFldCatPickup','pickup');
+        setEl('vlFldCatBus','bus');
+        // Form status options
+        setEl('vlFldStatOp','operational');
+        setEl('vlFldStatMaint','under_maintenance');
+        setEl('vlFldStatOos','out_of_service');
+        // Form mode options
+        setEl('vlFldModePrivate','private');
+        setEl('vlFldModeShift','shift');
+        // Form gender options
+        setEl('vlFldGenderMen','male');
+        setEl('vlFldGenderWomen','female');
+        // Delete modal
+        setEl('vlDeleteTitle','confirm_delete');
+        setEl('vlDeleteMsg','confirm_delete_vehicle');
+        setEl('vlEmptyText','no_vehicles');
+        // Buttons
+        setEl('vlCancelBtn','cancel');
         if($('vlSaveBtn')) $('vlSaveBtn').textContent='💾 '+t('save');
         if($('vlDeleteCancelBtn')) $('vlDeleteCancelBtn').textContent=t('cancel');
         if($('vlConfirmDeleteBtn')) $('vlConfirmDeleteBtn').textContent='🗑️ '+t('delete');
+        // Search placeholder
+        if($('vlSearch')) $('vlSearch').placeholder=t('search_vehicle');
         populateFilterDropdowns();
     }
 
