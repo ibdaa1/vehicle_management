@@ -90,24 +90,24 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="rolesPageTitle">Roles &amp; Permissions Management</h2>
+    <h2 id="rolesPageTitle" data-label-en="Roles &amp; Permissions Management" data-label-ar="إدارة الأدوار والصلاحيات">Roles &amp; Permissions Management</h2>
 </div>
 
 <!-- Stats -->
 <div class="r-stats">
-    <div class="r-stat"><div class="r-stat-val" id="rTotal">—</div><div class="r-stat-lbl" id="lbl_total_roles">Total Roles</div></div>
-    <div class="r-stat"><div class="r-stat-val" id="rPerms" style="color:var(--status-info)">—</div><div class="r-stat-lbl" id="lbl_total_perms">Total Permissions</div></div>
-    <div class="r-stat"><div class="r-stat-val" id="rModules" style="color:var(--accent-gold,#c69c3f)">—</div><div class="r-stat-lbl" id="lbl_modules">Modules</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="rTotal">—</div><div class="r-stat-lbl" id="lbl_total_roles" data-label-en="Total Roles" data-label-ar="إجمالي الأدوار">Total Roles</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="rPerms" style="color:var(--status-info)">—</div><div class="r-stat-lbl" id="lbl_total_perms" data-label-en="Total Permissions" data-label-ar="إجمالي الصلاحيات">Total Permissions</div></div>
+    <div class="r-stat"><div class="r-stat-val" id="rModules" style="color:var(--accent-gold,#c69c3f)">—</div><div class="r-stat-lbl" id="lbl_modules" data-label-en="Modules" data-label-ar="الوحدات">Modules</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="r-toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="roleSearch" placeholder="Search by name or key...">
+        <input type="text" class="form-control" id="roleSearch" placeholder="Search by name or key..." data-placeholder-en="Search by name or key..." data-placeholder-ar="بحث بالاسم أو المفتاح...">
         <span class="search-icon">🔍</span>
     </div>
     <div class="r-toolbar-end">
-        <button class="btn btn-primary" id="btnAddRole">➕ <span id="lbl_add_role">Add Role</span></button>
+        <button class="btn btn-primary" id="btnAddRole">➕ <span id="lbl_add_role" data-label-en="Add Role" data-label-ar="إضافة دور">Add Role</span></button>
     </div>
 </div>
 
@@ -118,15 +118,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             <thead>
                 <tr>
                     <th>#</th>
-                    <th id="th_key">Key</th>
-                    <th id="th_name">Display Name</th>
-                    <th id="th_perms">Permissions</th>
-                    <th id="th_created">Created</th>
-                    <th id="th_actions">Actions</th>
+                    <th id="th_key" data-label-en="Key" data-label-ar="المفتاح">Key</th>
+                    <th id="th_name" data-label-en="Display Name" data-label-ar="اسم العرض">Display Name</th>
+                    <th id="th_perms" data-label-en="Permissions" data-label-ar="الصلاحيات">Permissions</th>
+                    <th id="th_created" data-label-en="Created" data-label-ar="تاريخ الإنشاء">Created</th>
+                    <th id="th_actions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
                 </tr>
             </thead>
             <tbody id="rolesBody">
-                <tr><td colspan="6" class="empty-state"><div class="empty-icon">🔑</div><p id="lbl_loading">Loading...</p></td></tr>
+                <tr><td colspan="6" class="empty-state"><div class="empty-icon">🔑</div><p id="lbl_loading" data-label-en="Loading..." data-label-ar="جاري التحميل...">Loading...</p></td></tr>
             </tbody>
         </table>
     </div>
@@ -136,25 +136,25 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="modal-overlay" id="roleFormModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="roleFormTitle">➕ Add Role</h3>
+            <h3 id="roleFormTitle" data-label-en="➕ Add Role" data-label-ar="➕ إضافة دور">➕ Add Role</h3>
             <button class="modal-close" onclick="RolesPage.closeModal('roleFormModal')">✕</button>
         </div>
         <div class="modal-body">
             <form id="roleForm" class="form-grid" onsubmit="return false;">
                 <input type="hidden" id="editRoleId" value="">
                 <div class="form-group">
-                    <label id="lbl_key_name">Key Name *</label>
+                    <label id="lbl_key_name" data-label-en="Key Name *" data-label-ar="اسم المفتاح *">Key Name *</label>
                     <input type="text" id="fRoleKey" required placeholder="manager" pattern="[a-z0-9_]+">
                 </div>
                 <div class="form-group">
-                    <label id="lbl_display_name">Display Name *</label>
+                    <label id="lbl_display_name" data-label-en="Display Name *" data-label-ar="اسم العرض *">Display Name *</label>
                     <input type="text" id="fRoleName" required placeholder="Manager">
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="RolesPage.closeModal('roleFormModal')" id="lbl_cancel">Cancel</button>
-            <button class="btn btn-primary" id="saveRoleBtn" onclick="RolesPage.saveRole()">💾 <span id="lbl_save">Save</span></button>
+            <button class="btn btn-secondary" onclick="RolesPage.closeModal('roleFormModal')" id="lbl_cancel" data-label-en="Cancel" data-label-ar="إلغاء">Cancel</button>
+            <button class="btn btn-primary" id="saveRoleBtn" onclick="RolesPage.saveRole()">💾 <span id="lbl_save" data-label-en="Save" data-label-ar="حفظ">Save</span></button>
         </div>
     </div>
 </div>
@@ -163,42 +163,42 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="modal-overlay" id="permModal">
     <div class="modal-content wide">
         <div class="modal-header">
-            <h3 id="permModalTitle">🔐 Role Permissions</h3>
+            <h3 id="permModalTitle" data-label-en="🔐 Role Permissions" data-label-ar="🔐 صلاحيات الدور">🔐 Role Permissions</h3>
             <button class="modal-close" onclick="RolesPage.closeModal('permModal')">✕</button>
         </div>
         <div class="modal-body">
             <!-- Tabs -->
             <div class="perm-tabs">
-                <div class="perm-tab active" data-tab="basic" onclick="RolesPage.switchTab('basic')" id="tab_basic">Basic Permissions</div>
-                <div class="perm-tab" data-tab="resource" onclick="RolesPage.switchTab('resource')" id="tab_resource">Resource Permissions</div>
+                <div class="perm-tab active" data-tab="basic" onclick="RolesPage.switchTab('basic')" id="tab_basic" data-label-en="Basic Permissions" data-label-ar="الصلاحيات الأساسية">Basic Permissions</div>
+                <div class="perm-tab" data-tab="resource" onclick="RolesPage.switchTab('resource')" id="tab_resource" data-label-en="Resource Permissions" data-label-ar="صلاحيات الموارد">Resource Permissions</div>
             </div>
 
             <!-- Basic Permissions Tab -->
             <div class="tab-content active" id="tabBasic">
                 <div class="perm-actions">
-                    <button onclick="RolesPage.selectAll()">✅ <span id="lbl_select_all">Select All</span></button>
-                    <button onclick="RolesPage.deselectAll()">⬜ <span id="lbl_deselect_all">Deselect All</span></button>
+                    <button onclick="RolesPage.selectAll()">✅ <span id="lbl_select_all" data-label-en="Select All" data-label-ar="تحديد الكل">Select All</span></button>
+                    <button onclick="RolesPage.deselectAll()">⬜ <span id="lbl_deselect_all" data-label-en="Deselect All" data-label-ar="إلغاء التحديد">Deselect All</span></button>
                 </div>
                 <div id="permList">
-                    <div class="empty-state"><div class="empty-icon">🔐</div><p id="lbl_loading2">Loading...</p></div>
+                    <div class="empty-state"><div class="empty-icon">🔐</div><p id="lbl_loading2" data-label-en="Loading..." data-label-ar="جاري التحميل...">Loading...</p></div>
                 </div>
             </div>
 
             <!-- Resource Permissions Tab -->
             <div class="tab-content" id="tabResource">
-                <p style="color:var(--text-secondary);margin-bottom:16px;font-size:.85rem" id="lbl_fine_grained">Fine-grained access control per resource</p>
+                <p style="color:var(--text-secondary);margin-bottom:16px;font-size:.85rem" id="lbl_fine_grained" data-label-en="Fine-grained access control per resource" data-label-ar="التحكم الدقيق بالوصول لكل مورد">Fine-grained access control per resource</p>
                 <div class="table-wrapper">
                     <table class="res-table" id="resTable">
                         <thead>
                             <tr>
-                                <th id="th_resource">Resource</th>
-                                <th id="th_view_all">View All</th>
-                                <th id="th_view_own">View Own</th>
-                                <th id="th_create">Create</th>
-                                <th id="th_edit_all">Edit All</th>
-                                <th id="th_edit_own">Edit Own</th>
-                                <th id="th_delete_all">Delete All</th>
-                                <th id="th_delete_own">Delete Own</th>
+                                <th id="th_resource" data-label-en="Resource" data-label-ar="المورد">Resource</th>
+                                <th id="th_view_all" data-label-en="View All" data-label-ar="عرض الكل">View All</th>
+                                <th id="th_view_own" data-label-en="View Own" data-label-ar="عرض الخاصة">View Own</th>
+                                <th id="th_create" data-label-en="Create" data-label-ar="إنشاء">Create</th>
+                                <th id="th_edit_all" data-label-en="Edit All" data-label-ar="تعديل الكل">Edit All</th>
+                                <th id="th_edit_own" data-label-en="Edit Own" data-label-ar="تعديل الخاصة">Edit Own</th>
+                                <th id="th_delete_all" data-label-en="Delete All" data-label-ar="حذف الكل">Delete All</th>
+                                <th id="th_delete_own" data-label-en="Delete Own" data-label-ar="حذف الخاصة">Delete Own</th>
                             </tr>
                         </thead>
                         <tbody id="resBody"></tbody>
@@ -207,8 +207,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="RolesPage.closeModal('permModal')" id="lbl_close">Close</button>
-            <button class="btn btn-primary" id="savePermBtn" onclick="RolesPage.savePermissions()">💾 <span id="lbl_save_perms">Save Permissions</span></button>
+            <button class="btn btn-secondary" onclick="RolesPage.closeModal('permModal')" id="lbl_close" data-label-en="Close" data-label-ar="إغلاق">Close</button>
+            <button class="btn btn-primary" id="savePermBtn" onclick="RolesPage.savePermissions()">💾 <span id="lbl_save_perms" data-label-en="Save Permissions" data-label-ar="حفظ الصلاحيات">Save Permissions</span></button>
         </div>
     </div>
 </div>
