@@ -58,30 +58,30 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 @keyframes mt-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 
-<div class="page-header"><h2 id="mtPageTitle">Maintenance</h2></div>
+<div class="page-header"><h2 id="mtPageTitle" data-label-en="Maintenance" data-label-ar="الصيانة">Maintenance</h2></div>
 
 <!-- Stats -->
 <div class="mt-stats">
-    <div class="mt-stat"><div class="num" id="mtStatTotal">0</div><div class="lbl" id="mtLblTotal">Total Records</div></div>
-    <div class="mt-stat routine"><div class="num" id="mtStatRoutine">0</div><div class="lbl" id="mtLblRoutine">Routine</div></div>
-    <div class="mt-stat emergency"><div class="num" id="mtStatEmergency">0</div><div class="lbl" id="mtLblEmergency">Emergency</div></div>
-    <div class="mt-stat overdue"><div class="num" id="mtStatOverdue">0</div><div class="lbl" id="mtLblOverdue">Overdue</div></div>
+    <div class="mt-stat"><div class="num" id="mtStatTotal">0</div><div class="lbl" id="mtLblTotal" data-label-en="Total Records" data-label-ar="إجمالي السجلات">Total Records</div></div>
+    <div class="mt-stat routine"><div class="num" id="mtStatRoutine">0</div><div class="lbl" id="mtLblRoutine" data-label-en="Routine Maintenance" data-label-ar="صيانة دورية">Routine Maintenance</div></div>
+    <div class="mt-stat emergency"><div class="num" id="mtStatEmergency">0</div><div class="lbl" id="mtLblEmergency" data-label-en="Emergency" data-label-ar="طوارئ">Emergency</div></div>
+    <div class="mt-stat overdue"><div class="num" id="mtStatOverdue">0</div><div class="lbl" id="mtLblOverdue" data-label-en="Overdue" data-label-ar="متأخرة">Overdue</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="mt-toolbar">
     <div class="search-box">
         <span class="ico">🔍</span>
-        <input type="text" id="mtSearch" placeholder="Search maintenance...">
+        <input type="text" id="mtSearch" placeholder="Search maintenance..." data-placeholder-en="Search maintenance..." data-placeholder-ar="بحث في الصيانة...">
     </div>
     <select id="mtFilterType">
-        <option value="">All Types</option>
-        <option value="Routine">Routine Maintenance</option>
-        <option value="Emergency">Emergency</option>
-        <option value="Technical Check">Technical Check</option>
-        <option value="Mechanical">Mechanical</option>
+        <option value="" id="mtOptAllTypes" data-label-en="All Types" data-label-ar="كل الأنواع">All Types</option>
+        <option value="Routine" id="mtOptRoutine" data-label-en="Routine Maintenance" data-label-ar="صيانة دورية">Routine Maintenance</option>
+        <option value="Emergency" id="mtOptEmergency" data-label-en="Emergency" data-label-ar="طوارئ">Emergency</option>
+        <option value="Technical Check" id="mtOptTechnical" data-label-en="Technical Check" data-label-ar="فحص فني">Technical Check</option>
+        <option value="Mechanical" id="mtOptMechanical" data-label-en="Mechanical" data-label-ar="ميكانيكي">Mechanical</option>
     </select>
-    <button class="btn btn-primary btn-sm btn-add" id="mtBtnAdd">➕ <span id="mtBtnAddText">Add Record</span></button>
+    <button class="btn btn-primary btn-sm btn-add" id="mtBtnAdd" data-label-en="➕ Add Maintenance Record" data-label-ar="➕ إضافة سجل صيانة">➕ <span id="mtBtnAddText">Add Record</span></button>
 </div>
 
 <!-- Table -->
@@ -89,14 +89,14 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <table class="mt-table data-table">
     <thead><tr>
         <th>#</th>
-        <th id="mtThVehicle">Vehicle Code</th>
-        <th id="mtThVisitDate">Visit Date</th>
-        <th id="mtThNextVisit">Next Visit Date</th>
-        <th id="mtThType">Maintenance Type</th>
-        <th id="mtThLocation">Location</th>
-        <th id="mtThCreatedBy">Created By</th>
-        <th id="mtThNotes">Notes</th>
-        <th id="mtThActions">Actions</th>
+        <th id="mtThVehicle" data-label-en="Vehicle Code" data-label-ar="رقم المركبة">Vehicle Code</th>
+        <th id="mtThVisitDate" data-label-en="Visit Date" data-label-ar="تاريخ الزيارة">Visit Date</th>
+        <th id="mtThNextVisit" data-label-en="Next Visit Date" data-label-ar="تاريخ الزيارة القادمة">Next Visit Date</th>
+        <th id="mtThType" data-label-en="Maintenance Type" data-label-ar="نوع الصيانة">Maintenance Type</th>
+        <th id="mtThLocation" data-label-en="Location" data-label-ar="الموقع">Location</th>
+        <th id="mtThCreatedBy" data-label-en="Created By" data-label-ar="أنشأ بواسطة">Created By</th>
+        <th id="mtThNotes" data-label-en="Notes" data-label-ar="ملاحظات">Notes</th>
+        <th id="mtThActions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
     </tr></thead>
     <tbody id="mtTableBody"></tbody>
 </table>
@@ -106,7 +106,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mt-modal-bg" id="mtModal">
     <div class="mt-modal">
         <div class="modal-hd">
-            <h3 id="mtModalTitle">➕ Add Maintenance Record</h3>
+            <h3 id="mtModalTitle" data-label-en="➕ Add Maintenance Record" data-label-ar="➕ إضافة سجل صيانة">➕ Add Maintenance Record</h3>
             <button class="close" id="mtModalClose">&times;</button>
         </div>
         <div class="modal-bd">
@@ -114,42 +114,42 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 <input type="hidden" id="mtId">
                 <div class="row2">
                     <div class="fg">
-                        <label id="mtLblVehicleCode">Vehicle Code *</label>
+                        <label id="mtLblVehicleCode" data-label-en="Vehicle Code *" data-label-ar="رقم المركبة *">Vehicle Code *</label>
                         <input type="text" id="mtVehicleCode" required placeholder="e.g.: SHJ-1234">
                     </div>
                     <div class="fg">
-                        <label id="mtLblType">Maintenance Type</label>
+                        <label id="mtLblType" data-label-en="Maintenance Type" data-label-ar="نوع الصيانة">Maintenance Type</label>
                         <select id="mtType">
-                            <option value="Routine">Routine Maintenance</option>
-                            <option value="Emergency">Emergency</option>
-                            <option value="Technical Check">Technical Check</option>
-                            <option value="Mechanical">Mechanical</option>
+                            <option value="Routine" id="mtFormOptRoutine" data-label-en="Routine Maintenance" data-label-ar="صيانة دورية">Routine Maintenance</option>
+                            <option value="Emergency" id="mtFormOptEmergency" data-label-en="Emergency" data-label-ar="طوارئ">Emergency</option>
+                            <option value="Technical Check" id="mtFormOptTechnical" data-label-en="Technical Check" data-label-ar="فحص فني">Technical Check</option>
+                            <option value="Mechanical" id="mtFormOptMechanical" data-label-en="Mechanical" data-label-ar="ميكانيكي">Mechanical</option>
                         </select>
                     </div>
                 </div>
                 <div class="row2">
                     <div class="fg">
-                        <label id="mtLblVisitDate">Visit Date *</label>
+                        <label id="mtLblVisitDate" data-label-en="Visit Date *" data-label-ar="تاريخ الزيارة *">Visit Date *</label>
                         <input type="date" id="mtVisitDate" required>
                     </div>
                     <div class="fg">
-                        <label id="mtLblNextVisit">Next Visit Date</label>
+                        <label id="mtLblNextVisit" data-label-en="Next Visit Date" data-label-ar="تاريخ الزيارة القادمة">Next Visit Date</label>
                         <input type="date" id="mtNextVisitDate">
                     </div>
                 </div>
                 <div class="fg">
-                    <label id="mtLblLocation">Location</label>
-                    <input type="text" id="mtLocation" placeholder="Maintenance location">
+                    <label id="mtLblLocation" data-label-en="Location" data-label-ar="الموقع">Location</label>
+                    <input type="text" id="mtLocation" placeholder="Maintenance location" data-placeholder-en="Maintenance location" data-placeholder-ar="موقع الصيانة">
                 </div>
                 <div class="fg">
-                    <label id="mtLblNotes">Notes</label>
-                    <textarea id="mtNotes" rows="3" placeholder="Add additional notes..."></textarea>
+                    <label id="mtLblNotes" data-label-en="Notes" data-label-ar="ملاحظات">Notes</label>
+                    <textarea id="mtNotes" rows="3" placeholder="Add additional notes..." data-placeholder-en="Add additional notes..." data-placeholder-ar="أضف ملاحظات إضافية..."></textarea>
                 </div>
             </form>
         </div>
         <div class="modal-ft">
-            <button class="btn btn-ghost" id="mtCancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="mtSaveBtn">💾 Save</button>
+            <button class="btn btn-ghost" id="mtCancelBtn" data-label-en="Cancel" data-label-ar="إلغاء">Cancel</button>
+            <button class="btn btn-primary" id="mtSaveBtn" data-label-en="💾 Save" data-label-ar="💾 حفظ">💾 Save</button>
         </div>
     </div>
 </div>
@@ -158,7 +158,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="mt-modal-bg" id="mtDetailModal">
     <div class="mt-modal">
         <div class="modal-hd">
-            <h3 id="mtDetailTitle">Maintenance Details</h3>
+            <h3 id="mtDetailTitle" data-label-en="Maintenance Details" data-label-ar="تفاصيل الصيانة">Maintenance Details</h3>
             <button class="close" id="mtDetailClose">&times;</button>
         </div>
         <div class="modal-bd mt-detail" id="mtDetailBody"></div>
@@ -392,18 +392,16 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         $('mtSaveBtn').textContent='💾 '+t('save');
         $('mtDetailTitle').textContent=t('maintenance_details');
         // Filter dropdown options
-        const ft=$('mtFilterType');
-        ft.options[0].text=t('all_maintenance_types');
-        ft.options[1].text=t('type_routine');
-        ft.options[2].text=t('type_emergency');
-        ft.options[3].text=t('type_technical');
-        ft.options[4].text=t('type_mechanical');
+        $('mtOptAllTypes').textContent=t('all_maintenance_types');
+        $('mtOptRoutine').textContent=t('type_routine');
+        $('mtOptEmergency').textContent=t('type_emergency');
+        $('mtOptTechnical').textContent=t('type_technical');
+        $('mtOptMechanical').textContent=t('type_mechanical');
         // Form type select
-        const fs=$('mtType');
-        fs.options[0].text=t('type_routine');
-        fs.options[1].text=t('type_emergency');
-        fs.options[2].text=t('type_technical');
-        fs.options[3].text=t('type_mechanical');
+        $('mtFormOptRoutine').textContent=t('type_routine');
+        $('mtFormOptEmergency').textContent=t('type_emergency');
+        $('mtFormOptTechnical').textContent=t('type_technical');
+        $('mtFormOptMechanical').textContent=t('type_mechanical');
     }
 
     /* ---- Init with permission check ---- */
