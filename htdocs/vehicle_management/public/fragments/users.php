@@ -87,41 +87,41 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 </style>
 
 <div class="page-header">
-    <h2 id="pageTitle">User Management</h2>
+    <h2 id="pageTitle" data-label-en="User Management" data-label-ar="إدارة المستخدمين">User Management</h2>
 </div>
 
 <!-- Stats -->
 <div class="u-stats">
-    <div class="u-stat"><div class="u-stat-val" id="uTotal">—</div><div class="u-stat-lbl" id="lblTotalUsers">Total Users</div></div>
-    <div class="u-stat"><div class="u-stat-val" id="uActive" style="color:var(--status-success)">—</div><div class="u-stat-lbl" id="lblActiveUsers">Active</div></div>
-    <div class="u-stat"><div class="u-stat-val" id="uInactive" style="color:var(--status-danger)">—</div><div class="u-stat-lbl" id="lblInactiveUsers">Inactive</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uTotal">—</div><div class="u-stat-lbl" id="lblTotalUsers" data-label-en="Total Users" data-label-ar="إجمالي المستخدمين">Total Users</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uActive" style="color:var(--status-success)">—</div><div class="u-stat-lbl" id="lblActiveUsers" data-label-en="Active" data-label-ar="نشط">Active</div></div>
+    <div class="u-stat"><div class="u-stat-val" id="uInactive" style="color:var(--status-danger)">—</div><div class="u-stat-lbl" id="lblInactiveUsers" data-label-en="Inactive" data-label-ar="غير نشط">Inactive</div></div>
 </div>
 
 <!-- Toolbar -->
 <div class="u-toolbar">
     <div class="search-box">
-        <input type="text" class="form-control" id="userSearch" placeholder="Search user...">
+        <input type="text" class="form-control" id="userSearch" placeholder="Search user..." data-placeholder-en="Search user..." data-placeholder-ar="بحث بالاسم أو البريد أو الرقم الوظيفي...">
         <span class="search-icon">🔍</span>
     </div>
     <div class="filters">
-        <select class="form-select" id="filterRole"><option value="" id="optAllRoles">All Roles</option></select>
-        <select class="form-select" id="filterSector"><option value="" id="optAllSectors">All Sectors</option></select>
-        <select class="form-select" id="filterDept"><option value="" id="optAllDepts">All Departments</option></select>
-        <select class="form-select" id="filterSection"><option value="" id="optAllSections">All Sections</option></select>
-        <select class="form-select" id="filterDivision"><option value="" id="optAllDivisions">All Divisions</option></select>
+        <select class="form-select" id="filterRole"><option value="" id="optAllRoles" data-label-en="All Roles" data-label-ar="كل الأدوار">All Roles</option></select>
+        <select class="form-select" id="filterSector"><option value="" id="optAllSectors" data-label-en="All Sectors" data-label-ar="كل القطاعات">All Sectors</option></select>
+        <select class="form-select" id="filterDept"><option value="" id="optAllDepts" data-label-en="All Departments" data-label-ar="كل الإدارات">All Departments</option></select>
+        <select class="form-select" id="filterSection"><option value="" id="optAllSections" data-label-en="All Sections" data-label-ar="كل الأقسام">All Sections</option></select>
+        <select class="form-select" id="filterDivision"><option value="" id="optAllDivisions" data-label-en="All Divisions" data-label-ar="كل الشعب">All Divisions</option></select>
         <select class="form-select" id="filterActive">
-            <option value="" id="optAllStatus">All</option>
-            <option value="1" id="optActiveStatus">Active</option>
-            <option value="0" id="optInactiveStatus">Inactive</option>
+            <option value="" id="optAllStatus" data-label-en="All" data-label-ar="الكل">All</option>
+            <option value="1" id="optActiveStatus" data-label-en="Active" data-label-ar="نشط">Active</option>
+            <option value="0" id="optInactiveStatus" data-label-en="Inactive" data-label-ar="غير نشط">Inactive</option>
         </select>
         <select class="form-select" id="filterGender">
-            <option value="" id="optAllGenders">All Genders</option>
-            <option value="men" id="optMaleGender">Male</option>
-            <option value="women" id="optFemaleGender">Female</option>
+            <option value="" id="optAllGenders" data-label-en="All Genders" data-label-ar="كل الجنس">All Genders</option>
+            <option value="men" id="optMaleGender" data-label-en="Male" data-label-ar="ذكر">Male</option>
+            <option value="women" id="optFemaleGender" data-label-en="Female" data-label-ar="أنثى">Female</option>
         </select>
     </div>
     <div class="u-toolbar-end">
-        <button class="btn btn-primary" id="btnAddUser" onclick="openAddUser()">➕ Add User</button>
+        <button class="btn btn-primary" id="btnAddUser" onclick="openAddUser()" data-label-en="➕ Add User" data-label-ar="➕ إضافة مستخدم">➕ Add User</button>
     </div>
 </div>
 
@@ -132,19 +132,19 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             <thead>
                 <tr>
                     <th>#</th>
-                    <th id="thEmpId">Employee ID</th>
-                    <th id="thUsername">Username</th>
-                    <th id="thEmail">Email</th>
-                    <th id="thPhone">Phone</th>
-                    <th id="thRole">Role</th>
-                    <th id="thSector">Sector</th>
-                    <th id="thDept">Department</th>
-                    <th id="thSection">Section</th>
-                    <th id="thDivision">Division</th>
-                    <th id="thStatus">Status</th>
-                    <th id="thGender">Gender</th>
-                    <th id="thCreatedAt">Created At</th>
-                    <th id="thActions">Actions</th>
+                    <th id="thEmpId" data-label-en="Employee ID" data-label-ar="الرقم الوظيفي">Employee ID</th>
+                    <th id="thUsername" data-label-en="Username" data-label-ar="اسم المستخدم">Username</th>
+                    <th id="thEmail" data-label-en="Email" data-label-ar="البريد الإلكتروني">Email</th>
+                    <th id="thPhone" data-label-en="Phone" data-label-ar="الهاتف">Phone</th>
+                    <th id="thRole" data-label-en="Role" data-label-ar="الدور">Role</th>
+                    <th id="thSector" data-label-en="Sector" data-label-ar="القطاع">Sector</th>
+                    <th id="thDept" data-label-en="Department" data-label-ar="الإدارة">Department</th>
+                    <th id="thSection" data-label-en="Section" data-label-ar="القسم">Section</th>
+                    <th id="thDivision" data-label-en="Division" data-label-ar="الشعبة">Division</th>
+                    <th id="thStatus" data-label-en="Status" data-label-ar="الحالة">Status</th>
+                    <th id="thGender" data-label-en="Gender" data-label-ar="الجنس">Gender</th>
+                    <th id="thCreatedAt" data-label-en="Created At" data-label-ar="تاريخ الإنشاء">Created At</th>
+                    <th id="thActions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
                 </tr>
             </thead>
             <tbody id="usersBody">
@@ -159,86 +159,86 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <!-- View User Modal -->
 <div class="modal-overlay" id="viewModal">
     <div class="modal-content">
-        <div class="modal-header"><h3 id="viewModalTitle">👤 User Details</h3><button class="modal-close" onclick="closeModal('viewModal')">✕</button></div>
+        <div class="modal-header"><h3 id="viewModalTitle" data-label-en="👤 User Details" data-label-ar="👤 بيانات المستخدم">👤 User Details</h3><button class="modal-close" onclick="closeModal('viewModal')">✕</button></div>
         <div class="modal-body" id="viewBody"></div>
-        <div class="modal-footer"><button class="btn btn-secondary" id="btnCloseView" onclick="closeModal('viewModal')">Close</button></div>
+        <div class="modal-footer"><button class="btn btn-secondary" id="btnCloseView" data-label-en="Close" data-label-ar="إغلاق" onclick="closeModal('viewModal')">Close</button></div>
     </div>
 </div>
 
 <!-- Add/Edit User Modal -->
 <div class="modal-overlay" id="formModal">
     <div class="modal-content">
-        <div class="modal-header"><h3 id="formTitle">Add User</h3><button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
+        <div class="modal-header"><h3 id="formTitle" data-label-en="Add User" data-label-ar="إضافة مستخدم">Add User</h3><button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
         <div class="modal-body">
             <form id="userForm" class="form-grid" onsubmit="return false;">
                 <input type="hidden" id="editUserId" value="">
                 <div class="form-group">
-                    <label id="lblEmpId">Employee ID</label>
+                    <label id="lblEmpId" data-label-en="Employee ID" data-label-ar="رقم الموظف">Employee ID</label>
                     <input type="text" id="fEmpId" placeholder="EMP001">
                 </div>
                 <div class="form-group">
-                    <label id="lblUsername">Username *</label>
+                    <label id="lblUsername" data-label-en="Username *" data-label-ar="اسم المستخدم *">Username *</label>
                     <input type="text" id="fUsername" required placeholder="username">
                 </div>
                 <div class="form-group">
-                    <label id="lblEmail">Email</label>
+                    <label id="lblEmail" data-label-en="Email" data-label-ar="البريد الإلكتروني">Email</label>
                     <input type="email" id="fEmail" placeholder="user@example.com">
                 </div>
                 <div class="form-group">
-                    <label id="lblPhone">Phone</label>
+                    <label id="lblPhone" data-label-en="Phone" data-label-ar="الهاتف">Phone</label>
                     <input type="text" id="fPhone" placeholder="05xxxxxxxx">
                 </div>
                 <div class="form-group">
-                    <label id="fPasswordLabel">Password *</label>
+                    <label id="fPasswordLabel" data-label-en="Password *" data-label-ar="كلمة المرور *">Password *</label>
                     <input type="password" id="fPassword" placeholder="••••••••">
                 </div>
                 <div class="form-group">
-                    <label id="lblRole">Role</label>
+                    <label id="lblRole" data-label-en="Role" data-label-ar="الدور">Role</label>
                     <select id="fRoleId"></select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormSector">Sector</label>
+                    <label id="lblFormSector" data-label-en="Sector" data-label-ar="القطاع">Sector</label>
                     <select id="fSectorId"><option value="">-- All --</option></select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormDept">Department</label>
+                    <label id="lblFormDept" data-label-en="Department" data-label-ar="الإدارة">Department</label>
                     <select id="fDeptId"><option value="">-- All --</option></select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormSection">Section</label>
+                    <label id="lblFormSection" data-label-en="Section" data-label-ar="القسم">Section</label>
                     <select id="fSectionId"><option value="">-- All --</option></select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormDivision">Division</label>
+                    <label id="lblFormDivision" data-label-en="Division" data-label-ar="الشعبة">Division</label>
                     <select id="fDivisionId"><option value="">-- All --</option></select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormGender">Gender</label>
+                    <label id="lblFormGender" data-label-en="Gender" data-label-ar="الجنس">Gender</label>
                     <select id="fGender">
-                        <option value="" id="fOptUnspecified">-- Unspecified --</option>
-                        <option value="men" id="fOptMale">Male</option>
-                        <option value="women" id="fOptFemale">Female</option>
+                        <option value="" id="fOptUnspecified" data-label-en="-- Unspecified --" data-label-ar="-- غير محدد --">-- Unspecified --</option>
+                        <option value="men" id="fOptMale" data-label-en="Male" data-label-ar="ذكر">Male</option>
+                        <option value="women" id="fOptFemale" data-label-en="Female" data-label-ar="أنثى">Female</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label id="lblLang">Preferred Language</label>
+                    <label id="lblLang" data-label-en="Preferred Language" data-label-ar="اللغة المفضلة">Preferred Language</label>
                     <select id="fLang">
-                        <option value="ar" id="fOptArabic">Arabic</option>
-                        <option value="en" id="fOptEnglish">English</option>
+                        <option value="ar" id="fOptArabic" data-label-en="Arabic" data-label-ar="العربية">Arabic</option>
+                        <option value="en" id="fOptEnglish" data-label-en="English" data-label-ar="الإنجليزية">English</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label id="lblFormStatus">Status</label>
+                    <label id="lblFormStatus" data-label-en="Status" data-label-ar="الحالة">Status</label>
                     <select id="fActive">
-                        <option value="1" id="fOptActive">Active</option>
-                        <option value="0" id="fOptInactive">Inactive</option>
+                        <option value="1" id="fOptActive" data-label-en="Active" data-label-ar="نشط">Active</option>
+                        <option value="0" id="fOptInactive" data-label-en="Inactive" data-label-ar="غير نشط">Inactive</option>
                     </select>
                 </div>
             </form>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" id="btnCancel" onclick="closeModal('formModal')">Cancel</button>
-            <button class="btn btn-primary" id="saveBtn" onclick="saveUser()">💾 Save</button>
+            <button class="btn btn-secondary" id="btnCancel" data-label-en="Cancel" data-label-ar="إلغاء" onclick="closeModal('formModal')">Cancel</button>
+            <button class="btn btn-primary" id="saveBtn" data-label-en="💾 Save" data-label-ar="💾 حفظ" onclick="saveUser()">💾 Save</button>
         </div>
     </div>
 </div>
