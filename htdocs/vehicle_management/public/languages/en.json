@@ -442,5 +442,14 @@
   "mod_reports": "Reports",
   "mod_admin": "Admin",
   "mod_references": "References",
-  "mod_settings": "Settings"
+  "mod_settings": "Settings",
+  "no_roles": "No roles found",
+  "builtin": "System",
+  "key_name_required": "Key and name are required",
+  "role_updated": "Role updated successfully",
+  "role_created": "Role created successfully",
+  "confirm_delete_role": "Are you sure you want to delete role:",
+  "role_deleted": "Role deleted successfully",
+  "no_permissions": "No permissions",
+  "permissions_saved": "Permissions saved successfully"
 }

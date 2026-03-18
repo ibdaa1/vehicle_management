@@ -442,5 +442,14 @@
   "mod_reports": "التقارير",
   "mod_admin": "الإدارة",
   "mod_references": "المراجع",
-  "mod_settings": "الإعدادات"
+  "mod_settings": "الإعدادات",
+  "no_roles": "لم يتم العثور على أدوار",
+  "builtin": "نظامي",
+  "key_name_required": "المفتاح والاسم مطلوبان",
+  "role_updated": "تم تحديث الدور بنجاح",
+  "role_created": "تم إنشاء الدور بنجاح",
+  "confirm_delete_role": "هل أنت متأكد من حذف الدور:",
+  "role_deleted": "تم حذف الدور بنجاح",
+  "no_permissions": "لا توجد صلاحيات",
+  "permissions_saved": "تم حفظ الصلاحيات بنجاح"
 }
