@@ -75,7 +75,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             </div>
             <div class="fg">
                 <label id="pfLblGender" data-label-en="Gender" data-label-ar="الجنس">Gender</label>
-                <input type="text" id="pfGender" disabled>
+                <select id="pfGender">
+                    <option value="">--</option>
+                    <option value="male" data-label-en="Male" data-label-ar="ذكر">Male</option>
+                    <option value="female" data-label-en="Female" data-label-ar="أنثى">Female</option>
+                </select>
             </div>
             <div class="fg">
                 <label id="pfLblRole" data-label-en="Role" data-label-ar="الدور">Role</label>
@@ -83,19 +87,19 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             </div>
             <div class="fg">
                 <label id="pfLblSector" data-label-en="Sector" data-label-ar="القطاع">Sector</label>
-                <input type="text" id="pfSector" disabled>
+                <select id="pfSector"><option value="">--</option></select>
             </div>
             <div class="fg">
                 <label id="pfLblDept" data-label-en="Department" data-label-ar="الإدارة">Department</label>
-                <input type="text" id="pfDept" disabled>
+                <select id="pfDept"><option value="">--</option></select>
             </div>
             <div class="fg">
                 <label id="pfLblSection" data-label-en="Section" data-label-ar="القسم">Section</label>
-                <input type="text" id="pfSection" disabled>
+                <select id="pfSection"><option value="">--</option></select>
             </div>
             <div class="fg">
                 <label id="pfLblDivision" data-label-en="Division" data-label-ar="الشعبة">Division</label>
-                <input type="text" id="pfDivision" disabled>
+                <select id="pfDivision"><option value="">--</option></select>
             </div>
             <div class="fg">
                 <label id="pfLblLang" data-label-en="Preferred Language" data-label-ar="اللغة المفضلة">Preferred Language</label>
@@ -207,6 +211,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
     var currentUser = null;
     var profileData = null;
+    var pfRefs = {sectors:[],departments:[],sections:[],divisions:[]};
 
     function $(id) { return document.getElementById(id); }
 
@@ -269,6 +274,56 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         setEl('lbl_vl_loading','loading');
     }
 
+    /* Load reference data for dropdowns */
+    async function loadRefs() {
+        try {
+            var res = await API.get('/references');
+            pfRefs = (res && res.data) || res || {sectors:[],departments:[],sections:[],divisions:[]};
+        } catch(e) { pfRefs = {sectors:[],departments:[],sections:[],divisions:[]}; }
+
+        var isEn = getLang() === 'en';
+
+        // Populate sector dropdown
+        var sd = $('pfSector');
+        sd.innerHTML = '<option value="">--</option>';
+        (pfRefs.sectors||[]).forEach(function(s){
+            sd.innerHTML += '<option value="'+s.id+'">'+ esc(isEn ? (s.name_en||s.name) : (s.name||s.name_en)) +'</option>';
+        });
+
+        // Populate department dropdown
+        var dd = $('pfDept');
+        dd.innerHTML = '<option value="">--</option>';
+        (pfRefs.departments||[]).forEach(function(d){
+            dd.innerHTML += '<option value="'+d.department_id+'">'+ esc(isEn ? (d.name_en||d.name_ar) : (d.name_ar||d.name_en)) +'</option>';
+        });
+
+        // Wire cascading
+        dd.addEventListener('change', function(){ pfCascadeSection(this.value); });
+        $('pfSection').addEventListener('change', function(){ pfCascadeDivision(this.value); });
+
+        // Initial cascade
+        pfCascadeSection('');
+    }
+
+    function pfCascadeSection(did) {
+        var isEn = getLang() === 'en';
+        var s = $('pfSection');
+        s.innerHTML = '<option value="">--</option>';
+        (pfRefs.sections||[]).filter(function(sc){ return !did || sc.department_id == did; }).forEach(function(sc){
+            s.innerHTML += '<option value="'+sc.section_id+'">'+ esc(isEn ? (sc.name_en||sc.name_ar) : (sc.name_ar||sc.name_en)) +'</option>';
+        });
+        pfCascadeDivision('');
+    }
+
+    function pfCascadeDivision(sid) {
+        var isEn = getLang() === 'en';
+        var d = $('pfDivision');
+        d.innerHTML = '<option value="">--</option>';
+        (pfRefs.divisions||[]).filter(function(dv){ return !sid || dv.section_id == sid; }).forEach(function(dv){
+            d.innerHTML += '<option value="'+dv.division_id+'">'+ esc(isEn ? (dv.name_en||dv.name_ar) : (dv.name_ar||dv.name_en)) +'</option>';
+        });
+    }
+
     /* Load profile data */
     async function loadProfile() {
         try {
@@ -288,16 +343,27 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         $('pfPhone').value = data.phone || '';
         $('pfRole').value = data.role_name || (t('role', 'Role') + ' #' + (data.role_id || ''));
 
-        var genderMap = {
-            male:   t('male', 'Male'),
-            female: t('female', 'Female')
-        };
-        $('pfGender').value = genderMap[data.gender] || data.gender || '';
+        // Gender select
+        var genderSel = $('pfGender');
+        if (genderSel) genderSel.value = data.gender || '';
 
-        $('pfSector').value = data.sector_name || data.sector_name_en || t('not_set', 'Not set');
-        $('pfDept').value = data.department_name_ar || t('not_set', 'Not set');
-        $('pfSection').value = data.section_name_ar || t('not_set', 'Not set');
-        $('pfDivision').value = data.division_name_ar || t('not_set', 'Not set');
+        // Sector select
+        var sectorSel = $('pfSector');
+        if (sectorSel) sectorSel.value = data.sector_id || '';
+
+        // Department select
+        var deptSel = $('pfDept');
+        if (deptSel) deptSel.value = data.department_id || '';
+
+        // Cascade section based on department, then set value
+        pfCascadeSection(data.department_id || '');
+        var sectionSel = $('pfSection');
+        if (sectionSel) sectionSel.value = data.section_id || '';
+
+        // Cascade division based on section, then set value
+        pfCascadeDivision(data.section_id || '');
+        var divisionSel = $('pfDivision');
+        if (divisionSel) divisionSel.value = data.division_id || '';
 
         var langSel = $('pfLang');
         if (langSel) langSel.value = data.preferred_language || 'ar';
@@ -314,7 +380,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         var payload = {
             email: $('pfEmail').value.trim(),
             phone: $('pfPhone').value.trim(),
-            preferred_language: $('pfLang').value
+            preferred_language: $('pfLang').value,
+            gender: $('pfGender').value,
+            sector_id: $('pfSector').value || null,
+            department_id: $('pfDept').value || null,
+            section_id: $('pfSection').value || null,
+            division_id: $('pfDivision').value || null
         };
 
         try {
@@ -488,12 +559,13 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         tbody.innerHTML = html;
     }
 
-    (function init() {
+    (async function init() {
         if (window.__pageDenied) return;
         var user = Auth.getUser();
         if (!user) { setTimeout(init, 100); return; }
         currentUser = user;
         applyLang();
+        await loadRefs();
         loadProfile();
         loadMovements();
         loadViolations();

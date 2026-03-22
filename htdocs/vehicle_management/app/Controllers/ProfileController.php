@@ -88,13 +88,23 @@ class ProfileController extends BaseController
             'email'              => 's',
             'phone'              => 's',
             'preferred_language' => 's',
+            'gender'             => 's',
+            'sector_id'          => 'i',
+            'department_id'      => 'i',
+            'section_id'         => 'i',
+            'division_id'        => 'i',
         ];
 
         foreach ($allowedFields as $field => $type) {
             if (array_key_exists($field, $data)) {
-                $sets[] = "{$field} = ?";
-                $types .= $type;
-                $binds[] = $data[$field] !== '' ? $data[$field] : null;
+                $val = $data[$field] !== '' ? $data[$field] : null;
+                if ($val === null) {
+                    $sets[] = "{$field} = NULL";
+                } else {
+                    $sets[] = "{$field} = ?";
+                    $types .= $type;
+                    $binds[] = $val;
+                }
             }
         }
 
