@@ -25,19 +25,21 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .u-stat{background:var(--bg-card);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);text-align:center}
 .u-stat .u-stat-val{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
 .u-stat .u-stat-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
-.data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
-.data-table th,.data-table td{padding:12px 16px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.875rem}
+.data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow);table-layout:fixed}
+.data-table th,.data-table td{padding:8px 6px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .data-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap;position:sticky;top:0;z-index:2}
 .data-table tr:hover{background:var(--bg-main)}
-.data-table .table-actions{display:flex;gap:6px;justify-content:center}
-.data-table .table-actions .btn-icon{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;font-size:.85rem;display:inline-flex;align-items:center;justify-content:center;transition:all .3s}
+.data-table col.col-row{width:3%}.data-table col.col-emp{width:7%}.data-table col.col-user{width:8%}.data-table col.col-email{width:11%}.data-table col.col-phone{width:8%}.data-table col.col-role{width:7%}.data-table col.col-sector{width:8%}.data-table col.col-dept{width:8%}.data-table col.col-section{width:8%}.data-table col.col-div{width:7%}.data-table col.col-status{width:5%}.data-table col.col-gender{width:5%}.data-table col.col-date{width:7%}.data-table col.col-actions{width:8%}
+@media(min-width:769px) and (max-width:1400px){.data-table col.col-gender,.data-table col.col-date{width:0}.data-table .hide-md{display:none}}
+.data-table .table-actions{display:flex;gap:4px;justify-content:center;white-space:nowrap;overflow:visible}
+.data-table .table-actions .btn-icon{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;font-size:.75rem;display:inline-flex;align-items:center;justify-content:center;transition:all .3s}
 .btn-edit{background:var(--status-info);color:#fff}
 .btn-edit:hover{opacity:.85}
 .btn-delete{background:var(--status-danger);color:#fff}
 .btn-delete:hover{opacity:.85}
 .btn-view{background:var(--primary-main);color:#fff}
 .btn-view:hover{opacity:.85}
-.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .badge-active{background:#d4edda;color:#155724}
 .badge-inactive{background:#f8d7da;color:#721c24}
 .badge-role{background:var(--bg-main);color:var(--primary-dark);border:1px solid var(--border-default)}
@@ -55,8 +57,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .form-grid .full-width{grid-column:1/-1}
 .form-group{margin-bottom:16px}
 .form-group label{display:block;margin-bottom:6px;font-size:.85rem;font-weight:600;color:var(--text-secondary)}
-.form-group input,.form-group select{width:100%;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:.9rem}
-.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(58,81,58,.15)}
+.form-group input,.form-group select{width:100%;padding:10px 14px;border:1.5px solid var(--border-default);border-radius:10px;background:var(--bg-card);color:var(--text-primary);font-size:.875rem;min-height:42px;box-sizing:border-box}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(26,82,118,.12)}
 .empty-state{text-align:center;padding:48px 24px;color:var(--text-secondary)}
 .empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.5}
 .table-wrapper{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 340px);border-radius:12px;border:1px solid var(--border-default)}
@@ -76,12 +78,12 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .user-detail .detail-value{font-weight:600;color:var(--text-primary)}
 @media(max-width:480px){.user-detail{grid-template-columns:1fr}}
 /* Toggle switch */
-.toggle-switch{position:relative;display:inline-block;width:42px;height:24px;cursor:pointer}
+.toggle-switch{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer}
 .toggle-switch input{opacity:0;width:0;height:0}
-.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:24px;transition:.3s}
-.toggle-slider:before{content:"";position:absolute;height:18px;width:18px;bottom:3px;inset-inline-start:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:20px;transition:.3s}
+.toggle-slider:before{content:"";position:absolute;height:16px;width:16px;bottom:2px;inset-inline-start:2px;background:#fff;border-radius:50%;transition:.3s}
 .toggle-switch input:checked+.toggle-slider{background:var(--status-success,#4caf50)}
-.toggle-switch input:checked+.toggle-slider:before{transform:translateX(18px)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(16px)}
 /* Skeleton */
 .skel-row td{padding:12px 16px}
 .skel-cell{height:14px;border-radius:6px;background:linear-gradient(90deg,#e8e8e8 25%,#f5f5f5 50%,#e8e8e8 75%);background-size:200% 100%;animation:u-shimmer 1.5s infinite}
@@ -131,6 +133,9 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="section-card">
     <div class="table-wrapper table-responsive">
         <table class="data-table" id="usersTable">
+            <colgroup>
+                <col class="col-row"><col class="col-emp"><col class="col-user"><col class="col-email"><col class="col-phone"><col class="col-role"><col class="col-sector"><col class="col-dept"><col class="col-section"><col class="col-div"><col class="col-status"><col class="col-gender"><col class="col-date"><col class="col-actions">
+            </colgroup>
             <thead>
                 <tr>
                     <th>#</th>
@@ -144,8 +149,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                     <th id="thSection" data-label-en="Section" data-label-ar="القسم">Section</th>
                     <th id="thDivision" data-label-en="Division" data-label-ar="الشعبة">Division</th>
                     <th id="thStatus" data-label-en="Status" data-label-ar="الحالة">Status</th>
-                    <th id="thGender" data-label-en="Gender" data-label-ar="الجنس">Gender</th>
-                    <th id="thCreatedAt" data-label-en="Created At" data-label-ar="تاريخ الإنشاء">Created At</th>
+                    <th id="thGender" class="hide-md" data-label-en="Gender" data-label-ar="الجنس">Gender</th>
+                    <th id="thCreatedAt" class="hide-md" data-label-en="Created At" data-label-ar="تاريخ الإنشاء">Created At</th>
                     <th id="thActions" data-label-en="Actions" data-label-ar="الإجراءات">Actions</th>
                 </tr>
             </thead>
@@ -417,18 +422,18 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             const created = u.created_at ? u.created_at.substring(0, 10) : '\u2014';
             return '<tr>' +
                 '<td data-label="#">' + (start + i + 1) + '</td>' +
-                '<td data-label="' + i18n.t('employee_id') + '">' + escHtml(u.emp_id || '\u2014') + '</td>' +
-                '<td data-label="' + i18n.t('username') + '"><strong>' + escHtml(u.username) + '</strong></td>' +
-                '<td data-label="' + i18n.t('email') + '">' + escHtml(u.email || '\u2014') + '</td>' +
-                '<td data-label="' + i18n.t('phone') + '">' + escHtml(u.phone || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('employee_id') + '" title="' + escHtml(u.emp_id || '') + '">' + escHtml(u.emp_id || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('username') + '" title="' + escHtml(u.username) + '"><strong>' + escHtml(u.username) + '</strong></td>' +
+                '<td data-label="' + i18n.t('email') + '" title="' + escHtml(u.email || '') + '">' + escHtml(u.email || '\u2014') + '</td>' +
+                '<td data-label="' + i18n.t('phone') + '" title="' + escHtml(u.phone || '') + '">' + escHtml(u.phone || '\u2014') + '</td>' +
                 '<td data-label="' + i18n.t('role') + '">' + roleBadge + '</td>' +
-                '<td data-label="' + i18n.t('sector') + '">' + escHtml(sectorName) + '</td>' +
-                '<td data-label="' + i18n.t('department') + '">' + escHtml(deptName) + '</td>' +
-                '<td data-label="' + i18n.t('section') + '">' + escHtml(sectName) + '</td>' +
-                '<td data-label="' + i18n.t('division') + '">' + escHtml(divName) + '</td>' +
+                '<td data-label="' + i18n.t('sector') + '" title="' + escHtml(sectorName) + '">' + escHtml(sectorName) + '</td>' +
+                '<td data-label="' + i18n.t('department') + '" title="' + escHtml(deptName) + '">' + escHtml(deptName) + '</td>' +
+                '<td data-label="' + i18n.t('section') + '" title="' + escHtml(sectName) + '">' + escHtml(sectName) + '</td>' +
+                '<td data-label="' + i18n.t('division') + '" title="' + escHtml(divName) + '">' + escHtml(divName) + '</td>' +
                 '<td data-label="' + i18n.t('status') + '">' + toggleSwitch + '</td>' +
-                '<td data-label="' + i18n.t('gender') + '">' + genderLabel + '</td>' +
-                '<td data-label="' + i18n.t('created_at') + '">' + created + '</td>' +
+                '<td data-label="' + i18n.t('gender') + '" class="hide-md">' + genderLabel + '</td>' +
+                '<td data-label="' + i18n.t('created_at') + '" class="hide-md">' + created + '</td>' +
                 '<td data-label="' + i18n.t('actions') + '" class="table-actions">' +
                     '<button class="btn-icon btn-view" title="' + i18n.t('view') + '" data-action="view" data-id="' + parseInt(u.id) + '">👁</button>' +
                     (uCanEdit ? '<button class="btn-icon btn-edit" title="' + i18n.t('edit') + '" data-action="edit" data-id="' + parseInt(u.id) + '">✏️</button>' : '') +
