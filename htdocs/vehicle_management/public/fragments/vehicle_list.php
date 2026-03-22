@@ -445,10 +445,10 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             var statusTxt=v.status==='operational'?i18n.t('operational'):(v.status==='maintenance'?i18n.t('under_maintenance'):i18n.t('out_of_service'));
             var modeTxt=(v.vehicle_mode||v.usage_mode)==='private'?i18n.t('private'):i18n.t('shift');
             var sectorName='—', deptName='—', sectName='—', divName='—';
-            if(v.sector_id){var sc=(vlRefs.sectors||[]).find(function(s){return s.id==v.sector_id;});if(sc) sectorName=(sc.name_en||sc.name)||'—';}
-            if(v.department_id){var dd=(vlRefs.departments||[]).find(function(d){return d.department_id==v.department_id;});if(dd) deptName=(dd.name_en||dd.name_ar)||'—';}
-            if(v.section_id){var ss=(vlRefs.sections||[]).find(function(s){return s.section_id==v.section_id;});if(ss) sectName=(ss.name_en||ss.name_ar)||'—';}
-            if(v.division_id){var dv=(vlRefs.divisions||[]).find(function(d){return d.division_id==v.division_id;});if(dv) divName=(dv.name_en||dv.name_ar)||'—';}
+            if(v.sector_id){var sc=(vlRefs.sectors||[]).find(function(s){return s.id==v.sector_id;});if(sc) sectorName=(isEn?(sc.name_en||sc.name):(sc.name||sc.name_en))||'—';}
+            if(v.department_id){var dd=(vlRefs.departments||[]).find(function(d){return d.department_id==v.department_id;});if(dd) deptName=(isEn?(dd.name_en||dd.name_ar):(dd.name_ar||dd.name_en))||'—';}
+            if(v.section_id){var ss=(vlRefs.sections||[]).find(function(s){return s.section_id==v.section_id;});if(ss) sectName=(isEn?(ss.name_en||ss.name_ar):(ss.name_ar||ss.name_en))||'—';}
+            if(v.division_id){var dv=(vlRefs.divisions||[]).find(function(d){return d.division_id==v.division_id;});if(dv) divName=(isEn?(dv.name_en||dv.name_ar):(dv.name_ar||dv.name_en))||'—';}
             var actions='';
             if(canEdit) actions+='<button class="btn-icon btn-edit" onclick="VLForm.showEdit('+v.id+')" title="'+i18n.t('edit')+'">✏️</button>';
             if(canDelete) actions+='<button class="btn-icon btn-delete" onclick="VLForm.showDelete('+v.id+')" title="'+i18n.t('delete')+'">🗑️</button>';
