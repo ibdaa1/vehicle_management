@@ -269,14 +269,6 @@ $menuItems = [
     }
     #langBtn:hover { background: rgba(255,255,255,.2) !important; }
 
-    /* Theme btn */
-    #themeBtn {
-        width: 34px !important; height: 34px !important;
-        border-radius: 7px !important;
-        background: rgba(255,255,255,.08) !important;
-        border: 1px solid rgba(255,255,255,.12) !important;
-    }
-
     /* Logout */
     #logoutBtn {
         border: 1px solid rgba(220,53,69,.35) !important;
@@ -354,10 +346,6 @@ $menuItems = [
             </h1>
         </div>
         <div class="header-actions">
-            <button class="btn btn-ghost btn-icon"
-                    data-action="toggle-theme"
-                    title="تبديل المظهر"
-                    id="themeBtn">&#9728;&#65039;</button>
             <button class="btn btn-ghost btn-sm"
                     data-action="toggle-lang"
                     id="langBtn">EN</button>
