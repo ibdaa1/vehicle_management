@@ -256,19 +256,6 @@ $menuItems = [
     #mobileMenuBtn { display: none; }
     @media(max-width:768px){ #mobileMenuBtn { display: flex; } }
 
-    /* Lang pill */
-    #langBtn {
-        border: 1px solid rgba(255,255,255,.22) !important;
-        border-radius: 20px !important;
-        padding: 4px 12px !important;
-        font-size: .76rem !important;
-        font-weight: 700 !important;
-        letter-spacing: .06em;
-        color: var(--text-light, #fff) !important;
-        background: rgba(255,255,255,.1) !important;
-    }
-    #langBtn:hover { background: rgba(255,255,255,.2) !important; }
-
     /* Logout */
     #logoutBtn {
         border: 1px solid rgba(220,53,69,.35) !important;
@@ -346,9 +333,6 @@ $menuItems = [
             </h1>
         </div>
         <div class="header-actions">
-            <button class="btn btn-ghost btn-sm"
-                    data-action="toggle-lang"
-                    id="langBtn">EN</button>
             <div class="user-info"></div>
             <button class="btn btn-ghost btn-sm"
                     data-action="logout"
@@ -403,8 +387,6 @@ $menuItems = [
             // 3. Header text
             var ht = document.getElementById('headerTitle');
             if (ht) ht.textContent = ht.getAttribute(isEn ? 'data-title-en' : 'data-title-ar') || ht.textContent;
-            var lb = document.getElementById('langBtn');
-            if (lb) lb.textContent = isEn ? 'AR' : 'EN';
             var lo = document.getElementById('logoutBtn');
             if (lo) lo.textContent = lo.getAttribute(isEn ? 'data-label-en' : 'data-label-ar') || lo.textContent;
 

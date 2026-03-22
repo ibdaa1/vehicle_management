@@ -1175,23 +1175,6 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
     })();
 })();
 
-/* ── Direction guard: prevent preferred_language from overriding manual toggle ── */
-(function(){
-    var storedLang = localStorage.getItem('lang');
-    if (!storedLang) return;
-    var correctDir = storedLang === 'en' ? 'ltr' : 'rtl';
-    var obs = new MutationObserver(function(){
-        var curDir = document.documentElement.getAttribute('dir');
-        if (curDir !== correctDir) {
-            obs.disconnect();
-            document.documentElement.setAttribute('dir', correctDir);
-            document.documentElement.setAttribute('lang', storedLang);
-            document.body.setAttribute('dir', correctDir);
-            setTimeout(function(){ obs.observe(document.documentElement, {attributes:true,attributeFilter:['dir']}); }, 50);
-        }
-    });
-    obs.observe(document.documentElement, {attributes:true,attributeFilter:['dir']});
-    setTimeout(function(){ obs.disconnect(); }, 8000);
-})();
+
 </script>
 <?php $pageScripts = ob_get_clean(); ?>
