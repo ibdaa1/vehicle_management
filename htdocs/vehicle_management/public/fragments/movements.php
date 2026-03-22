@@ -20,23 +20,22 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .mv-stat .print-hint{font-size:.7rem;color:var(--text-secondary,#999);margin-top:2px;opacity:0;transition:opacity .2s}
 .mv-stat:hover .print-hint{opacity:1}
 .mv-toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
-.mv-toolbar .search-box{flex:1;min-width:200px;position:relative}
-.mv-toolbar .search-box input{width:100%;padding:10px 12px;padding-inline-end:36px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.95rem}
-.mv-toolbar .search-box .ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:#999}
-.mv-toolbar select{padding:10px;border:1px solid var(--border-default,#ddd);border-radius:8px;font-size:.9rem;min-width:120px;max-width:200px}
+.mv-toolbar .search-box{flex:1;min-width:200px;max-width:360px;position:relative}
+.mv-toolbar .search-box input{width:100%;padding:10px 14px;padding-inline-end:36px;border:1.5px solid var(--border-default,#ddd);border-radius:10px;font-size:.875rem;background:var(--bg-card,#fff);color:var(--text-primary,#333);min-height:42px;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+.mv-toolbar .search-box input:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.12)}
+.mv-toolbar .search-box .ico{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);color:#999;pointer-events:none}
 .mv-toolbar .btn-add{margin-inline-start:auto}
-.mv-filters-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:16px;align-items:end}
-.mv-filters-row label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
-.mv-filters-row select{width:100%;padding:10px 12px;border:2px solid var(--border-default,#ddd);border-radius:10px;font-size:.9rem;background:var(--bg-card,#fff);color:var(--text-primary,#333);transition:border-color .2s,box-shadow .2s;cursor:pointer;min-height:42px}
-.mv-filters-row select:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.1)}
-.mv-date-range{display:flex;align-items:center;gap:10px;flex-wrap:wrap;grid-column:span 2}
-.mv-date-range label{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
-.mv-date-range input[type="date"]{padding:10px 12px;border:2px solid var(--border-default,#ddd);border-radius:10px;font-size:.9rem;min-width:150px;background:var(--bg-card,#fff);color:var(--text-primary,#333);min-height:42px;transition:border-color .2s,box-shadow .2s}
-.mv-date-range input[type="date"]:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.1)}
-@media(max-width:768px){.mv-filters-row{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.mv-date-range{grid-column:span 1}}
+.mv-filters-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;align-items:end}
+.mv-filters-row select{width:100%;padding:10px 12px;border:1.5px solid var(--border-default,#ddd);border-radius:10px;font-size:.875rem;background:var(--bg-card,#fff);color:var(--text-primary,#333);transition:border-color .2s,box-shadow .2s;cursor:pointer;min-height:42px;box-sizing:border-box}
+.mv-filters-row select:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.12)}
+.mv-date-group{display:flex;align-items:center;gap:8px;grid-column:span 2}
+.mv-date-group input[type="date"]{flex:1;padding:10px 12px;border:1.5px solid var(--border-default,#ddd);border-radius:10px;font-size:.875rem;background:var(--bg-card,#fff);color:var(--text-primary,#333);min-height:42px;box-sizing:border-box;transition:border-color .2s,box-shadow .2s}
+.mv-date-group input[type="date"]:focus{outline:none;border-color:var(--primary-main,#1a5276);box-shadow:0 0 0 3px rgba(26,82,118,.12)}
+.mv-date-group .date-sep{font-size:.85rem;color:var(--text-secondary,#666);white-space:nowrap;font-weight:600}
+@media(max-width:768px){.mv-filters-row{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}.mv-date-group{grid-column:span 1;flex-wrap:wrap}}
 .mv-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--bg-card,#fff);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .mv-table th{background:var(--primary-dark,#1a5276);color:#fff;padding:12px 14px;font-size:.85rem;white-space:nowrap}
-.mv-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem}
+.mv-table td{padding:10px 14px;border-bottom:1px solid var(--border-default,#eee);font-size:.9rem;word-break:break-word}
 .mv-table tr:hover td{background:rgba(26,82,118,.04)}
 .mv-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.8rem;font-weight:600}
 .mv-badge.pickup{background:#d4edda;color:#155724}
@@ -129,7 +128,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <button class="btn btn-primary btn-sm btn-add" id="mvBtnAdd">➕ <span id="mvBtnAddText">Add Movement</span></button>
 </div>
 
-<!-- Filters Row 1: Organizational filters -->
+<!-- Filters -->
 <div class="mv-filters-row">
     <select id="mvFilterSector">
         <option value="" id="mvOptAllSectors">All Sectors</option>
@@ -153,10 +152,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         <option value="private" id="mvOptPrivateMode">Private</option>
         <option value="shift" id="mvOptShiftMode">Shift</option>
     </select>
-</div>
-
-<!-- Filters Row 2: Vehicle and movement filters + date range -->
-<div class="mv-filters-row">
     <select id="mvFilterType">
         <option value="" id="mvOptAllTypes">All Types</option>
         <option value="pickup" id="mvOptPickup">Pickup</option>
@@ -177,11 +172,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     <select id="mvFilterVehicle">
         <option value="" id="mvOptAllVehicles">All Vehicles</option>
     </select>
-    <div class="mv-date-range">
-        <label id="mvLabelFrom">From:</label>
-        <input type="date" id="mvDateFrom" class="form-control">
-        <label id="mvLabelTo">To:</label>
-        <input type="date" id="mvDateTo" class="form-control">
+    <div class="mv-date-group">
+        <span class="date-sep" id="mvLabelFrom">From:</span>
+        <input type="date" id="mvDateFrom">
+        <span class="date-sep" id="mvLabelTo">To:</span>
+        <input type="date" id="mvDateTo">
     </div>
 </div>
 
