@@ -451,5 +451,10 @@
   "confirm_delete_role": "هل أنت متأكد من حذف الدور:",
   "role_deleted": "تم حذف الدور بنجاح",
   "no_permissions": "لا توجد صلاحيات",
-  "permissions_saved": "تم حفظ الصلاحيات بنجاح"
+  "permissions_saved": "تم حفظ الصلاحيات بنجاح",
+  "av_confirm_pickup_btn": "تأكيد التسليم",
+  "av_confirm_return_btn": "تأكيد الإرجاع",
+  "av_user_not_found": "المستخدم غير موجود",
+  "av_fill_required": "يرجى ملء جميع الحقول المطلوبة",
+  "av_recipient_admin_number": "الرقم الإداري للمستلم"
 }

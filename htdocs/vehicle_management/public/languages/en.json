@@ -451,5 +451,10 @@
   "confirm_delete_role": "Are you sure you want to delete role:",
   "role_deleted": "Role deleted successfully",
   "no_permissions": "No permissions",
-  "permissions_saved": "Permissions saved successfully"
+  "permissions_saved": "Permissions saved successfully",
+  "av_confirm_pickup_btn": "Confirm Pickup",
+  "av_confirm_return_btn": "Confirm Return",
+  "av_user_not_found": "User not found",
+  "av_fill_required": "Please fill all required fields",
+  "av_recipient_admin_number": "Recipient Admin Number"
 }

@@ -98,6 +98,36 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     .av-view-toggle{width:100%}
     .av-toggle-btn{flex:1;text-align:center}
 }
+/* === Action Modal (Pickup/Return Form) === */
+.av-action-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px}
+.av-action-modal{background:var(--bg-card);border-radius:16px;width:100%;max-width:480px;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:avModalIn .25s ease}
+@keyframes avModalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.av-action-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border-default)}
+.av-action-header h3{margin:0;font-size:1.1rem;font-weight:700;color:var(--text-primary)}
+.av-action-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-secondary);line-height:1;padding:4px}
+.av-action-close:hover{color:var(--text-primary)}
+.av-action-body{padding:24px}
+.av-action-body .av-fg{margin-bottom:16px}
+.av-action-body .av-fg label{display:block;font-size:.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:6px}
+.av-action-body .av-fg input,.av-action-body .av-fg select{width:100%;padding:10px 14px;border:1px solid var(--border-default);border-radius:8px;font-size:.9rem;background:var(--bg-card);color:var(--text-primary);box-sizing:border-box}
+.av-action-body .av-fg input:focus,.av-action-body .av-fg select:focus{outline:none;border-color:var(--primary-main);box-shadow:0 0 0 3px rgba(var(--primary-main-rgb,59,130,246),.15)}
+.av-action-body .av-fg input[readonly]{background:var(--bg-body);color:var(--text-secondary)}
+.av-lookup-result{margin-top:6px;padding:8px 12px;border-radius:8px;font-size:.85rem;font-weight:600;display:none}
+.av-lookup-result.found{display:block;background:rgba(25,135,84,.1);color:var(--status-success,#198754);border:1px solid rgba(25,135,84,.2)}
+.av-lookup-result.not-found{display:block;background:rgba(220,53,69,.08);color:var(--status-danger,#dc3545);border:1px solid rgba(220,53,69,.15)}
+.av-action-footer{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px;border-top:1px solid var(--border-default)}
+.av-action-footer .av-btn-cancel{padding:10px 20px;border:1px solid var(--border-default);border-radius:8px;background:var(--bg-card);color:var(--text-secondary);font-size:.9rem;font-weight:600;cursor:pointer}
+.av-action-footer .av-btn-cancel:hover{background:var(--bg-body)}
+.av-action-footer .av-btn-submit{padding:10px 24px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;color:#fff}
+.av-action-footer .av-btn-submit.pickup-btn{background:var(--primary-main,#3b82f6)}
+.av-action-footer .av-btn-submit.pickup-btn:hover{filter:brightness(1.1)}
+.av-action-footer .av-btn-submit.return-btn{background:var(--status-success,#198754)}
+.av-action-footer .av-btn-submit.return-btn:hover{filter:brightness(1.1)}
+.av-action-footer .av-btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.av-action-vehicle-info{padding:12px 16px;background:rgba(var(--primary-main-rgb,59,130,246),.06);border-radius:10px;margin-bottom:16px;border:1px solid rgba(var(--primary-main-rgb,59,130,246),.12)}
+.av-action-vehicle-info .av-vi-row{display:flex;gap:8px;font-size:.85rem;color:var(--text-primary);margin-bottom:4px}
+.av-action-vehicle-info .av-vi-row:last-child{margin-bottom:0}
+.av-action-vehicle-info .av-vi-label{font-weight:600;min-width:80px;color:var(--text-secondary)}
 </style>
 
 <div class="page-header">
@@ -244,6 +274,54 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         </div>
         <div class="av-modal-body" id="avDetailBody">
             <div class="av-empty-state"><div class="spinner spinner-sm"></div><span data-label-ar="جاري التحميل..." data-label-en="Loading...">Loading...</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Pickup / Return Action Modal ===== -->
+<div id="avActionModal" class="av-action-overlay" style="display:none">
+    <div class="av-action-modal">
+        <div class="av-action-header">
+            <h3 id="avActionTitle" data-label-ar="تسليم مركبة" data-label-en="Pickup Vehicle">Pickup Vehicle</h3>
+            <button class="av-action-close" id="avActionClose">&times;</button>
+        </div>
+        <div class="av-action-body">
+            <div class="av-action-vehicle-info" id="avActionVehicleInfo"></div>
+            <input type="hidden" id="avActionVehicleCode">
+            <input type="hidden" id="avActionType">
+            <div class="av-fg">
+                <label id="avActionEmpLabel" data-label-ar="الرقم الإداري للمستلم *" data-label-en="Recipient Admin Number *">Recipient Admin Number *</label>
+                <input type="text" id="avActionEmpId" placeholder="Enter admin number..." data-placeholder-ar="أدخل الرقم الإداري..." data-placeholder-en="Enter admin number...">
+                <div class="av-lookup-result" id="avActionLookup"></div>
+            </div>
+            <div class="av-fg">
+                <label id="avActionCondLabel" data-label-ar="حالة المركبة" data-label-en="Vehicle Condition">Vehicle Condition</label>
+                <select id="avActionCondition">
+                    <option value="" data-label-ar="-- اختر --" data-label-en="-- Select --">-- Select --</option>
+                    <option value="clean" data-label-ar="نظيفة" data-label-en="Clean">Clean</option>
+                    <option value="acceptable" data-label-ar="مقبولة" data-label-en="Acceptable">Acceptable</option>
+                    <option value="damaged" data-label-ar="متضررة" data-label-en="Damaged">Damaged</option>
+                </select>
+            </div>
+            <div class="av-fg">
+                <label id="avActionFuelLabel" data-label-ar="مستوى الوقود" data-label-en="Fuel Level">Fuel Level</label>
+                <select id="avActionFuel">
+                    <option value="" data-label-ar="-- اختر --" data-label-en="-- Select --">-- Select --</option>
+                    <option value="full" data-label-ar="ممتلئ" data-label-en="Full">Full</option>
+                    <option value="three_quarter" data-label-ar="3/4" data-label-en="3/4">3/4</option>
+                    <option value="half" data-label-ar="نصف" data-label-en="Half">Half</option>
+                    <option value="quarter" data-label-ar="1/4" data-label-en="1/4">1/4</option>
+                    <option value="empty" data-label-ar="فارغ" data-label-en="Empty">Empty</option>
+                </select>
+            </div>
+            <div class="av-fg">
+                <label id="avActionNotesLabel" data-label-ar="ملاحظات" data-label-en="Notes">Notes</label>
+                <input type="text" id="avActionNotes" placeholder="Optional notes..." data-placeholder-ar="ملاحظات اختيارية..." data-placeholder-en="Optional notes...">
+            </div>
+        </div>
+        <div class="av-action-footer">
+            <button class="av-btn-cancel" id="avActionCancelBtn" data-label-ar="إلغاء" data-label-en="Cancel">Cancel</button>
+            <button class="av-btn-submit pickup-btn" id="avActionSubmitBtn" data-label-ar="تأكيد التسليم" data-label-en="Confirm Pickup">Confirm Pickup</button>
         </div>
     </div>
 </div>
@@ -710,45 +788,164 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             esc(i18n.t('av_retry')) + '</button></div>';
     }
 
-    /* ---------- Pickup action (admin self-service) ---------- */
+    /* ---------- Pickup action (admin — open form modal) ---------- */
     async function pickup(vehicleCode) {
-        var msg = i18n.t('av_confirm_pickup') + ' ' + vehicleCode + '?';
-        if (!confirm(msg)) return;
+        openActionModal(vehicleCode, 'pickup');
+    }
 
-        try {
-            await API.post('/vehicles/self-service', {
-                vehicle_code: vehicleCode,
-                operation_type: 'pickup'
-            });
-            if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(i18n.t('pickup_success'), 'success');
+    /* ---------- Return action (admin — open form modal) ---------- */
+    async function returnVehicle(vehicleCode) {
+        openActionModal(vehicleCode, 'return');
+    }
+
+    /* ---------- Action Modal Logic ---------- */
+    function openActionModal(vehicleCode, operationType) {
+        var modal = document.getElementById('avActionModal');
+        if (!modal) return;
+        var title = document.getElementById('avActionTitle');
+        var vehicleInfo = document.getElementById('avActionVehicleInfo');
+        var submitBtn = document.getElementById('avActionSubmitBtn');
+        var empInput = document.getElementById('avActionEmpId');
+        var lookupDiv = document.getElementById('avActionLookup');
+        var condSelect = document.getElementById('avActionCondition');
+        var fuelSelect = document.getElementById('avActionFuel');
+        var notesInput = document.getElementById('avActionNotes');
+
+        /* Reset form */
+        document.getElementById('avActionVehicleCode').value = vehicleCode;
+        document.getElementById('avActionType').value = operationType;
+        if (empInput) empInput.value = '';
+        if (lookupDiv) { lookupDiv.className = 'av-lookup-result'; lookupDiv.style.display = 'none'; lookupDiv.textContent = ''; }
+        if (condSelect) condSelect.value = '';
+        if (fuelSelect) fuelSelect.value = '';
+        if (notesInput) notesInput.value = '';
+
+        /* Set title and button label */
+        var isPickup = (operationType === 'pickup');
+        if (title) {
+            title.textContent = isPickup ? ('🚗 ' + i18n.t('av_pickup_btn') + ' — ' + vehicleCode) : ('↩️ ' + i18n.t('av_return_btn') + ' — ' + vehicleCode);
+        }
+        if (submitBtn) {
+            submitBtn.textContent = isPickup ? i18n.t('av_confirm_pickup_btn') : i18n.t('av_confirm_return_btn');
+            submitBtn.className = 'av-btn-submit ' + (isPickup ? 'pickup-btn' : 'return-btn');
+            submitBtn.disabled = true;
+        }
+
+        /* Fill vehicle info */
+        var vehicle = null;
+        for (var vi = 0; vi < allVehiclesData.length; vi++) {
+            if (allVehiclesData[vi].vehicle_code === vehicleCode) { vehicle = allVehiclesData[vi]; break; }
+        }
+        if (vehicleInfo && vehicle) {
+            var infoHtml = '';
+            infoHtml += '<div class="av-vi-row"><span class="av-vi-label">' + esc(i18n.t('av_code')) + ':</span><span>' + esc(vehicle.vehicle_code) + '</span></div>';
+            infoHtml += '<div class="av-vi-row"><span class="av-vi-label">' + esc(i18n.t('av_type')) + ':</span><span>' + esc(vehicle.type || vehicle.vehicle_type || '—') + '</span></div>';
+            if (vehicle.driver_name) {
+                infoHtml += '<div class="av-vi-row"><span class="av-vi-label">' + esc(i18n.t('driver')) + ':</span><span>' + esc(vehicle.driver_name) + '</span></div>';
             }
-            loadAllVehicles();
-        } catch (e) {
-            if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(e.message || i18n.t('error'), 'error');
-            }
+            vehicleInfo.innerHTML = infoHtml;
+        }
+
+        /* Pre-fill emp_id for return operations */
+        if (!isPickup && vehicle && vehicle.last_holder) {
+            empInput.value = vehicle.last_holder;
+            lookupEmpId(vehicle.last_holder);
+        }
+
+        /* Default emp_id to current user for pickup */
+        if (isPickup && currentUser && currentUser.emp_id) {
+            empInput.value = currentUser.emp_id;
+            lookupEmpId(currentUser.emp_id);
+        }
+
+        modal.style.display = 'flex';
+        if (empInput) empInput.focus();
+    }
+
+    function closeActionModal() {
+        var modal = document.getElementById('avActionModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function lookupEmpId(empId) {
+        var lookupDiv = document.getElementById('avActionLookup');
+        var submitBtn = document.getElementById('avActionSubmitBtn');
+        if (!lookupDiv) return;
+
+        empId = (empId || '').trim();
+        if (!empId) {
+            lookupDiv.className = 'av-lookup-result';
+            lookupDiv.style.display = 'none';
+            lookupDiv.textContent = '';
+            if (submitBtn) submitBtn.disabled = true;
+            return;
+        }
+
+        var info = userMap[empId];
+        if (info && info.name) {
+            lookupDiv.className = 'av-lookup-result found';
+            lookupDiv.style.display = 'block';
+            var foundText = '✅ ' + info.name;
+            if (info.sector_name) foundText += ' — ' + info.sector_name;
+            if (info.department_name) foundText += ' / ' + info.department_name;
+            lookupDiv.textContent = foundText;
+            if (submitBtn) submitBtn.disabled = false;
+        } else {
+            lookupDiv.className = 'av-lookup-result not-found';
+            lookupDiv.style.display = 'block';
+            lookupDiv.textContent = '❌ ' + i18n.t('av_user_not_found');
+            if (submitBtn) submitBtn.disabled = true;
         }
     }
 
-    /* ---------- Return action (admin self-service) ---------- */
-    async function returnVehicle(vehicleCode) {
-        var msg = i18n.t('av_confirm_return') + ' ' + vehicleCode + '?';
-        if (!confirm(msg)) return;
+    async function submitAction() {
+        var vehicleCode = (document.getElementById('avActionVehicleCode') || {}).value || '';
+        var operationType = (document.getElementById('avActionType') || {}).value || '';
+        var empId = (document.getElementById('avActionEmpId') || {}).value || '';
+        var condition = (document.getElementById('avActionCondition') || {}).value || '';
+        var fuel = (document.getElementById('avActionFuel') || {}).value || '';
+        var notes = (document.getElementById('avActionNotes') || {}).value || '';
+
+        empId = empId.trim();
+        if (!vehicleCode || !operationType || !empId) {
+            if (typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast(i18n.t('av_fill_required'), 'error');
+            }
+            return;
+        }
+
+        /* Verify user exists in our map */
+        if (!userMap[empId]) {
+            if (typeof UI !== 'undefined' && UI.showToast) {
+                UI.showToast(i18n.t('av_user_not_found'), 'error');
+            }
+            return;
+        }
+
+        var submitBtn = document.getElementById('avActionSubmitBtn');
+        if (submitBtn) submitBtn.disabled = true;
 
         try {
-            await API.post('/vehicles/self-service', {
+            var data = {
                 vehicle_code: vehicleCode,
-                operation_type: 'return'
-            });
+                operation_type: operationType,
+                performed_by: empId,
+                vehicle_condition: condition || null,
+                fuel_level: fuel || null,
+                notes: notes || null
+            };
+            await API.post('/movements', data);
             if (typeof UI !== 'undefined' && UI.showToast) {
-                UI.showToast(i18n.t('vehicle_returned_success'), 'success');
+                var msg = operationType === 'pickup' ? i18n.t('pickup_success') : i18n.t('vehicle_returned_success');
+                UI.showToast(msg, 'success');
             }
+            closeActionModal();
             loadAllVehicles();
         } catch (e) {
             if (typeof UI !== 'undefined' && UI.showToast) {
                 UI.showToast(e.message || i18n.t('error'), 'error');
             }
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 
@@ -1047,7 +1244,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
     }
 
     /* ---------- Expose globally ---------- */
-    window.AdminVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadAllVehicles, showDetails: showDetails, closeDetails: closeDetails };
+    window.AdminVehiclesFragment = { pickup: pickup, returnVehicle: returnVehicle, reload: loadAllVehicles, showDetails: showDetails, closeDetails: closeDetails, closeActionModal: closeActionModal };
 
     /* ---------- Init with retry for Auth ---------- */
     var _initAttempts = 0;
@@ -1078,6 +1275,32 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         if (modal) {
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) closeDetails();
+            });
+        }
+
+        /* Action modal event listeners */
+        var actionModal = document.getElementById('avActionModal');
+        var actionClose = document.getElementById('avActionClose');
+        var actionCancel = document.getElementById('avActionCancelBtn');
+        var actionSubmit = document.getElementById('avActionSubmitBtn');
+        var actionEmpInput = document.getElementById('avActionEmpId');
+
+        if (actionClose) actionClose.addEventListener('click', closeActionModal);
+        if (actionCancel) actionCancel.addEventListener('click', closeActionModal);
+        if (actionSubmit) actionSubmit.addEventListener('click', submitAction);
+        if (actionModal) {
+            actionModal.addEventListener('click', function(e) {
+                if (e.target === actionModal) closeActionModal();
+            });
+        }
+        /* Lookup emp_id on input with debounce */
+        if (actionEmpInput) {
+            var lookupTimer = null;
+            actionEmpInput.addEventListener('input', function() {
+                clearTimeout(lookupTimer);
+                lookupTimer = setTimeout(function() {
+                    lookupEmpId(actionEmpInput.value);
+                }, 300);
             });
         }
     })();
