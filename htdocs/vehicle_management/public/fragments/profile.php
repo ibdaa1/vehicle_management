@@ -77,8 +77,8 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
                 <label id="pfLblGender" data-label-en="Gender" data-label-ar="الجنس">Gender</label>
                 <select id="pfGender">
                     <option value="">--</option>
-                    <option value="male" data-label-en="Male" data-label-ar="ذكر">Male</option>
-                    <option value="female" data-label-en="Female" data-label-ar="أنثى">Female</option>
+                    <option value="men" data-label-en="Male" data-label-ar="ذكر">Male</option>
+                    <option value="women" data-label-en="Female" data-label-ar="أنثى">Female</option>
                 </select>
             </div>
             <div class="fg">
