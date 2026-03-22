@@ -25,12 +25,11 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .u-stat{background:var(--bg-card);padding:16px;border-radius:12px;box-shadow:var(--card-shadow);border:1px solid var(--border-default);text-align:center}
 .u-stat .u-stat-val{font-size:1.5rem;font-weight:700;color:var(--text-primary)}
 .u-stat .u-stat-lbl{font-size:.8rem;color:var(--text-secondary);margin-top:4px}
-.data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow);table-layout:fixed}
-.data-table th,.data-table td{padding:8px 6px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.data-table{width:100%;border-collapse:collapse;background:var(--bg-card);border-radius:12px;overflow:hidden;box-shadow:var(--card-shadow)}
+.data-table th,.data-table td{padding:8px 6px;text-align:start;border-bottom:1px solid var(--border-default);font-size:.8rem;word-break:break-word}
 .data-table th{background:var(--primary-dark);color:var(--text-light);font-weight:600;white-space:nowrap;position:sticky;top:0;z-index:2}
 .data-table tr:hover{background:var(--bg-main)}
-.data-table col.col-row{width:3%}.data-table col.col-emp{width:7%}.data-table col.col-user{width:8%}.data-table col.col-email{width:11%}.data-table col.col-phone{width:8%}.data-table col.col-role{width:7%}.data-table col.col-sector{width:8%}.data-table col.col-dept{width:8%}.data-table col.col-section{width:8%}.data-table col.col-div{width:7%}.data-table col.col-status{width:5%}.data-table col.col-gender{width:5%}.data-table col.col-date{width:7%}.data-table col.col-actions{width:8%}
-@media(min-width:769px) and (max-width:1400px){.data-table col.col-gender,.data-table col.col-date{width:0}.data-table .hide-md{display:none}}
+@media(min-width:769px) and (max-width:1400px){.data-table .hide-md{display:none}}
 .data-table .table-actions{display:flex;gap:4px;justify-content:center;white-space:nowrap;overflow:visible}
 .data-table .table-actions .btn-icon{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;font-size:.75rem;display:inline-flex;align-items:center;justify-content:center;transition:all .3s}
 .btn-edit{background:var(--status-info);color:#fff}
@@ -133,9 +132,6 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 <div class="section-card">
     <div class="table-wrapper table-responsive">
         <table class="data-table" id="usersTable">
-            <colgroup>
-                <col class="col-row"><col class="col-emp"><col class="col-user"><col class="col-email"><col class="col-phone"><col class="col-role"><col class="col-sector"><col class="col-dept"><col class="col-section"><col class="col-div"><col class="col-status"><col class="col-gender"><col class="col-date"><col class="col-actions">
-            </colgroup>
             <thead>
                 <tr>
                     <th>#</th>
