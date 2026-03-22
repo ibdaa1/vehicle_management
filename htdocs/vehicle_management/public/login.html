@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نظام متابعة السيارات - تسجيل / دخول</title>
+  <link rel="stylesheet" href="css/theme.css" />
+  <style>
+    /* Login-specific overrides (centered layout, no sidebar) */
+    :root {
+      --login-primary: var(--primary-main, #3a513a);
+      --login-primary-dark: var(--primary-dark, #2c3e2c);
+      --login-primary-light: var(--primary-light, #4a6b4a);
+      --login-gold: var(--accent-gold, #d4af37);
+      --login-gold-light: #f5e8c8;
+      --login-surface: var(--bg-card, #fff);
+      --login-bg: var(--bg-main, #f4f6f4);
+      --login-text: var(--text-primary, #1a1a2e);
+      --login-muted: var(--text-secondary, #6b7280);
+      --login-border: var(--border-default, #e5e7eb);
+      --login-danger: var(--status-danger, #dc3545);
+      --login-success: var(--status-success, #28a745);
+      --login-info: var(--status-info, #17a2b8);
+      --login-radius: var(--card-border-radius, 12px);
+    }
+    [data-theme="dark"] {
+      --login-gold-light: #2a2518;
+    }
+    body { background: var(--login-bg); min-height: 100vh; }
+
+    .auth-backdrop {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(44,62,44,.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(212,175,55,.07) 0%, transparent 50%),
+        linear-gradient(160deg, var(--login-bg) 0%, var(--login-surface) 50%, var(--login-bg) 100%);
+    }
+
+    /* Top-bar toggles */
+    .top-actions { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; z-index: 50; pointer-events: none; }
+    .top-actions button { pointer-events: auto; background: var(--login-surface); border: 1.5px solid var(--login-border); color: var(--login-muted); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; transition: .25s ease; }
+    .top-actions button:hover { border-color: var(--login-primary); color: var(--login-primary); }
+
+    /* Card */
+    .auth-card {
+      width: 100%; max-width: 460px; background: var(--login-surface);
+      border-radius: var(--login-radius); box-shadow: var(--card-shadow, 0 2px 8px rgba(0,0,0,.08)), 0 16px 48px rgba(0,0,0,.08);
+      padding: 40px 36px 28px; position: relative; overflow: hidden;
+      animation: fadeUp .45s ease-out;
+    }
+    .auth-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(90deg, var(--login-primary-dark), var(--login-gold), var(--login-primary-dark)); }
+
+    /* Header */
+    .auth-header { text-align: center; margin-bottom: 24px; }
+    .logo-wrap { margin-bottom: 12px; display: flex; justify-content: center; }
+    .logo-wrap img { width: 80px; height: 80px; object-fit: contain; border-radius: 50%; background: var(--login-gold-light); padding: 6px; border: 2px solid var(--login-gold); }
+    .auth-header h1 { font-size: 19px; font-weight: 700; color: var(--login-primary); margin-bottom: 2px; }
+    .auth-header p { font-size: 13px; color: var(--login-muted); font-weight: 500; }
+
+    /* Tabs */
+    .mode-tabs { display: flex; background: var(--login-bg); border-radius: 8px; padding: 3px; margin-bottom: 20px; gap: 3px; }
+    .mode-tabs button { flex:1; padding: 9px 0; border: none; border-radius: 6px; background: transparent; color: var(--login-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: .2s; font-family: inherit; }
+    .mode-tabs button.active { background: var(--login-surface); color: var(--login-primary); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+    /* Form */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+    .fg { margin-bottom: 14px; }
+    .fg label { display: block; font-size: 12.5px; font-weight: 600; color: var(--login-muted); margin-bottom: 5px; }
+    .fr { display: flex; gap: 10px; }
+    .fr .fg { flex: 1; }
+
+    .iw { position: relative; }
+    .iw .ic { position: absolute; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--login-muted); pointer-events: none; }
+    html[dir="rtl"] .iw .ic { right: 12px; }
+    html[dir="ltr"] .iw .ic { left: 12px; }
+
+    .iw input, .iw select {
+      width: 100%; padding: 10px 14px; border: 1.5px solid var(--login-border); border-radius: 8px;
+      font-size: 14px; color: var(--login-text); background: var(--login-surface); transition: .2s; outline: none; font-family: inherit;
+    }
+    html[dir="rtl"] .iw input, html[dir="rtl"] .iw select { padding-right: 36px; }
+    html[dir="ltr"] .iw input, html[dir="ltr"] .iw select { padding-left: 36px; }
+    .iw input:focus, .iw select:focus { border-color: var(--login-primary); box-shadow: 0 0 0 3px rgba(58,81,58,.1); }
+    .iw select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; }
+    html[dir="rtl"] .iw select { background-position: left 10px center; padding-left: 32px; }
+    html[dir="ltr"] .iw select { background-position: right 10px center; padding-right: 32px; }
+
+    .pwd-toggle { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--login-muted); font-size: 15px; padding: 4px; }
+    html[dir="rtl"] .pwd-toggle { left: 10px; }
+    html[dir="ltr"] .pwd-toggle { right: 10px; }
+    .pwd-toggle:hover { color: var(--login-primary); }
+
+    /* Button */
+    .submit-btn {
+      width: 100%; padding: 12px; margin-top: 6px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--login-primary), var(--login-primary-light));
+      color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: .25s;
+      box-shadow: 0 4px 12px rgba(44,62,44,.2); display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;
+    }
+    .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(44,62,44,.3); }
+    .submit-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .submit-btn.loading .btn-text, .submit-btn.loading .arrow { display: none; }
+    .submit-btn.loading .spinner { display: inline-block; }
+    .spinner { display: none; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; }
+    html[dir="rtl"] .submit-btn .arrow { transform: scaleX(-1); }
+
+    /* Messages */
+    .msg-area { margin-top: 12px; text-align: center; font-size: 13px; font-weight: 500; border-radius: 6px; padding: 0; transition: .2s; min-height: 0; }
+    .msg-area:not(:empty) { padding: 9px 12px; }
+    .msg-area.error { background: rgba(220,53,69,.08); color: var(--login-danger); }
+    .msg-area.success { background: rgba(40,167,69,.08); color: var(--login-success); }
+    .msg-area.info { background: rgba(23,162,184,.08); color: var(--login-info); }
+
+    /* Permissions box */
+    .perms-box { margin-top: 6px; padding: 8px 12px; background: var(--login-gold-light); border-radius: 6px; font-size: 12px; border: 1px solid rgba(212,175,55,.2); display: none; }
+    .perms-box strong { display: block; margin-bottom: 3px; color: var(--login-primary); font-size: 12.5px; }
+    .perms-box ul { margin: 0; padding-inline-start: 16px; }
+
+    /* Footer */
+    .auth-footer { margin-top: 20px; text-align: center; font-size: 11.5px; color: var(--login-muted); padding-top: 14px; border-top: 1px solid var(--login-border); }
+    .auth-footer .gold { color: var(--login-gold); font-weight: 600; }
+
+    @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 520px) {
+      .auth-card { padding: 28px 18px 20px; }
+      .fr { flex-direction: column; gap: 0; }
+      .logo-wrap img { width: 64px; height: 64px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Top actions: language (start) / theme (end) -->
+  <div class="top-actions">
+    <button type="button" id="langBtn">English</button>
+    <button type="button" id="themeBtn" title="Toggle theme">🌙</button>
+  </div>
+
+  <div class="auth-backdrop">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-wrap"><img id="logoImg" src="" alt="Logo" style="display:none" /></div>
+        <h1 id="siteTitle"></h1>
+        <p id="siteSubtitle"></p>
+      </div>
+
+      <div class="mode-tabs">
+        <button type="button" id="tabLogin" class="active"></button>
+        <button type="button" id="tabRegister"></button>
+      </div>
+
+      <!-- Login -->
+      <form id="loginForm" class="form-section active" autocomplete="off" novalidate>
+        <div class="fg">
+          <label id="lblIdentifier"></label>
+          <div class="iw">
+            <input type="text" id="identifier" autocomplete="username" required />
+            <span class="ic">👤</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label id="lblPassword"></label>
+          <div class="iw">
+            <input type="password" id="password" autocomplete="current-password" required />
+            <span class="ic">🔒</span>
+            <button type="button" class="pwd-toggle" data-target="password">👁</button>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <span class="spinner"></span><span class="btn-text"></span><span class="arrow">→</span>
+        </button>
+        <div id="loginMsg" class="msg-area" role="alert"></div>
+      </form>
+
+      <!-- Register -->
+      <form id="registerForm" class="form-section" autocomplete="off" novalidate>
+        <div class="fg">
+          <label id="lblEmpId"></label>
+          <div class="iw"><input type="text" id="emp_id" required /><span class="ic">🏢</span></div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label id="lblUsername"></label>
+            <div class="iw"><input type="text" id="reg_username" required /><span class="ic">👤</span></div>
+          </div>
+          <div class="fg">
+            <label id="lblEmail"></label>
+            <div class="iw"><input type="email" id="reg_email" required /><span class="ic">✉</span></div>
+          </div>
+        </div>
+        <div class="fg" style="display:none">
+          <label id="lblRole"></label>
+          <div class="iw"><select id="role_id"><option value="4" selected>Employee</option></select><span class="ic">🛡</span></div>
+          <div id="rolePermsBox" class="perms-box"></div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label id="lblSector"></label>
+            <div class="iw"><select id="sector_id"><option value=""></option></select><span class="ic">🏛</span></div>
+          </div>
+          <div class="fg">
+            <label id="lblDept"></label>
+            <div class="iw"><select id="department_id"><option value=""></option></select><span class="ic">📂</span></div>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label id="lblSection"></label>
+            <div class="iw"><select id="section_id"><option value=""></option></select><span class="ic">📁</span></div>
+          </div>
+          <div class="fg">
+            <label id="lblDivision"></label>
+            <div class="iw"><select id="division_id"><option value=""></option></select><span class="ic">📋</span></div>
+          </div>
+        </div>
+        <div class="fg">
+          <label id="lblPhone"></label>
+          <div class="iw"><input type="tel" id="phone" /><span class="ic">📞</span></div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label id="lblRegPass"></label>
+            <div class="iw">
+              <input type="password" id="reg_password" autocomplete="new-password" required />
+              <span class="ic">🔒</span>
+              <button type="button" class="pwd-toggle" data-target="reg_password">👁</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label id="lblConfirmPass"></label>
+            <div class="iw">
+              <input type="password" id="reg_password_confirm" autocomplete="new-password" required />
+              <span class="ic">🔒</span>
+              <button type="button" class="pwd-toggle" data-target="reg_password_confirm">👁</button>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" id="registerBtn">
+          <span class="spinner"></span><span class="btn-text"></span><span class="arrow">→</span>
+        </button>
+        <div id="registerMsg" class="msg-area" role="alert"></div>
+      </form>
+
+      <div class="auth-footer"><span id="footerText"></span></div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  const BASE = location.pathname.includes('/vehicle_management/') ? '/vehicle_management' : '';
+  const API = {
+    settingsPublic: BASE+'/api/v1/settings/public', settingsTheme: BASE+'/api/v1/settings/theme',
+    rolesPublic: BASE+'/api/v1/roles/public', references: BASE+'/api/v1/references',
+    refSections: d => BASE+'/api/v1/references/sections/'+d,
+    refDivisions: s => BASE+'/api/v1/references/divisions/'+s,
+    authLogin: BASE+'/api/v1/auth/login',
+    authRegister: BASE+'/api/v1/auth/register',
+    langFile: l => BASE+'/public/languages/'+l+'.json'
+  };
+
+  let lang = 'ar', storedSettings = {};
+  const i18n = {};
+  const $ = id => document.getElementById(id);
+  const el = {
+    langBtn:$('langBtn'), themeBtn:$('themeBtn'), logoImg:$('logoImg'),
+    siteTitle:$('siteTitle'), siteSubtitle:$('siteSubtitle'),
+    tabLogin:$('tabLogin'), tabRegister:$('tabRegister'),
+    loginForm:$('loginForm'), registerForm:$('registerForm'),
+    loginBtn:$('loginBtn'), registerBtn:$('registerBtn'),
+    loginMsg:$('loginMsg'), registerMsg:$('registerMsg'),
+    footerText:$('footerText'),
+    identifier:$('identifier'), password:$('password'),
+    empId:$('emp_id'), regUsername:$('reg_username'), regEmail:$('reg_email'),
+    roleId:$('role_id'), sectorId:$('sector_id'), deptId:$('department_id'), sectionId:$('section_id'),
+    divisionId:$('division_id'), phone:$('phone'),
+    regPassword:$('reg_password'), regConfirm:$('reg_password_confirm'),
+    rolePermsBox:$('rolePermsBox')
+  };
+
+  // Get safe return URL from query parameter (same-origin and same-app only)
+  function getReturnUrl() {
+    var defaultUrl = BASE+'/public/dashboard.php';
+    var params = new URLSearchParams(location.search);
+    var returnTo = params.get('return_to');
+    if (!returnTo) return defaultUrl;
+    try {
+      var url = new URL(returnTo, location.origin);
+      // Must be same origin
+      if (url.origin !== location.origin) return defaultUrl;
+      // Must be within the app's base path (or root if no BASE)
+      var path = url.pathname + url.search;
+      if (BASE && path.indexOf(BASE) !== 0) return defaultUrl;
+      return path;
+    } catch(e) {
+      return defaultUrl;
+    }
+  }
+  var afterLoginUrl = getReturnUrl();
+
+  // Check if already logged in
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    fetch(API.settingsPublic, { headers: { Authorization: 'Bearer '+token } })
+      .then(r => { if (r.ok) location.href = afterLoginUrl; })
+      .catch(() => {});
+  }
+
+  // Theme toggle
+  let theme = localStorage.getItem('theme') || 'light';
+  function applyDarkMode() {
+    document.documentElement.setAttribute('data-theme', theme);
+    el.themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+  applyDarkMode();
+  el.themeBtn.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('theme', theme); applyDarkMode(); });
+
+  // Fetch helper
+  async function api(url, opts = {}) {
+    opts.credentials = 'same-origin';
+    try { const r = await fetch(url, opts); if (!r.ok) throw 0; return await r.json(); } catch { return null; }
+  }
+
+  // Apply theme colors from API
+  function applyThemeColors(t) {
+    if (!t) return;
+    const root = document.documentElement.style;
+    const m = { primary_color:'--primary-main', primary_light:'--primary-light', primary_dark:'--primary-dark',
+      accent_color:'--accent-gold', surface_color:'--bg-card', background_color:'--bg-main',
+      text_color:'--text-primary', text_muted:'--text-secondary', border_color:'--border-default',
+      danger_color:'--status-danger', success_color:'--status-success', info_color:'--status-info' };
+    const c = t.colors || t;
+    if (c && typeof c === 'object') Object.entries(m).forEach(([k,v]) => { if (c[k]) root.setProperty(v, c[k]); });
+    const f = t.fonts || {};
+    if (f.arabic) root.setProperty('--font-ar', f.arabic);
+    if (f.english) root.setProperty('--font-en', f.english);
+  }
+
+  // Apply settings
+  function applySettings(s) {
+    if (!s) return;
+    storedSettings = s.data || s;
+    const logo = storedSettings.logo_url || storedSettings.logoUrl;
+    el.logoImg.src = logo ? (logo.startsWith('http') ? logo : BASE+'/'+logo.replace(/^\//,'')) : BASE+'/public/logo/shjmunlogo.png';
+    el.logoImg.style.display = 'block';
+  }
+
+  // i18n
+  function T(key) { return (i18n[lang] || {})[key] || ''; }
+  function fallback(l) {
+    const a = l === 'ar';
+    return {
+      institutionNameAr:'بلدية مدينة الشارقة', institutionNameEn:'Sharjah City Municipality',
+      systemTitleAr:'نظام متابعة وإدارة السيارات', systemTitleEn:'Vehicle Management System',
+      loginTitle: a?'تسجيل الدخول':'Login', registerTitle: a?'تسجيل جديد':'Register',
+      loginBtn: a?'تسجيل الدخول':'Login', registerBtn: a?'إنشاء حساب':'Create Account',
+      identifierLabel: a?'اسم المستخدم / البريد / الرقم الوظيفي':'Username / Email / Employee ID',
+      passwordLabel: a?'كلمة المرور':'Password',
+      empIdLabel: a?'الرقم الوظيفي':'Employee ID', usernameLabel: a?'اسم المستخدم':'Username',
+      emailLabel: a?'البريد الإلكتروني':'Email', roleLabel: a?'الدور':'Role',
+      sectorLabel: a?'القطاع':'Sector', deptLabel: a?'الإدارة':'Department', sectionLabel: a?'القسم':'Section',
+      divisionLabel: a?'الشعبة':'Division', phoneLabel: a?'الهاتف (اختياري)':'Phone (optional)',
+      regPasswordLabel: a?'كلمة المرور':'Password', confirmPasswordLabel: a?'تأكيد كلمة المرور':'Confirm Password',
+      selectRole: a?'اختر الدور':'Select role', selectSector: a?'اختر القطاع':'Select sector', selectDept: a?'اختر الإدارة':'Select department',
+      selectSection: a?'اختر القسم':'Select section', selectDivision: a?'اختر الشعبة':'Select division',
+      missingFields: a?'حقول مطلوبة: ':'Missing fields: ',
+      loginProgress: a?'جارٍ تسجيل الدخول...':'Signing in...',
+      loginFailed: a?'فشل تسجيل الدخول':'Login failed',
+      loginSuccess: a?'تم تسجيل الدخول بنجاح':'Login successful',
+      creatingAccount: a?'جارٍ إنشاء الحساب...':'Creating account...',
+      registerSuccess: a?'تم التسجيل بنجاح!':'Registered successfully!',
+      passwordMismatch: a?'كلمتا المرور غير متطابقتان':'Passwords do not match',
+      networkError: a?'خطأ في الشبكة':'Network error',
+      permissionsTitle: a?'الصلاحيات:':'Permissions:'
+    };
+  }
+  async function loadI18n(l) {
+    if (i18n[l]) return;
+    const data = await api(API.langFile(l));
+    i18n[l] = data ? { ...fallback(l), ...data } : fallback(l);
+  }
+
+  function applyI18n() {
+    const t = i18n[lang] || {}, a = lang === 'ar', html = document.documentElement;
+    html.setAttribute('dir', a ? 'rtl' : 'ltr');
+    html.setAttribute('lang', lang);
+    document.title = (a ? t.systemTitleAr : t.systemTitleEn) + ' - ' + t.loginTitle;
+
+    const s = storedSettings;
+    el.siteTitle.textContent = a ? (s.site_name_ar||s.system_title_ar||t.systemTitleAr) : (s.site_name_en||s.system_title_en||t.systemTitleEn);
+    el.siteSubtitle.textContent = a ? (s.system_title_ar||t.institutionNameAr) : (s.system_title_en||t.institutionNameEn);
+    el.tabLogin.textContent = t.loginTitle;
+    el.tabRegister.textContent = t.registerTitle;
+    el.langBtn.textContent = a ? 'English' : 'العربية';
+
+    const lbl = (id,txt) => { const e=$(id); if(e) e.textContent=txt; };
+    lbl('lblIdentifier',t.identifierLabel); lbl('lblPassword',t.passwordLabel);
+    lbl('lblEmpId',t.empIdLabel); lbl('lblUsername',t.usernameLabel); lbl('lblEmail',t.emailLabel);
+    lbl('lblRole',t.roleLabel); lbl('lblSector',t.sectorLabel); lbl('lblDept',t.deptLabel); lbl('lblSection',t.sectionLabel);
+    lbl('lblDivision',t.divisionLabel); lbl('lblPhone',t.phoneLabel);
+    lbl('lblRegPass',t.regPasswordLabel); lbl('lblConfirmPass',t.confirmPasswordLabel);
+
+    el.loginBtn.querySelector('.btn-text').textContent = t.loginBtn;
+    el.registerBtn.querySelector('.btn-text').textContent = t.registerBtn;
+
+    const ph = (e,k) => { if(e) e.placeholder = t[k] || ''; };
+    ph(el.identifier,'identifierLabel'); ph(el.password,'passwordPlaceholder');
+    ph(el.empId,'empIdPlaceholder'); ph(el.regUsername,'usernamePlaceholder');
+    ph(el.regEmail,'emailPlaceholder'); ph(el.phone,'phonePlaceholder');
+
+    [['roleId','selectRole'],['sectorId','selectSector'],['deptId','selectDept'],['sectionId','selectSection'],['divisionId','selectDivision']]
+      .forEach(([k,tk]) => { const s=el[k]; if(s){ const o=s.querySelector('option[value=""]'); if(o) o.textContent=t[tk]||''; } });
+
+    const fAr = s.footer_text_ar || t.departmentNameAr || 'إدارة الرقابة والسلامة الصحية';
+    const fEn = s.footer_text_en || t.departmentNameEn || 'Health Control and Safety Department';
+    el.footerText.innerHTML = '<span class="gold">'+(a?t.institutionNameAr:t.institutionNameEn)+'</span> &mdash; '+(a?fAr:fEn);
+  }
+
+  // Mode switch
+  function setMode(m) {
+    el.tabLogin.classList.toggle('active', m==='login');
+    el.tabRegister.classList.toggle('active', m==='register');
+    el.loginForm.classList.toggle('active', m==='login');
+    el.registerForm.classList.toggle('active', m==='register');
+    el.loginForm.style.display = m==='login'?'block':'none';
+    el.registerForm.style.display = m==='register'?'block':'none';
+    clearMsg(el.loginMsg); clearMsg(el.registerMsg);
+  }
+
+  function showMsg(e,txt,type) { if(!e) return; e.className='msg-area '+type; e.textContent=txt; }
+  function clearMsg(e) { if(!e) return; e.className='msg-area'; e.textContent=''; }
+
+  // Password toggle
+  document.querySelectorAll('.pwd-toggle').forEach(b => b.addEventListener('click', () => {
+    const inp = $(b.dataset.target); if(!inp) return;
+    const show = inp.type==='password'; inp.type=show?'text':'password'; b.textContent=show?'🙈':'👁';
+  }));
+
+  // Roles
+  let rolesData = [];
+  async function loadRoles() {
+    const d = await api(API.rolesPublic);
+    if (d) { rolesData = d.data||d.roles||d||[]; if(!Array.isArray(rolesData)) rolesData=[]; }
+    fillRoles();
+  }
+  function fillRoles() {
+    const t=i18n[lang]||{}, s=el.roleId; if(!s) return;
+    const prev=s.value; s.innerHTML='';
+    const o=document.createElement('option'); o.value=''; o.textContent=t.selectRole||''; s.appendChild(o);
+    rolesData.forEach(r => {
+      const id=r.id??r.role_id; if(id==null) return;
+      const opt=document.createElement('option'); opt.value=id;
+      opt.textContent=lang==='en'?(r.name_en||r.name||r.name_ar):(r.name_ar||r.name||r.name_en);
+      try{opt.dataset.perms=JSON.stringify(r.permissions||r.perms||[]);}catch(e){opt.dataset.perms='[]';}
+      s.appendChild(opt);
+    });
+    if(prev) s.value=prev;
+  }
+  function showRolePerms(id) {
+    const box=el.rolePermsBox; if(!box) return;
+    if(!id){box.style.display='none'; return;}
+    const opt=el.roleId.querySelector('option[value="'+id+'"]'); if(!opt){box.style.display='none'; return;}
+    let p=[]; try{p=JSON.parse(opt.dataset.perms||'[]');}catch(e){}
+    if(!p.length){box.style.display='none'; return;}
+    const t=i18n[lang]||{};
+    box.style.display='block';
+    box.innerHTML='<strong>'+(t.permissionsTitle||'Permissions:')+'</strong><ul>'+p.map(x=>'<li>'+(typeof x==='string'?x:(x.name||x.label||''))+'</li>').join('')+'</ul>';
+  }
+
+  // References (cascading)
+  let allDepts = [], allSectors = [];
+  async function loadRefs() {
+    let d = await api(API.references);
+    if(d){ const r=d.data||d; allDepts=r.departments||[]; allSectors=r.sectors||[]; fillSel(el.sectorId, allSectors, 'selectSector'); fillSel(el.deptId, allDepts, 'selectDept'); return; }
+    d = await api(API.references+'?type=departments&lang='+lang);
+    if(d){ allDepts=d.departments||d.items||d.data||[]; fillSel(el.deptId, allDepts, 'selectDept'); }
+    let s = await api(API.references+'?type=sectors&lang='+lang);
+    if(s){ allSectors=s.sectors||s.items||s.data||[]; fillSel(el.sectorId, allSectors, 'selectSector'); }
+  }
+  function fillSel(s, items, phKey) {
+    if(!s) return; const t=i18n[lang]||{}, prev=s.value; s.innerHTML='';
+    const o=document.createElement('option'); o.value=''; o.textContent=t[phKey]||''; s.appendChild(o);
+    (items||[]).forEach(it => {
+      const id=it.id??it.division_id??it.section_id??it.department_id; if(id==null) return;
+      const opt=document.createElement('option'); opt.value=id;
+      opt.textContent=lang==='en'?(it.name_en||it.name||it.name_ar):(it.name_ar||it.name||it.name_en);
+      s.appendChild(opt);
+    });
+    if(prev) s.value=prev;
+  }
+  async function loadSections(dId) {
+    if(!dId){fillSel(el.sectionId,[],'selectSection'); fillSel(el.divisionId,[],'selectDivision'); return;}
+    let d=await api(API.refSections(dId)); if(!d) d=await api(API.references+'?type=sections&parent_id='+dId+'&lang='+lang);
+    fillSel(el.sectionId, d?(d.data||d.sections||d.items||[]):[], 'selectSection');
+    fillSel(el.divisionId, [], 'selectDivision');
+  }
+  async function loadDivisions(sId) {
+    if(!sId){fillSel(el.divisionId,[],'selectDivision'); return;}
+    let d=await api(API.refDivisions(sId)); if(!d) d=await api(API.references+'?type=divisions&parent_id='+sId+'&lang='+lang);
+    fillSel(el.divisionId, d?(d.data||d.divisions||d.items||[]):[], 'selectDivision');
+  }
+
+  // Cascade events
+  el.deptId&&el.deptId.addEventListener('change',()=>loadSections(el.deptId.value));
+  el.sectionId&&el.sectionId.addEventListener('change',()=>loadDivisions(el.sectionId.value));
+  el.roleId&&el.roleId.addEventListener('change',()=>showRolePerms(el.roleId.value));
+
+  // Login
+  el.loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const t=i18n[lang]||{}, id=(el.identifier.value||'').trim(), pw=el.password.value||'';
+    if(!id||!pw){ showMsg(el.loginMsg,(t.missingFields||'Missing: ')+(!id?'identifier ':'')+(!pw?'password':''),'error'); return; }
+    el.loginBtn.disabled=true; el.loginBtn.classList.add('loading');
+    showMsg(el.loginMsg, t.loginProgress, 'info');
+    try {
+      const r = await fetch(API.authLogin, { method:'POST', credentials:'same-origin',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body: JSON.stringify({login:id,identifier:id,username:id,email:id,emp_id:id,password:pw})
+      });
+      const j = await r.json().catch(()=>({success:false,message:t.loginFailed}));
+      if(j.success||j.token){
+        if(j.token) localStorage.setItem('auth_token',j.token);
+        if(j.data&&j.data.token) localStorage.setItem('auth_token',j.data.token);
+        if(j.user) localStorage.setItem('auth_user',JSON.stringify(j.user));
+        if(j.data&&j.data.user) localStorage.setItem('auth_user',JSON.stringify(j.data.user));
+        showMsg(el.loginMsg, t.loginSuccess+' ✓', 'success');
+        setTimeout(()=>{ location.href=afterLoginUrl; },600);
+      } else {
+        showMsg(el.loginMsg, j.message||t.loginFailed, 'error');
+        el.loginBtn.disabled=false; el.loginBtn.classList.remove('loading');
+      }
+    } catch(err) {
+      console.error('Login error:',err);
+      showMsg(el.loginMsg, t.networkError, 'error');
+      el.loginBtn.disabled=false; el.loginBtn.classList.remove('loading');
+    }
+  });
+
+  // Register
+  el.registerForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const t=i18n[lang]||{};
+    const f = { emp_id:(el.empId.value||'').trim(), username:(el.regUsername.value||'').trim(),
+      email:(el.regEmail.value||'').trim(), role_id:el.roleId.value||'',
+      password:el.regPassword.value||'', confirm:el.regConfirm.value||'' };
+    const missing=[];
+    if(!f.emp_id) missing.push('emp_id'); if(!f.username) missing.push('username');
+    if(!f.email) missing.push('email'); if(!f.password) missing.push('password');
+    if(!f.confirm) missing.push('confirm'); if(!f.role_id) missing.push('role');
+    if(missing.length){ showMsg(el.registerMsg,(t.missingFields||'Missing: ')+missing.join(', '),'error'); return; }
+    if(f.password!==f.confirm){ showMsg(el.registerMsg,t.passwordMismatch,'error'); return; }
+
+    el.registerBtn.disabled=true; el.registerBtn.classList.add('loading');
+    showMsg(el.registerMsg, t.creatingAccount, 'info');
+    try {
+      const p=new URLSearchParams();
+      p.append('emp_id',f.emp_id); p.append('username',f.username); p.append('email',f.email);
+      p.append('password',f.password); p.append('role_id',f.role_id);
+      p.append('sector_id',el.sectorId?el.sectorId.value:'');
+      p.append('department_id',el.deptId?el.deptId.value:'');
+      p.append('section_id',el.sectionId?el.sectionId.value:'');
+      p.append('division_id',el.divisionId?el.divisionId.value:'');
+      p.append('phone',el.phone?el.phone.value.trim():'');
+      p.append('preferred_language',lang);
+      const r=await fetch(API.authRegister,{method:'POST',credentials:'same-origin',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:p.toString()});
+      const j=await r.json().catch(()=>({success:false,message:'Invalid response'}));
+      if(j.success){
+        showMsg(el.registerMsg, j.message||t.registerSuccess, 'success');
+        setTimeout(()=>{ setMode('login'); if(el.identifier) el.identifier.value=f.username;
+          el.registerBtn.disabled=false; el.registerBtn.classList.remove('loading'); },1200);
+      } else {
+        showMsg(el.registerMsg, j.message||'Registration failed', 'error');
+        el.registerBtn.disabled=false; el.registerBtn.classList.remove('loading');
+      }
+    } catch(err) {
+      console.error('Register error:',err);
+      showMsg(el.registerMsg, t.networkError, 'error');
+      el.registerBtn.disabled=false; el.registerBtn.classList.remove('loading');
+    }
+  });
+
+  // Tab & lang events
+  el.tabLogin.addEventListener('click', ()=>setMode('login'));
+  el.tabRegister.addEventListener('click', ()=>setMode('register'));
+  el.langBtn.addEventListener('click', async ()=>{
+    lang=lang==='ar'?'en':'ar'; el.langBtn.disabled=true;
+    await loadI18n(lang); applyI18n(); fillRoles();
+    fillSel(el.sectorId, allSectors, 'selectSector');
+    fillSel(el.deptId, allDepts, 'selectDept');
+    if(el.deptId.value) await loadSections(el.deptId.value);
+    if(el.sectionId.value) await loadDivisions(el.sectionId.value);
+    el.langBtn.disabled=false;
+  });
+
+  // Init
+  (async function() {
+    await loadI18n(lang); applyI18n();
+    el.logoImg.src = BASE+'/public/logo/shjmunlogo.png'; el.logoImg.style.display='block';
+    const [sR, tR] = await Promise.allSettled([api(API.settingsPublic), api(API.settingsTheme)]);
+    if(sR.status==='fulfilled'&&sR.value){ applySettings(sR.value); applyI18n(); }
+    if(tR.status==='fulfilled'&&tR.value) applyThemeColors(tR.value.data||tR.value);
+    await Promise.allSettled([loadRoles(), loadRefs()]);
+  })();
+})();
+</script>
+</body>
+</html>

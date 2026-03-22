@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title data-i18n="title">لوحة تحكم حركة المركبات - بلدية مدينة الشارقة</title>
+  <!-- Tajawal + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --primary-green: #1B5E20;
+      --secondary-green: #2E7D32;
+      --accent-gold: #B8860B; /* تم تعديل اللون الذهبي ليكون أغمق */
+      --light-gold: #F5E8C8;
+      --olive-green: #556B2F;
+      --white: #FFFFFF;
+      --light-gray: #F5F5F5;
+      --text-dark: #1E3A1F;
+      --text-light: #666666;
+      --border-color: #C5E1A5;
+      --success: #4CAF50;
+      --warning: #FF9800;
+      --danger: #D32F2F;
+      --info: #2196F3;
+      --movement-blue: #2196F3;
+      --report-purple: #7B1FA2;
+      --maintenance-orange: #FF9800;
+      --shadow: 0 2px 12px rgba(27, 94, 32, 0.08);
+      --radius: 10px;
+      --transition: all 0.3s ease;
+    }
+    
+    *{box-sizing:border-box; margin:0; padding:0}
+    
+    body{
+      font-family:"Tajawal", sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
+      color: var(--text-dark);
+      min-height:100vh;
+      font-size:14px;
+      line-height:1.6;
+    }
+    
+    .main-card{
+      background: var(--white);
+      min-height:100vh;
+      max-width:1400px;
+      margin:0 auto;
+      box-shadow: var(--shadow);
+      position:relative;
+    }
+    
+    /* Topbar Styling */
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:15px 25px;
+      background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+      color: var(--white);
+      border-bottom: 4px solid var(--accent-gold);
+    }
+    
+    .brand{
+      display:flex;
+      gap:15px;
+      align-items:center;
+    }
+    
+    .logo{
+      width:50px;
+      height:50px;
+      border-radius:12px;
+      background: var(--white);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      border: 2px solid var(--accent-gold);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .logo .line1{
+      font-size:12px;
+      font-weight:700;
+      color: var(--primary-green);
+      margin-bottom:2px;
+    }
+    
+    .logo .line2{
+      font-size:10px;
+      color: var(--secondary-green);
+      text-align:center;
+      line-height:1.2;
+    }
+    
+    .brand-text h1{
+      font-size:1.3rem;
+      font-weight:700;
+      margin-bottom:5px;
+    }
+    
+    .brand-text .subtitle{
+      font-size:0.85rem;
+      opacity:0.9;
+      font-weight:300;
+    }
+    
+    /* User Info */
+    .user-info{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background: rgba(255,255,255,0.15);
+      padding:8px 15px;
+      border-radius:25px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .user-avatar{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background: var(--accent-gold);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--primary-green);
+      font-weight:600;
+    }
+    
+    .user-details{
+      display:flex;
+      flex-direction:column;
+    }
+    
+    .user-name{
+      font-weight:600;
+      font-size:0.9rem;
+    }
+    
+    .user-role{
+      font-size:0.8rem;
+      opacity:0.8;
+    }
+    
+    /* Language Selector */
+    .lang-selector{
+      display:flex;
+      gap:5px;
+      margin-right:15px;
+    }
+    
+    .lang-btn{
+      background: rgba(255,255,255,0.2);
+      border:1px solid rgba(255,255,255,0.3);
+      color: var(--white);
+      padding:5px 10px;
+      border-radius:4px;
+      cursor:pointer;
+      font-size:0.8rem;
+      transition: var(--transition);
+    }
+    
+    .lang-btn:hover{
+      background: var(--accent-gold);
+      color: var(--primary-green);
+    }
+    
+    .lang-btn.active{
+      background: var(--accent-gold);
+      color: var(--primary-green);
+      font-weight:600;
+    }
+    
+    /* Controls */
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    
+    .icon-btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 18px;
+      border-radius:25px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(184, 134, 11, 0.3);
+      color: var(--white);
+      cursor:pointer;
+      text-decoration:none;
+      font-weight:600;
+      font-size:0.9rem;
+      transition: var(--transition);
+    }
+    
+    .icon-btn:hover{
+      background: var(--accent-gold);
+      border-color: var(--accent-gold);
+      color: var(--primary-green);
+      transform: translateY(-2px);
+    }
+    
+    .icon-btn i{
+      font-size:16px;
+    }
+    
+    /* Content Area */
+    .content{
+      padding:25px;
+    }
+    
+    /* Section Headers */
+    .section{
+      margin-bottom:30px;
+    }
+    
+    .section h3{
+      font-size:1.2rem;
+      color: var(--primary-green);
+      margin-bottom:15px;
+      padding-bottom:10px;
+      border-bottom: 2px solid var(--accent-gold);
+      position:relative;
+    }
+    
+    .section h3:after{
+      content:'';
+      position:absolute;
+      bottom:-2px;
+      right:0;
+      width:100px;
+      height:2px;
+      background: var(--secondary-green);
+    }
+    
+    /* Grid and Tiles */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+      gap:20px;
+      margin-top:15px;
+    }
+    
+    .tile{
+      background: var(--white);
+      border-radius: var(--radius);
+      padding:20px;
+      border: 2px solid var(--border-color);
+      display:flex;
+      align-items:center;
+      gap:15px;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      text-decoration:none;
+      color: inherit;
+      position:relative;
+      overflow:hidden;
+    }
+    
+    .tile:hover{
+      transform: translateY(-5px);
+      border-color: var(--accent-gold);
+      box-shadow: 0 8px 20px rgba(27, 94, 32, 0.15);
+    }
+    
+    .tile .icon{
+      width:50px;
+      height:50px;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: var(--white);
+      font-size:20px;
+      flex-shrink:0;
+    }
+    
+    .tile .icon.movement{
+      background: linear-gradient(135deg, var(--movement-blue), #03A9F4);
+    }
+    
+    .tile .icon.admin{
+      background: linear-gradient(135deg, var(--accent-gold), #FFD700);
+    }
+    
+    .tile .icon.super-admin{
+      background: linear-gradient(135deg, #7B1FA2, #9C27B0);
+    }
+    
+    .tile .icon.violation{
+      background: linear-gradient(135deg, var(--danger), #F44336);
+    }
+    
+    .tile .icon.report{
+      background: linear-gradient(135deg, var(--report-purple), #9C27B0);
+    }
+    
+    .tile .icon.maintenance{
+      background: linear-gradient(135deg, var(--maintenance-orange), #FFB300);
+    }
+    
+    .tile .icon.vehicle{
+      background: linear-gradient(135deg, var(--secondary-green), #4CAF50);
+    }
+    
+    .tile .content-text{
+      flex:1;
+      min-width: 0; /* لمنع التوسع الزائد */
+    }
+    
+    .tile .title{
+      font-weight:600;
+      font-size:1rem;
+      color: var(--primary-green);
+      margin-bottom:5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .tile .description{
+      font-size:0.85rem;
+      color: var(--text-light);
+      line-height:1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    /* Hidden Elements */
+    .hidden{
+      display:none !important;
+    }
+    
+    .restricted{
+      opacity:0.5;
+      pointer-events:none;
+    }
+    
+    /* Loading State */
+    .loading{
+      position:relative;
+      pointer-events:none;
+    }
+    
+    .loading:after{
+      content:'';
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(255,255,255,0.8);
+      z-index:100;
+    }
+    
+    .loading-spinner{
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      z-index:101;
+      text-align:center;
+    }
+    
+    .spinner{
+      width:40px;
+      height:40px;
+      border:4px solid var(--border-color);
+      border-top:4px solid var(--accent-gold);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:0 auto 15px;
+    }
+    
+    @keyframes spin{
+      0%{transform:rotate(0deg)}
+      100%{transform:rotate(360deg)}
+    }
+    
+    /* Error State */
+    .error{
+      color: var(--danger);
+      padding:10px;
+      background: #FFEBEE;
+      border-radius: var(--radius);
+      border:1px solid var(--danger);
+    }
+    
+    /* Footer */
+    .footer{
+      text-align:center;
+      padding:20px;
+      margin-top:40px;
+      border-top:1px solid var(--border-color);
+      color: var(--text-light);
+      font-size:0.85rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .grid{
+        grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .topbar{
+        flex-direction:column;
+        gap:15px;
+        padding:15px;
+      }
+      
+      .brand{
+        flex-direction:column;
+        text-align:center;
+      }
+      
+      .controls{
+        width:100%;
+        justify-content:center;
+        flex-wrap:wrap;
+      }
+      
+      .content{
+        padding:15px;
+      }
+      
+      .grid{
+        grid-template-columns:1fr;
+        gap:15px;
+      }
+      
+      .tile{
+        padding:15px;
+      }
+      
+      .tile .title {
+        font-size: 0.95rem;
+      }
+      
+      .tile .description {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 1;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .icon-btn{
+        padding:8px 12px;
+        font-size:0.8rem;
+      }
+      
+      .icon-btn span{
+        display:none;
+      }
+      
+      .user-info{
+        padding:6px 10px;
+      }
+      
+      .user-details{
+        display:none;
+      }
+      
+      .tile {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 10px;
+      }
+      
+      .tile .icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+      }
+      
+      .tile .content-text {
+        width: 100%;
+      }
+      
+      .tile .title {
+        font-size: 0.9rem;
+        margin-bottom: 3px;
+      }
+      
+      .tile .description {
+        display: none;
+      }
+    }
+    
+    /* RTL/LTR Support */
+    [dir="rtl"] .section h3:after{
+      right:0;
+      left:auto;
+    }
+    
+    [dir="ltr"] .section h3:after{
+      left:0;
+      right:auto;
+    }
+    
+    [dir="ltr"] .tile{
+      text-align:left;
+    }
+    
+    [dir="rtl"] .tile{
+      text-align:right;
+    }
+    
+    /* Animation for tiles */
+    @keyframes fadeIn {
+      from { opacity:0; transform: translateY(20px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+    
+    .tile{
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width:8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--light-gray);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--secondary-green);
+      border-radius:4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-green);
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-spinner hidden" id="loadingSpinner">
+    <div class="spinner"></div>
+    <div data-i18n="loading">جاري التحميل...</div>
+  </div>
+  
+  <div class="main-card">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <div class="line1" data-i18n="logoLine1">بلدية</div>
+          <div class="line2" data-i18n="logoLine2">الشارقة</div>
+        </div>
+        <div class="brand-text">
+          <h1 data-i18n="dashboardTitle">لوحة تحكم حركة المركبات</h1>
+          <div class="subtitle" data-i18n="departmentName">إدارة الرقابة والسلامة الصحية</div>
+        </div>
+      </div>
+      
+      <div class="user-info" id="userInfo">
+        <div class="user-avatar" id="userAvatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="user-details">
+          <div class="user-name" id="userName">جاري التحميل...</div>
+          <div class="user-role" id="userRole"></div>
+        </div>
+      </div>
+      
+      <div class="controls" role="toolbar" aria-label="controls">
+        <!-- Language Selector -->
+        <div class="lang-selector">
+          <button class="lang-btn" data-lang="ar">عربي</button>
+          <button class="lang-btn" data-lang="en">English</button>
+        </div>
+        
+        <!-- Profile -->
+        <a id="profileLink" href="/vehicle_management/public/profile.html" class="icon-btn" title="الملف الشخصي" data-i18n-title="Profile">
+          <i class="fas fa-user-cog"></i>
+          <span data-i18n="Profile">الملف الشخصي</span>
+        </a>
+        
+        <!-- Logout -->
+        <button id="logoutBtn" class="icon-btn" title="تسجيل الخروج" data-i18n-title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span data-i18n="Logout">تسجيل الخروج</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+      <!-- Vehicle Movements Section -->
+      <div class="section" id="movementsSection">
+        <h3 data-i18n="movementsSection">حركة المركبات</h3>
+        <div class="grid">
+          <!-- Vehicle Movements (Visible to All) -->
+          <a href="/vehicle_management/public/vehicle_movements.html" class="tile" id="vehicleMovementsTile">
+            <div class="icon movement">
+              <i class="fas fa-truck-moving"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="vehicleMovements">حركة المركبات</div>
+              <div class="description" data-i18n="vehicleMovementsDesc">عرض وتتبع حركات المركبات</div>
+            </div>
+          </a>
+          
+          <!-- Add Vehicle Movement (Admin Only) -->
+          <a href="/vehicle_management/public/add_vehicle_movements.html" class="tile hidden" id="addMovementTile">
+            <div class="icon movement">
+              <i class="fas fa-truck-loading"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="addMovement">إضافة حركة</div>
+              <div class="description" data-i18n="addMovementDesc">تسجيل حركة مركبة جديدة</div>
+            </div>
+          </a>
+          
+          <!-- Movements Report -->
+          <a href="/vehicle_management/public/report_vehicle_movements.html" class="tile hidden" id="movementsReportTile">
+            <div class="icon report">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="movementsReport">تقرير الحركة</div>
+              <div class="description" data-i18n="movementsReportDesc">تقارير إحصائية عن حركة المركبات</div>
+            </div>
+          </a>
+          
+          <!-- Movement Management (Admin/Super Admin Only) -->
+          <a href="/vehicle_management/public/vehicle_management.html" class="tile hidden" id="movementManagementTile">
+            <div class="icon admin">
+              <i class="fas fa-traffic-light"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="movementManagement">إدارة الحركة</div>
+              <div class="description" data-i18n="movementManagementDesc">إدارة وتنظيم حركات المركبات</div>
+            </div>
+          </a>
+          
+          <!-- Add Vehicle Violation (Admin & Super Admin Only) -->
+          <a href="/vehicle_management/public/add_vehicle_violations.html" class="tile hidden" id="addViolationTile">
+            <div class="icon violation">
+              <i class="fas fa-car-crash"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="addViolation">إضافة مخالفة</div>
+              <div class="description" data-i18n="addViolationDesc">تسجيل مخالفة مركبة جديدة</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- System Administration Section (Super Admin Only) -->
+      <div class="section hidden" id="systemAdminSection">
+        <h3 data-i18n="systemAdmin">إدارة النظام</h3>
+        <div class="grid">
+          <!-- Users Management -->
+          <a href="/vehicle_management/public/admin_users.html" class="tile" id="usersManagementTile">
+            <div class="icon super-admin">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="usersManagement">إدارة المستخدمين</div>
+              <div class="description" data-i18n="usersManagementDesc">إضافة وتعديل وحذف حسابات المستخدمين</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Vehicles Section (Admin Only) -->
+      <div class="section hidden" id="vehiclesSection">
+        <h3 data-i18n="vehiclesSection">إدارة المركبات</h3>
+        <div class="grid">
+          <!-- Add New Vehicle -->
+          <a href="/vehicle_management/public/add_Vehicles.html" class="tile" id="addVehicleTile">
+            <div class="icon vehicle">
+              <i class="fas fa-truck-pickup"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="addVehicle">إضافة مركبة جديدة</div>
+              <div class="description" data-i18n="addVehicleDesc">إضافة مركبة جديدة إلى نظام البلدية</div>
+            </div>
+          </a>
+          
+          <!-- Vehicles Report -->
+          <a href="/vehicle_management/public/report_add_Vehicles.html" class="tile" id="vehiclesReportTile">
+            <div class="icon report">
+              <i class="fas fa-file-chart-line"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="vehiclesReport">تقرير المركبات</div>
+              <div class="description" data-i18n="vehiclesReportDesc">عرض تقارير مفصلة عن جميع المركبات</div>
+            </div>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Maintenance Section (Admin Only) -->
+      <div class="section hidden" id="maintenanceSection">
+        <h3 data-i18n="maintenanceSection">الصيانة والدعم</h3>
+        <div class="grid">
+          <!-- Maintenance -->
+          <a href="/vehicle_management/public/Vehicle_Maintenance.html" class="tile" id="maintenanceTile">
+            <div class="icon maintenance">
+              <i class="fas fa-tools"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="maintenance">صيانة المركبات</div>
+              <div class="description" data-i18n="maintenanceDesc">إدارة عمليات صيانة المركبات</div>
+            </div>
+          </a>
+          
+          <!-- Maintenance Report -->
+          <a href="/vehicle_management/public/report_Vehicle_Maintenance.html" class="tile" id="maintenanceReportTile">
+            <div class="icon report">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div class="content-text">
+              <div class="title" data-i18n="maintenanceReport">تقرير الصيانة</div>
+              <div class="description" data-i18n="maintenanceReportDesc">تقارير تفصيلية عن صيانة المركبات</div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <div data-i18n="footerText">© 2025 نظام إدارة المركبات - بلدية مدينة الشارقة - إدارة الرقابة والسلامة الصحية. جميع الحقوق محفوظة.</div>
+    </div>
+  </div>
+
+  <script>
+  /* Global variables */
+  let currentUser = null;
+  let currentPermissions = null;
+  let currentLanguage = 'ar';
+  let translations = {};
+  
+  /* Show/Hide loading */
+  function showLoading(show) {
+    const spinner = document.getElementById('loadingSpinner');
+    if (show) {
+      spinner.classList.remove('hidden');
+      document.body.classList.add('loading');
+    } else {
+      spinner.classList.add('hidden');
+      document.body.classList.remove('loading');
+    }
+  }
+  
+  /* Load translations */
+  async function loadTranslations(lang) {
+    try {
+      const res = await fetch(`/vehicle_management/languages/${lang}_index.json`);
+      translations = await res.json();
+      applyTranslations();
+    } catch (e) {
+      console.warn('Translation load error:', e);
+      // Fallback to embedded translations
+      translations = getFallbackTranslations(lang);
+      applyTranslations();
+    }
+  }
+  
+  /* Apply translations to the page */
+  function applyTranslations() {
+    // Update all translatable elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (translations[key]) {
+        el.textContent = translations[key];
+      }
+    });
+    
+    // Update title attributes
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      if (translations[key]) {
+        el.title = translations[key];
+      }
+    });
+    
+    // Update document title
+    document.title = translations['title'] || 'لوحة تحكم حركة المركبات';
+    
+    // Update HTML lang and dir attributes
+    document.documentElement.lang = currentLanguage;
+    document.documentElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+  }
+  
+  /* Fallback translations */
+  function getFallbackTranslations(lang) {
+    const fallback = {
+      ar: {
+        title: "لوحة تحكم حركة المركبات - بلدية مدينة الشارقة",
+        dashboardTitle: "لوحة تحكم حركة المركبات",
+        departmentName: "إدارة الرقابة والسلامة الصحية",
+        systemAdmin: "إدارة النظام",
+        usersManagement: "إدارة المستخدمين",
+        usersManagementDesc: "إضافة وتعديل وحذف حسابات المستخدمين",
+        vehiclesSection: "إدارة المركبات",
+        addVehicle: "إضافة مركبة جديدة",
+        addVehicleDesc: "إضافة مركبة جديدة إلى نظام البلدية",
+        vehiclesReport: "تقرير المركبات",
+        vehiclesReportDesc: "عرض تقارير مفصلة عن جميع المركبات",
+        movementsSection: "حركة المركبات",
+        vehicleMovements: "حركة المركبات",
+        vehicleMovementsDesc: "عرض وتتبع حركات المركبات",
+        addMovement: "إضافة حركة",
+        addMovementDesc: "تسجيل حركة مركبة جديدة",
+        movementsReport: "تقرير الحركة",
+        movementsReportDesc: "تقارير إحصائية عن حركة المركبات",
+        movementManagement: "إدارة الحركة",
+        movementManagementDesc: "إدارة وتنظيم حركات المركبات",
+        addViolation: "إضافة مخالفة",
+        addViolationDesc: "تسجيل مخالفة مركبة جديدة",
+        maintenanceSection: "الصيانة والدعم",
+        maintenance: "صيانة المركبات",
+        maintenanceDesc: "إدارة عمليات صيانة المركبات",
+        maintenanceReport: "تقرير الصيانة",
+        maintenanceReportDesc: "تقارير تفصيلية عن صيانة المركبات",
+        Profile: "الملف الشخصي",
+        Logout: "تسجيل الخروج",
+        loading: "جاري التحميل...",
+        footerText: "© 2025 نظام إدارة المركبات - بلدية مدينة الشارقة - إدارة الرقابة والسلامة الصحية. جميع الحقوق محفوظة.",
+        logoLine1: "بلدية",
+        logoLine2: "الشارقة"
+      },
+      en: {
+        title: "Vehicle Movement Dashboard - Sharjah Municipality",
+        dashboardTitle: "Vehicle Movement Dashboard",
+        departmentName: "Health Control and Safety Department",
+        systemAdmin: "System Administration",
+        usersManagement: "Users Management",
+        usersManagementDesc: "Add, modify and delete user accounts",
+        vehiclesSection: "Vehicles Management",
+        addVehicle: "Add New Vehicle",
+        addVehicleDesc: "Add a new vehicle to the municipality system",
+        vehiclesReport: "Vehicles Report",
+        vehiclesReportDesc: "View detailed reports on all vehicles",
+        movementsSection: "Vehicle Movements",
+        vehicleMovements: "Vehicle Movements",
+        vehicleMovementsDesc: "View and track vehicle movements",
+        addMovement: "Add Movement",
+        addMovementDesc: "Record a new vehicle movement",
+        movementsReport: "Movements Report",
+        movementsReportDesc: "Statistical reports on vehicle movements",
+        movementManagement: "Movement Management",
+        movementManagementDesc: "Manage and organize vehicle movements",
+        addViolation: "Add Violation",
+        addViolationDesc: "Record a new vehicle violation",
+        maintenanceSection: "Maintenance and Support",
+        maintenance: "Vehicle Maintenance",
+        maintenanceDesc: "Manage vehicle maintenance operations",
+        maintenanceReport: "Maintenance Report",
+        maintenanceReportDesc: "Detailed reports on vehicle maintenance",
+        Profile: "Profile",
+        Logout: "Logout",
+        loading: "Loading...",
+        footerText: "© 2025 Vehicle Management System - Sharjah Municipality - Health Control and Safety Department. All rights reserved.",
+        logoLine1: "Sharjah",
+        logoLine2: "Municipality"
+      }
+    };
+    return fallback[lang] || fallback['ar'];
+  }
+  
+  /* Initialize user interface */
+  function initUserInterface(user) {
+    const avatar = document.getElementById('userAvatar');
+    const userName = document.getElementById('userName');
+    const userRole = document.getElementById('userRole');
+    
+    if (user) {
+      // Set user name
+      userName.textContent = user.username || user.name || 'مستخدم';
+      
+      // Set user role based on role_id
+      let roleText = 'مستخدم';
+      
+      switch(user.role_id) {
+        case 1:
+          roleText = 'سوبر أدمن';
+          break;
+        case 2:
+          roleText = 'مشرف';
+          break;
+        case 3:
+          roleText = 'مستخدم عادي';
+          break;
+        case 4:
+          roleText = 'مستخدم مخصص';
+          break;
+        case 5:
+          roleText = 'مسؤول مناوبة';
+          break;
+        case 6:
+          roleText = 'فني صيانة';
+          break;
+        case 7:
+          roleText = 'الموظف الإداري';
+          break;
+        case 8:
+          roleText = 'مستخدم مخصص';
+          break;
+      }
+      
+      userRole.textContent = roleText;
+      
+      // Set avatar initials
+      const names = (user.username || '').split(' ');
+      const initials = names[0] ? names[0].charAt(0) : 'U';
+      avatar.innerHTML = `<span style="font-weight: 700;">${initials}</span>`;
+    }
+  }
+  
+  /* Apply permissions based on user role */
+  function applyPermissions() {
+    if (!currentUser) return;
+    
+    const isSuperAdmin = currentUser.role_id === 1;
+    const isAdmin = currentUser.role_id === 1 || currentUser.role_id === 2;
+    const isRegularUser = currentUser.role_id === 3 || currentUser.role_id === 8;
+    const isShiftSupervisor = currentUser.role_id === 5;
+    const isMaintenanceSupervisor = currentUser.role_id === 4;
+    const isTechnician = currentUser.role_id === 6;
+    const isAdministrativeStaff = currentUser.role_id === 7;
+    
+    // Hide all sections initially
+    document.getElementById('systemAdminSection').classList.add('hidden');
+    document.getElementById('vehiclesSection').classList.add('hidden');
+    document.getElementById('maintenanceSection').classList.add('hidden');
+    
+    // Hide all admin tiles in movements section
+    const adminTiles = [
+      'addMovementTile',
+      'movementsReportTile',
+      'movementManagementTile',
+      'addViolationTile'
+    ];
+    
+    adminTiles.forEach(tileId => {
+      const tile = document.getElementById(tileId);
+      if (tile) tile.classList.add('hidden');
+    });
+    
+    // Super Admin: Show all sections and tiles
+    if (isSuperAdmin) {
+      document.getElementById('systemAdminSection').classList.remove('hidden');
+      document.getElementById('vehiclesSection').classList.remove('hidden');
+      document.getElementById('maintenanceSection').classList.remove('hidden');
+      
+      // Show all admin tiles
+      adminTiles.forEach(tileId => {
+        const tile = document.getElementById(tileId);
+        if (tile) tile.classList.remove('hidden');
+      });
+    }
+    // Admin: Show admin sections and tiles
+    else if (isAdmin) {
+      document.getElementById('vehiclesSection').classList.remove('hidden');
+      document.getElementById('maintenanceSection').classList.remove('hidden');
+      
+      // Show admin tiles in movements section
+      adminTiles.forEach(tileId => {
+        const tile = document.getElementById(tileId);
+        if (tile) tile.classList.remove('hidden');
+      });
+    }
+    // Shift Supervisor (مسؤول مناوبة): Show some admin functions
+    else if (isShiftSupervisor) {
+      document.getElementById('addMovementTile').classList.remove('hidden');
+      document.getElementById('movementManagementTile').classList.remove('hidden');
+    }
+    // Maintenance Supervisor (مسؤول صيانة): Show maintenance functions
+    else if (isMaintenanceSupervisor) {
+      document.getElementById('maintenanceSection').classList.remove('hidden');
+    }
+    // Technician (فني صيانة): Show maintenance functions
+    else if (isTechnician) {
+      document.getElementById('maintenanceSection').classList.remove('hidden');
+    }
+    // Administrative Staff (الموظف الإداري): Show some admin functions
+    else if (isAdministrativeStaff) {
+      document.getElementById('addMovementTile').classList.remove('hidden');
+      document.getElementById('movementManagementTile').classList.remove('hidden');
+    }
+    // Regular User or Custom User: Show only vehicle movements tile
+    else if (isRegularUser) {
+      // Only show the basic movements tile, all other tiles remain hidden
+    }
+    
+    // Update profile link with language parameter
+    const profileLink = document.getElementById('profileLink');
+    if (profileLink) {
+      profileLink.href = `/vehicle_management/public/profile.html?lang=${currentLanguage}`;
+    }
+  }
+  
+  /* Change language */
+  async function changeLanguage(lang) {
+    currentLanguage = lang;
+    showLoading(true);
+    
+    // Update language in user session
+    if (currentUser) {
+      try {
+        await fetch('/vehicle_management/api/users/update_language.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ language: lang }),
+          credentials: 'same-origin'
+        });
+      } catch (error) {
+        console.warn('Could not update language preference:', error);
+      }
+    }
+    
+    // Load new translations
+    await loadTranslations(lang);
+    
+    // Update UI
+    initUserInterface(currentUser);
+    applyPermissions();
+    
+    // Update active language button
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-lang') === lang) {
+        btn.classList.add('active');
+      }
+    });
+    
+    showLoading(false);
+  }
+  
+  /* Initialize application */
+  async function initApp() {
+    showLoading(true);
+    
+    try {
+      // 1. Initialize session
+      await fetch('/vehicle_management/api/config/session.php?init=1', { 
+        credentials: 'same-origin' 
+      });
+      
+      // 2. Check session and get user data
+      const sessionRes = await fetch('/vehicle_management/api/users/session_check.php', { 
+        credentials: 'same-origin' 
+      });
+      
+      const sessionData = await sessionRes.json();
+      
+      if (!sessionData.success || !sessionData.isLoggedIn) {
+        window.location.href = '/vehicle_management/public/login.html';
+        return;
+      }
+      
+      currentUser = sessionData.user;
+      currentLanguage = currentUser.preferred_language || 'ar';
+      
+      // 3. Load translations
+      await loadTranslations(currentLanguage);
+      
+      // 4. Get permissions
+      const permRes = await fetch('/vehicle_management/api/permissions/get_permissions.php', { 
+        credentials: 'same-origin' 
+      });
+      
+      if (permRes.ok) {
+        const permData = await permRes.json();
+        if (permData.success) {
+          currentPermissions = permData.role;
+        }
+      }
+      
+      // 5. Initialize user interface
+      initUserInterface(currentUser);
+      
+      // 6. Apply permissions
+      applyPermissions();
+      
+      // 7. Set active language button
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.getAttribute('data-lang') === currentLanguage) {
+          btn.classList.add('active');
+        }
+      });
+      
+    } catch (error) {
+      console.error('Initialization error:', error);
+      
+      // Show error message
+      const content = document.querySelector('.content');
+      if (content) {
+        content.innerHTML = `
+          <div class="error">
+            <h3>خطأ في التحميل</h3>
+            <p>حدث خطأ أثناء تحميل النظام. يرجى المحاولة مرة أخرى أو التواصل مع الدعم الفني.</p>
+            <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:var(--primary-green); color:white; border:none; border-radius:4px; cursor:pointer">
+              إعادة المحاولة
+            </button>
+          </div>
+        `;
+      }
+      
+    } finally {
+      showLoading(false);
+    }
+  }
+  
+  /* Logout function */
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    showLoading(true);
+    try {
+      const response = await fetch('/vehicle_management/public/logout.php', { 
+        method: 'POST', 
+        credentials: 'same-origin' 
+      });
+      
+      if (response.ok) {
+        window.location.href = '/vehicle_management/public/login.html';
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/vehicle_management/public/login.html';
+    }
+  });
+  
+  /* Language switcher */
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.getAttribute('data-lang');
+      changeLanguage(lang);
+    });
+  });
+  
+  // Initialize application when DOM is loaded
+  document.addEventListener('DOMContentLoaded', initApp);
+  
+  // Add keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Alt + P for profile
+    if (e.altKey && e.key === 'p') {
+      e.preventDefault();
+      document.getElementById('profileLink').click();
+    }
+    
+    // Alt + L for logout
+    if (e.altKey && e.key === 'l') {
+      e.preventDefault();
+      document.getElementById('logoutBtn').click();
+    }
+    
+    // Alt + R for refresh
+    if (e.altKey && e.key === 'r') {
+      e.preventDefault();
+      window.location.reload();
+    }
+    
+    // Alt + A for Arabic
+    if (e.altKey && e.key === 'a') {
+      e.preventDefault();
+      changeLanguage('ar');
+    }
+    
+    // Alt + E for English
+    if (e.altKey && e.key === 'e') {
+      e.preventDefault();
+      changeLanguage('en');
+    }
+    
+    // Alt + V for violations (admin/super admin only)
+    if (e.altKey && e.key === 'v') {
+      e.preventDefault();
+      const violationTile = document.getElementById('addViolationTile');
+      if (!violationTile.classList.contains('hidden')) {
+        violationTile.click();
+      }
+    }
+  });
+  </script>
+</body>
+</html>
