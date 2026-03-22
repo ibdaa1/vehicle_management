@@ -392,6 +392,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             await API.put('/profile', payload);
             successEl.style.display = 'inline';
             setTimeout(function() { successEl.style.display = 'none'; }, 3000);
+            await loadProfile();
         } catch (e) {
             errorEl.textContent = (e && e.message) || t('error_occurred', 'An error occurred');
             errorEl.style.display = 'inline';
@@ -566,7 +567,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         currentUser = user;
         applyLang();
         await loadRefs();
-        loadProfile();
+        await loadProfile();
         loadMovements();
         loadViolations();
     })();
