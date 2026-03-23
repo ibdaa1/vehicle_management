@@ -1,11 +1,11 @@
 (function () {
   'use strict';
-  const API_SESSION = '/vehicle_management/api/users/session_check.php';
-  const API_MAINTENANCE = '/vehicle_management/api/vehicle/Vehicle_Maintenance.php';
-  const API_PERMISSIONS = '/vehicle_management/api/permissions/get_permissions.php';
-  const API_VEHICLES = '/vehicle_management/api/vehicle/list.php';
-  const API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
-  const SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
+  const API_SESSION = '/vehicle_management/api/v1/auth/check';
+  const API_MAINTENANCE = '/vehicle_management/api/v1/maintenance';
+  const API_PERMISSIONS = '/vehicle_management/api/v1/permissions/my';
+  const API_VEHICLES = '/vehicle_management/api/v1/vehicles';
+  const API_REFERENCES = '/vehicle_management/api/v1/references';
+  const SESSION_INIT = '/vehicle_management/api/v1/auth/check';
   const REPORT_PAGE = '/vehicle_management/public/report_Vehicle_Maintenance.html';
   const form = document.getElementById('maintenanceForm');
   const submitBtn = document.getElementById('submitBtn');

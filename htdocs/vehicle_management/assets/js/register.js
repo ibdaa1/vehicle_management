@@ -8,8 +8,8 @@
 (function(){
   'use strict';
 
-  const API_REGISTER = '/api/users/register_user.php';
-  const API_VERIFY = '/api/users/verify_signed_token.php'; // verification endpoint
+  const API_REGISTER = '/vehicle_management/api/v1/auth/register';
+  const API_VERIFY = '/vehicle_management/api/v1/auth/activate'; // verification endpoint
   const API_COUNTRIES = '/api/countries.php';
   const API_CITIES = '/api/cities.php?country_id=';
 

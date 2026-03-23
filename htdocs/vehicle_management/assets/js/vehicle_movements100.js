@@ -2,12 +2,12 @@
   'use strict';
 
   // API Endpoints
-  const API_SESSION_INIT = '/vehicle_management/api/config/session.php?init=1';
-  const API_SESSION = '/vehicle_management/api/users/session_check.php';
-  const API_REFERENCES = '/vehicle_management/api/helper/get_references.php';
-  const API_VEHICLES = '/vehicle_management/api/vehicle/get_vehicle_movements.php';
-  const API_ADD_MOVEMENT = '/vehicle_management/api/vehicle/add_vehicle_movements.php';
-  const API_RANDOM_ASSIGNMENT = '/vehicle_management/api/vehicle/random_assignment.php';
+  const API_SESSION_INIT = '/vehicle_management/api/v1/auth/check';
+  const API_SESSION = '/vehicle_management/api/v1/auth/check';
+  const API_REFERENCES = '/vehicle_management/api/v1/references';
+  const API_VEHICLES = '/vehicle_management/api/v1/movements';
+  const API_ADD_MOVEMENT = '/vehicle_management/api/v1/movements';
+  const API_RANDOM_ASSIGNMENT = '/vehicle_management/api/v1/movements';
 
   // DOM elements
   const searchInput = document.getElementById('searchInput');
@@ -1629,7 +1629,7 @@ function renderVehicleActions(vehicle) {
       formData.append('latitude', latitude);
       formData.append('longitude', longitude);
 
-      const result = await fetchData('/vehicle_management/api/vehicle/update_movement_coords.php', {
+      const result = await fetchData('/vehicle_management/api/v1/movements', {
         method: 'POST',
         body: formData
       });
@@ -1747,7 +1747,7 @@ function renderVehicleActions(vehicle) {
         formData.append('photos[]', file);
       });
 
-      const result = await fetchData('/vehicle_management/api/vehicle/upload.php', {
+      const result = await fetchData('/vehicle_management/api/v1/movements', {
         method: 'POST',
         body: formData
       });

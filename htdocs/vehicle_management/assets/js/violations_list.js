@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check user session
     async function checkSession() {
         try {
-            const response = await fetch('/vehicle_management/api/users/session_check.php');
+            const response = await fetch('/vehicle_management/api/v1/auth/check');
             const data = await response.json();
             
             if (data.success && data.isLoggedIn) {
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get CSRF token
     async function getCsrfToken() {
         try {
-            const response = await fetch('/vehicle_management/api/config/session.php');
+            const response = await fetch('/vehicle_management/api/v1/auth/check');
             const data = await response.json();
             
             if (data.success && data.csrf_token) {
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save language preference
     async function saveLanguagePreference(lang) {
         try {
-            const response = await fetch('/vehicle_management/api/users/update_preferences.php', {
+            const response = await fetch('/vehicle_management/api/v1/profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle logout
     async function handleLogout() {
         try {
-            const response = await fetch('/vehicle_management/api/users/logout.php', {
+            const response = await fetch('/vehicle_management/api/v1/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             params.append('limit', 1000); // Get all for local filtering
             params.append('days', 365);
             
-            const response = await fetch(`/vehicle_management/api/vehicle/get_recent_violations.php?${params.toString()}`);
+            const response = await fetch(`/vehicle_management/api/v1/violations?${params.toString()}`);
             const data = await response.json();
             
             console.log('API Response:', data);
