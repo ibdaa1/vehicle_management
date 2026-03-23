@@ -434,18 +434,25 @@ class UserController extends BaseController
         $db = Database::getInstance();
 
         try {
-            // Revoke all sessions first
+            // Fetch user's emp_id for FK cleanup
+            $user = $db->fetchOne("SELECT emp_id FROM users WHERE id = ?", 'i', [$id]);
+            if (!$user) {
+                Response::error('User not found or already deleted', 404);
+                return;
+            }
+
+            // Delete related vehicle movements that reference this user's emp_id
+            $db->execute("DELETE FROM vehicle_movements WHERE performed_by = ?", 's', [$user['emp_id']]);
+
+            // Revoke all sessions
             $db->execute("UPDATE user_sessions SET revoked = 1 WHERE user_id = ?", 'i', [$id]);
 
             $result = $db->execute("DELETE FROM users WHERE id = ?", 'i', [$id]);
 
             if ($result->success && $result->affected_rows > 0) {
                 Response::success(null, 'User deleted successfully');
-            } elseif (!$result->success) {
-                // Foreign key constraint or other DB error
-                Response::error('Cannot delete user: referenced by existing records', 409);
             } else {
-                Response::error('User not found or already deleted', 404);
+                Response::error('Failed to delete user', 500);
             }
         } catch (\Throwable $e) {
             error_log("UserController::destroy error: " . $e->getMessage());
