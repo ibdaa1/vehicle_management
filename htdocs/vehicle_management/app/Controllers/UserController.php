@@ -434,27 +434,24 @@ class UserController extends BaseController
         $db = Database::getInstance();
 
         try {
-            // Fetch user's emp_id for FK cleanup
-            $user = $db->fetchOne("SELECT emp_id FROM users WHERE id = ?", 'i', [$id]);
-            if (!$user) {
-                Response::error('User not found or already deleted', 404);
-                return;
-            }
-
-            // Delete related vehicle movements that reference this user's emp_id
-            $db->execute("DELETE FROM vehicle_movements WHERE performed_by = ?", 's', [$user['emp_id']]);
-
             // Revoke all sessions
             $db->execute("UPDATE user_sessions SET revoked = 1 WHERE user_id = ?", 'i', [$id]);
 
+            // Temporarily disable FK checks so vehicle_movements history is preserved
+            $db->execute("SET FOREIGN_KEY_CHECKS = 0");
             $result = $db->execute("DELETE FROM users WHERE id = ?", 'i', [$id]);
+            $db->execute("SET FOREIGN_KEY_CHECKS = 1");
 
             if ($result->success && $result->affected_rows > 0) {
                 Response::success(null, 'User deleted successfully');
+            } elseif ($result->affected_rows === 0) {
+                Response::error('User not found or already deleted', 404);
             } else {
                 Response::error('Failed to delete user', 500);
             }
         } catch (\Throwable $e) {
+            // Re-enable FK checks in case of error
+            try { $db->execute("SET FOREIGN_KEY_CHECKS = 1"); } catch (\Throwable $ignored) {}
             error_log("UserController::destroy error: " . $e->getMessage());
             Response::error('Failed to delete user', 500);
         }
