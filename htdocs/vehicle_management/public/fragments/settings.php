@@ -29,7 +29,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 .st-tab{padding:12px 22px;cursor:pointer;font-size:.9rem;font-weight:600;color:var(--text-secondary);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .2s}
 .st-tab:hover{color:var(--primary-main)}
 .st-tab.active{color:var(--primary-main);border-bottom-color:var(--primary-main)}
-.st-panel{display:none}.st-panel.active{display:block}
+.st-panel{display:none !important}.st-panel.active{display:block !important}
 /* ---- Themes ---- */
 .st-active-summary{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--primary-main),var(--primary-light,#4a8a4a));color:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .st-active-summary-icon{font-size:2rem}

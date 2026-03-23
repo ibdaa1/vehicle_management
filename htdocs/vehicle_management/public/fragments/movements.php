@@ -586,6 +586,7 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
         const fuelLabel=f=>{const m={full:i18n.t('fuel_full'),three_quarter:i18n.t('fuel_three_quarter'),half:i18n.t('fuel_half'),quarter:i18n.t('fuel_quarter'),empty:i18n.t('fuel_empty')};return m[f]||'—';};
         const typeLabel=t=>t==='pickup'?i18n.t('pickup_operation'):i18n.t('return_operation');
         let h='';
+        const returnShown={};
         page.forEach((m,i)=>{
             const hasLoc=m.latitude&&m.longitude;
             // Check if vehicle is currently checked out (latest movement is pickup)
@@ -601,7 +602,8 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
             h+='<td data-label="'+i18n.t('fuel_level')+'">'+fuelLabel(m.fuel_level)+'</td>';
             h+='<td data-label="'+i18n.t('location')+'">'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
             h+='<td data-label="'+i18n.t('actions')+'" class="mv-actions">';
-            if(isCheckedOut && m.id==latest.id && mvCanCreate){
+            if(isCheckedOut && !returnShown[m.vehicle_code] && mvCanCreate){
+                returnShown[m.vehicle_code]=true;
                 h+='<button onclick="MvPage.quickReturn(\''+esc(m.vehicle_code)+'\',\''+esc(m.performed_by)+'\')" title="'+i18n.t('return_vehicle')+'" style="color:#d63031;font-weight:700">↩️</button>';
             }
             h+='<button onclick="MvPage.view('+m.id+')" title="View">👁</button>';
