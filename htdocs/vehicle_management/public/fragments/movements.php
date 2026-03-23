@@ -601,7 +601,7 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
             h+='<td data-label="'+i18n.t('fuel_level')+'">'+fuelLabel(m.fuel_level)+'</td>';
             h+='<td data-label="'+i18n.t('location')+'">'+(hasLoc?'<a href="https://www.google.com/maps?q='+m.latitude+','+m.longitude+'" target="_blank" title="Open Map">📍</a>':'—')+'</td>';
             h+='<td data-label="'+i18n.t('actions')+'" class="mv-actions">';
-            if(isCheckedOut && m.id===latest.id && mvCanCreate){
+            if(isCheckedOut && m.id==latest.id && mvCanCreate){
                 h+='<button onclick="MvPage.quickReturn(\''+esc(m.vehicle_code)+'\',\''+esc(m.performed_by)+'\')" title="'+i18n.t('return_vehicle')+'" style="color:#d63031;font-weight:700">↩️</button>';
             }
             h+='<button onclick="MvPage.view('+m.id+')" title="View">👁</button>';
