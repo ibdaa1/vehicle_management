@@ -441,6 +441,9 @@ class UserController extends BaseController
 
             if ($result->success && $result->affected_rows > 0) {
                 Response::success(null, 'User deleted successfully');
+            } elseif (!$result->success) {
+                // Foreign key constraint or other DB error
+                Response::error('Cannot delete user: referenced by existing records', 409);
             } else {
                 Response::error('User not found or already deleted', 404);
             }
