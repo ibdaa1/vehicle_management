@@ -238,6 +238,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
         setEl('pfLblEmail','email');
         setEl('pfLblPhone','phone');
         setEl('pfLblGender','gender');
+        // Translate gender option labels
+        var isEn = getLang() === 'en';
+        var genderSel = document.getElementById('pfGender');
+        if (genderSel) {
+            Array.prototype.forEach.call(genderSel.options, function(opt) {
+                var lbl = opt.getAttribute(isEn ? 'data-label-en' : 'data-label-ar');
+                if (lbl) opt.textContent = lbl;
+            });
+        }
         setEl('pfLblRole','role');
         setEl('pfLblSector','sector');
         setEl('pfLblDept','department');
@@ -345,7 +354,15 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
 
         // Gender select
         var genderSel = $('pfGender');
-        if (genderSel) genderSel.value = data.gender || '';
+        if (genderSel) {
+            var gVal = data.gender || '';
+            // Ensure the value exists among the options before setting
+            var found = false;
+            for (var i = 0; i < genderSel.options.length; i++) {
+                if (genderSel.options[i].value === gVal) { found = true; break; }
+            }
+            genderSel.value = found ? gVal : '';
+        }
 
         // Sector select
         var sectorSel = $('pfSector');
@@ -381,7 +398,7 @@ html[dir="ltr"] .app-sidebar.collapsed~.app-main{margin-right:0;margin-left:var(
             email: $('pfEmail').value.trim(),
             phone: $('pfPhone').value.trim(),
             preferred_language: $('pfLang').value,
-            gender: $('pfGender').value,
+            gender: $('pfGender').value || null,
             sector_id: $('pfSector').value || null,
             department_id: $('pfDept').value || null,
             section_id: $('pfSection').value || null,

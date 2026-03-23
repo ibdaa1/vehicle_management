@@ -231,9 +231,8 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
                 </div>
                 <div class="fg">
                     <label data-lang-key="performed_by_label">Performed By *</label>
-                    <select id="mvPerformedBy" required>
-                        <option value="">-- Select --</option>
-                    </select>
+                    <input type="text" id="mvPerformedBy" list="mvPerformedByList" required autocomplete="off" placeholder="-- Select --">
+                    <datalist id="mvPerformedByList"></datalist>
                 </div>
                 <div class="row2">
                     <div class="fg">
@@ -371,16 +370,17 @@ html[dir="ltr"] .mv-filters-row select{background-position:right 10px center;pad
         try{
             var uRes=await API.get('/users');
             var users=(uRes.data||uRes)||[];
-            var pbSel=$('mvPerformedBy');
+            var pbList=$('mvPerformedByList');
+            var pbInput=$('mvPerformedBy');
             users.forEach(function(u){
                 if(!u.emp_id) return;
                 var o=document.createElement('option');
                 o.value=u.emp_id;
-                o.textContent=u.emp_id+' - '+(u.username||u.email||'');
-                pbSel.appendChild(o);
+                o.label=u.emp_id+' - '+(u.username||u.email||'');
+                pbList.appendChild(o);
             });
             // Default to current user's emp_id
-            if(mvUser&&mvUser.emp_id) pbSel.value=mvUser.emp_id;
+            if(mvUser&&mvUser.emp_id) pbInput.value=mvUser.emp_id;
         }catch(e){console.error('loadReferences: users',e);}
     }
 
